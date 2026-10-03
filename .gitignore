@@ -1,0 +1,44 @@
+# Entorno y secretos
+.env
+.env.*
+!.env.example
+
+# Node / Expo (mobile)
+node_modules/
+.expo/
+dist/
+web-build/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+
+# PHP / Laravel (web)
+/web/vendor/
+/web/storage/*.key
+/web/public/storage
+/web/public/hot
+/web/.phpunit.result.cache
+
+# Python (api)
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Archivos subidos en desarrollo
+/api/uploads/
+
+# Editor y sistema
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*.log
