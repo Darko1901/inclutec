@@ -1,0 +1,506 @@
+// IncluTec — modelo relacional (generado desde PostgreSQL). Pegar en https://dbdiagram.io
+
+TableGroup seguridad {
+  rol
+  usuario
+  token_recuperacion
+  dispositivo
+  bitacora
+  notificacion
+  preferencia_notificacion
+}
+
+TableGroup catalogos {
+  entidad_federativa
+  municipio
+  modalidad
+  jornada
+  tipo_contrato
+  nivel_educativo
+  sector
+  tamano_empresa
+  categoria
+  habilidad
+  ajuste
+  motivo_reporte
+}
+
+TableGroup candidato {
+  candidato
+  candidato_modalidad
+  candidato_categoria
+  experiencia
+  formacion
+  candidato_habilidad
+  candidato_necesidad
+}
+
+TableGroup empresa {
+  empresa
+  reclutador
+  vacante
+  vacante_habilidad
+  vacante_ajuste
+  compatibilidad
+}
+
+TableGroup proceso {
+  postulacion
+  historial_postulacion
+  observacion
+  horario_entrevista
+  entrevista
+}
+
+TableGroup moderacion {
+  reporte
+  historial_reporte
+}
+
+Table rol [note: 'Roles de usuario de la plataforma.'] {
+  id smallint [pk, increment, note: 'Identificador del rol.']
+  nombre varchar(20) [not null, unique, note: 'Nombre del rol: candidato, reclutador o administrador.']
+  descripcion varchar(150) [note: 'Descripción del alcance del rol.']
+}
+
+Table usuario [note: 'Cuentas de acceso de candidatos, reclutadores y administradores.'] {
+  id bigint [pk, increment, note: 'Identificador del usuario.']
+  rol_id smallint [not null, note: 'Rol del usuario.']
+  correo varchar(254) [not null, unique, note: 'Correo electrónico; se usa como nombre de usuario.']
+  contrasena_hash varchar(255) [not null, note: 'Hash bcrypt de la contraseña (cost ≥ 10).']
+  nombre varchar(80) [not null, note: 'Nombre(s) de la persona.']
+  apellidos varchar(120) [not null, note: 'Apellidos de la persona.']
+  telefono varchar(10) [note: 'Teléfono a 10 dígitos.']
+  estado varchar(12) [not null, default: 'activo', note: 'Estado de la cuenta: activo, suspendido o eliminado (baja lógica).']
+  motivo_estado varchar(255) [note: 'Motivo de la suspensión o baja.']
+  acepto_aviso_en timestamptz [not null, note: 'Fecha en que aceptó el aviso de privacidad.']
+  ultimo_acceso_en timestamptz [note: 'Fecha del último inicio de sesión.']
+  creado_en timestamptz [not null, default: `now()`, note: 'Fecha de registro.']
+  actualizado_en timestamptz [not null, default: `now()`, note: 'Fecha de la última modificación.']
+}
+
+Table token_recuperacion [note: 'Códigos de 6 dígitos para recuperar la contraseña.'] {
+  id bigint [pk, increment, note: 'Identificador del código.']
+  usuario_id bigint [not null, note: 'Usuario que solicitó la recuperación.']
+  codigo_hash varchar(255) [not null, note: 'Hash del código enviado por correo.']
+  intentos smallint [not null, default: `0`, note: 'Intentos de validación realizados (máximo 5).']
+  expira_en timestamptz [not null, note: 'Vencimiento del código (15 minutos después de emitirse).']
+  usado_en timestamptz [note: 'Fecha en que se usó el código; nulo si no se ha usado.']
+  creado_en timestamptz [not null, default: `now()`, note: 'Fecha de emisión.']
+}
+
+Table dispositivo [note: 'Dispositivos móviles registrados para recibir notificaciones push.'] {
+  id bigint [pk, increment, note: 'Identificador del dispositivo.']
+  usuario_id bigint [not null, note: 'Usuario dueño del dispositivo.']
+  expo_push_token varchar(255) [not null, unique, note: 'Token de Expo Push Notifications.']
+  plataforma varchar(10) [not null, note: 'Sistema operativo: android o ios.']
+  creado_en timestamptz [not null, default: `now()`, note: 'Fecha de registro del dispositivo.']
+}
+
+Table bitacora [note: 'Registro de auditoría de las acciones administrativas y cambios de estado.'] {
+  id bigint [pk, increment, note: 'Identificador del registro.']
+  usuario_id bigint [note: 'Usuario que realizó la acción.']
+  accion varchar(20) [not null, note: 'Tipo de acción realizada.']
+  entidad varchar(40) [not null, note: 'Tabla afectada.']
+  entidad_id bigint [note: 'Identificador del registro afectado.']
+  valor_anterior jsonb [note: 'Valores previos al cambio (sin datos sensibles).']
+  valor_nuevo jsonb [note: 'Valores posteriores al cambio (sin datos sensibles).']
+  creado_en timestamptz [not null, default: `now()`, note: 'Fecha y hora de la acción.']
+}
+
+Table notificacion [note: 'Notificaciones dentro de la aplicación; también se envían por push y correo según las preferencias.'] {
+  id bigint [pk, increment, note: 'Identificador de la notificación.']
+  usuario_id bigint [not null, note: 'Destinatario.']
+  tipo varchar(30) [not null, note: 'Tipo de evento que la originó.']
+  titulo varchar(120) [not null, note: 'Título breve.']
+  mensaje varchar(300) [not null, note: 'Texto de la notificación (sin datos sensibles).']
+  referencia_tipo varchar(20) [note: 'Tipo de recurso relacionado (postulacion, entrevista, empresa, reporte).']
+  referencia_id bigint [note: 'Identificador del recurso relacionado, para navegar a él.']
+  leida boolean [not null, default: `false`, note: 'Indica si el usuario ya la leyó.']
+  creado_en timestamptz [not null, default: `now()`, note: 'Fecha de creación.']
+}
+
+Table preferencia_notificacion [note: 'Preferencias de canal (push y correo) por tipo de notificación.'] {
+  usuario_id bigint [note: 'Usuario.']
+  tipo varchar(30) [note: 'Tipo de notificación.']
+  push boolean [not null, default: `true`, note: 'Recibir por notificación push.']
+  correo boolean [not null, default: `true`, note: 'Recibir por correo electrónico.']
+  indexes {
+    (usuario_id, tipo) [pk]
+  }
+}
+
+Table entidad_federativa [note: 'Catálogo de entidades federativas (clave INEGI).'] {
+  id smallint [pk, note: 'Clave INEGI de la entidad.']
+  nombre varchar(40) [not null, unique, note: 'Nombre de la entidad.']
+}
+
+Table municipio [note: 'Catálogo de municipios (clave INEGI).'] {
+  id integer [pk, increment, note: 'Identificador del municipio.']
+  entidad_federativa_id smallint [not null, note: 'Entidad federativa a la que pertenece.']
+  clave varchar(3) [not null, note: 'Clave INEGI del municipio dentro de la entidad.']
+  nombre varchar(80) [not null, note: 'Nombre del municipio.']
+}
+
+Table modalidad [note: 'Catálogo de modalidades de trabajo (presencial, remoto, híbrido).'] {
+  id smallint [pk, increment, note: 'Identificador de la modalidad.']
+  nombre varchar(20) [not null, unique, note: 'Nombre de la modalidad.']
+  activo boolean [not null, default: `true`, note: 'Indica si se ofrece en nuevos registros.']
+}
+
+Table jornada [note: 'Catálogo de jornadas laborales (tiempo completo, medio tiempo, por horas, etc.).'] {
+  id smallint [pk, increment, note: 'Identificador de la jornada.']
+  nombre varchar(40) [not null, unique, note: 'Nombre de la jornada.']
+  activo boolean [not null, default: `true`, note: 'Indica si se ofrece en nuevos registros.']
+}
+
+Table tipo_contrato [note: 'Catálogo de tipos de contrato (indefinido, temporal, por proyecto, prácticas).'] {
+  id smallint [pk, increment, note: 'Identificador del tipo de contrato.']
+  nombre varchar(40) [not null, unique, note: 'Nombre del tipo de contrato.']
+  activo boolean [not null, default: `true`, note: 'Indica si se ofrece en nuevos registros.']
+}
+
+Table nivel_educativo [note: 'Catálogo de niveles educativos ordenados de menor a mayor.'] {
+  id smallint [pk, increment, note: 'Identificador del nivel.']
+  nombre varchar(40) [not null, unique, note: 'Nombre del nivel (primaria, secundaria, bachillerato, técnico, licenciatura, posgrado).']
+  orden smallint [not null, unique, note: 'Posición jerárquica; permite comparar si se cumple la formación mínima.']
+  activo boolean [not null, default: `true`, note: 'Indica si se ofrece en nuevos registros.']
+}
+
+Table sector [note: 'Catálogo de sectores económicos de las empresas.'] {
+  id smallint [pk, increment, note: 'Identificador del sector.']
+  nombre varchar(80) [not null, unique, note: 'Nombre del sector.']
+  activo boolean [not null, default: `true`, note: 'Indica si se ofrece en nuevos registros.']
+}
+
+Table tamano_empresa [note: 'Catálogo de tamaños de empresa.'] {
+  id smallint [pk, increment, note: 'Identificador del tamaño.']
+  nombre varchar(30) [not null, unique, note: 'Nombre del tamaño (micro, pequeña, mediana, grande).']
+  rango varchar(40) [not null, note: 'Rango de número de trabajadores.']
+  activo boolean [not null, default: `true`, note: 'Indica si se ofrece en nuevos registros.']
+}
+
+Table categoria [note: 'Categorías o áreas laborales de las vacantes y de las habilidades.'] {
+  id smallint [pk, increment, note: 'Identificador de la categoría.']
+  nombre varchar(80) [not null, unique, note: 'Nombre de la categoría (p. ej. Tecnologías de la información).']
+  descripcion varchar(255) [note: 'Descripción de la categoría.']
+  activo boolean [not null, default: `true`, note: 'Indica si se ofrece en nuevos registros.']
+}
+
+Table habilidad [note: 'Catálogo de habilidades que registran los candidatos y requieren las vacantes.'] {
+  id integer [pk, increment, note: 'Identificador de la habilidad.']
+  categoria_id smallint [not null, note: 'Categoría a la que pertenece la habilidad.']
+  nombre varchar(80) [not null, unique, note: 'Nombre de la habilidad.']
+  activo boolean [not null, default: `true`, note: 'Indica si se ofrece en nuevos registros.']
+}
+
+Table ajuste [note: 'Catálogo único de ajustes razonables y condiciones de accesibilidad; lo usan tanto las necesidades del candidato como las condiciones de la vacante.'] {
+  id smallint [pk, increment, note: 'Identificador del ajuste.']
+  categoria varchar(25) [not null, note: 'Categoría: movilidad, visual, auditiva, comunicacion, cognitiva_psicosocial o general.']
+  nombre varchar(100) [not null, unique, note: 'Nombre del ajuste (p. ej. Intérprete de Lengua de Señas Mexicana).']
+  descripcion varchar(255) [not null, note: 'Descripción en lenguaje claro.']
+  activo boolean [not null, default: `true`, note: 'Indica si se ofrece en nuevos registros.']
+}
+
+Table motivo_reporte [note: 'Catálogo de motivos para reportar vacantes, empresas o candidatos.'] {
+  id smallint [pk, increment, note: 'Identificador del motivo.']
+  nombre varchar(100) [not null, unique, note: 'Nombre del motivo (p. ej. Discriminación, Vacante engañosa).']
+  aplica_a varchar(10) [not null, note: 'Tipo de elemento al que aplica el motivo.']
+  activo boolean [not null, default: `true`, note: 'Indica si se ofrece en nuevos reportes.']
+}
+
+Table candidato [note: 'Perfil del candidato (extensión 1:1 de usuario con rol candidato).'] {
+  usuario_id bigint [pk, note: 'Usuario al que pertenece el perfil.']
+  municipio_id integer [note: 'Municipio de residencia.']
+  jornada_id smallint [note: 'Jornada deseada.']
+  resumen varchar(500) [note: 'Resumen profesional (máximo 500 caracteres).']
+  foto_url varchar(500) [note: 'URL de la fotografía (opcional).']
+  disponible_reubicacion boolean [not null, default: `false`, note: 'Indica si está dispuesto a cambiar de residencia.']
+  consentimiento_sensibles_en timestamptz [note: 'Fecha del consentimiento expreso para tratar necesidades de ajuste; nulo si no lo otorgó.']
+  compartir_ajustes varchar(10) [not null, default: 'preguntar', note: 'Preferencia para compartir necesidades de ajuste: preguntar, siempre o nunca.']
+  nota_ajustes varchar(300) [note: 'Nota libre sobre sus necesidades de ajuste (máximo 300 caracteres).']
+  completitud smallint [not null, default: `0`, note: 'Porcentaje de completitud del perfil (0 a 100).']
+  actualizado_en timestamptz [not null, default: `now()`, note: 'Fecha de la última modificación del perfil.']
+}
+
+Table candidato_modalidad [note: 'Modalidades de trabajo que prefiere el candidato (N:M).'] {
+  candidato_id bigint [note: 'Candidato.']
+  modalidad_id smallint [note: 'Modalidad preferida.']
+  indexes {
+    (candidato_id, modalidad_id) [pk]
+  }
+}
+
+Table candidato_categoria [note: 'Categorías laborales de interés del candidato (N:M).'] {
+  candidato_id bigint [note: 'Candidato.']
+  categoria_id smallint [note: 'Categoría de interés.']
+  indexes {
+    (candidato_id, categoria_id) [pk]
+  }
+}
+
+Table experiencia [note: 'Experiencia laboral del candidato.'] {
+  id bigint [pk, increment, note: 'Identificador de la experiencia.']
+  candidato_id bigint [not null, note: 'Candidato al que pertenece.']
+  puesto varchar(100) [not null, note: 'Puesto desempeñado.']
+  empresa varchar(120) [not null, note: 'Nombre de la empresa (texto libre).']
+  fecha_inicio date [not null, note: 'Fecha de inicio.']
+  fecha_fin date [note: 'Fecha de término; nula si es el empleo actual.']
+  actual boolean [not null, default: `false`, note: 'Indica si es su empleo actual.']
+  descripcion varchar(500) [note: 'Descripción de funciones (máximo 500 caracteres).']
+}
+
+Table formacion [note: 'Formación académica del candidato.'] {
+  id bigint [pk, increment, note: 'Identificador de la formación.']
+  candidato_id bigint [not null, note: 'Candidato al que pertenece.']
+  nivel_educativo_id smallint [not null, note: 'Nivel educativo.']
+  institucion varchar(150) [not null, note: 'Institución educativa.']
+  carrera varchar(150) [note: 'Carrera o programa (si aplica).']
+  estado varchar(10) [not null, note: 'Estado: concluida, en_curso o trunca.']
+  fecha_inicio date [note: 'Fecha de inicio.']
+  fecha_fin date [note: 'Fecha de término.']
+}
+
+Table candidato_habilidad [note: 'Habilidades del candidato con su nivel (N:M; máximo 30 por candidato, validado en el API).'] {
+  candidato_id bigint [note: 'Candidato.']
+  habilidad_id integer [note: 'Habilidad.']
+  nivel varchar(12) [not null, note: 'Nivel de dominio: basico, intermedio o avanzado.']
+  indexes {
+    (candidato_id, habilidad_id) [pk]
+  }
+}
+
+Table candidato_necesidad [note: 'Necesidades de ajuste del candidato (N:M). Dato sensible: requiere consentimiento expreso.'] {
+  candidato_id bigint [note: 'Candidato.']
+  ajuste_id smallint [note: 'Ajuste que necesita.']
+  indexes {
+    (candidato_id, ajuste_id) [pk]
+  }
+}
+
+Table empresa [note: 'Organizaciones que publican vacantes; requieren validación del administrador.'] {
+  id bigint [pk, increment, note: 'Identificador de la empresa.']
+  razon_social varchar(200) [not null, note: 'Razón social registrada ante el SAT.']
+  nombre_comercial varchar(150) [not null, note: 'Nombre comercial visible para los candidatos.']
+  rfc varchar(13) [not null, unique, note: 'RFC de 12 (persona moral) o 13 (persona física) caracteres; único.']
+  sector_id smallint [not null, note: 'Sector económico.']
+  tamano_empresa_id smallint [not null, note: 'Tamaño de la empresa.']
+  municipio_id integer [not null, note: 'Municipio del domicilio principal.']
+  direccion varchar(255) [note: 'Domicilio principal.']
+  descripcion varchar(1000) [note: 'Descripción de la organización (máximo 1000 caracteres).']
+  sitio_web varchar(255) [note: 'Sitio web.']
+  logo_url varchar(500) [note: 'URL del logotipo.']
+  practicas_inclusion varchar(1000) [note: 'Compromisos y prácticas de inclusión declarados.']
+  documento_url varchar(500) [note: 'URL de la constancia de situación fiscal (PDF) para validación.']
+  estado varchar(12) [not null, default: 'pendiente', note: 'Estado: pendiente, validada, rechazada o suspendida.']
+  motivo_estado varchar(255) [note: 'Motivo del rechazo o de la suspensión.']
+  validada_por bigint [note: 'Administrador que validó o rechazó la empresa.']
+  validada_en timestamptz [note: 'Fecha de la validación o el rechazo.']
+  creado_en timestamptz [not null, default: `now()`, note: 'Fecha de registro.']
+  actualizado_en timestamptz [not null, default: `now()`, note: 'Fecha de la última modificación.']
+}
+
+Table reclutador [note: 'Perfil del reclutador (extensión 1:1 de usuario con rol reclutador) y su empresa.'] {
+  usuario_id bigint [pk, note: 'Usuario al que pertenece el perfil.']
+  empresa_id bigint [not null, note: 'Empresa que representa.']
+  puesto varchar(100) [not null, note: 'Puesto del reclutador dentro de la empresa.']
+}
+
+Table vacante [note: 'Vacantes publicadas por las empresas, con requisitos, modalidad y accesibilidad.'] {
+  id bigint [pk, increment, note: 'Identificador de la vacante.']
+  empresa_id bigint [not null, note: 'Empresa que ofrece la vacante.']
+  reclutador_id bigint [not null, note: 'Reclutador responsable.']
+  categoria_id smallint [not null, note: 'Categoría o área laboral.']
+  modalidad_id smallint [not null, note: 'Modalidad de trabajo.']
+  jornada_id smallint [not null, note: 'Jornada laboral.']
+  tipo_contrato_id smallint [not null, note: 'Tipo de contrato.']
+  nivel_educativo_id smallint [note: 'Formación mínima requerida; nula si no se exige.']
+  municipio_id integer [not null, note: 'Municipio del lugar de trabajo.']
+  titulo varchar(120) [not null, note: 'Título del puesto.']
+  descripcion varchar(2000) [not null, note: 'Descripción del puesto (máximo 2000 caracteres).']
+  plazas smallint [not null, default: `1`, note: 'Número de plazas disponibles.']
+  direccion varchar(255) [note: 'Dirección del lugar de trabajo; obligatoria para modalidad presencial o híbrida (validado en el API).']
+  salario_min numeric(10,2) [note: 'Salario mensual mínimo (MXN).']
+  salario_max numeric(10,2) [note: 'Salario mensual máximo (MXN).']
+  mostrar_salario boolean [not null, default: `false`, note: 'Indica si el salario se muestra a los candidatos.']
+  experiencia_anios smallint [not null, default: `0`, note: 'Años de experiencia solicitados.']
+  sin_condiciones_accesibilidad boolean [not null, default: `false`, note: 'Declaración explícita de que el lugar no cuenta con condiciones de accesibilidad.']
+  notas_accesibilidad varchar(500) [note: 'Notas adicionales sobre accesibilidad (máximo 500 caracteres).']
+  estado varchar(12) [not null, default: 'borrador', note: 'Estado: borrador, publicada, pausada, cerrada o suspendida.']
+  motivo_estado varchar(255) [note: 'Motivo de la suspensión por el administrador.']
+  publicada_en timestamptz [note: 'Fecha de la primera publicación.']
+  creado_en timestamptz [not null, default: `now()`, note: 'Fecha de creación.']
+  actualizado_en timestamptz [not null, default: `now()`, note: 'Fecha de la última modificación.']
+}
+
+Table vacante_habilidad [note: 'Habilidades requeridas por la vacante (N:M), marcadas como obligatorias o deseables.'] {
+  vacante_id bigint [note: 'Vacante.']
+  habilidad_id integer [note: 'Habilidad requerida.']
+  obligatoria boolean [not null, default: `true`, note: 'Verdadero si es obligatoria; falso si es deseable.']
+  indexes {
+    (vacante_id, habilidad_id) [pk]
+  }
+}
+
+Table vacante_ajuste [note: 'Condiciones de accesibilidad y ajustes razonables que declara la vacante (N:M).'] {
+  vacante_id bigint [note: 'Vacante.']
+  ajuste_id smallint [note: 'Ajuste o condición.']
+  tipo varchar(15) [not null, note: 'existente (el lugar ya cuenta con ella) o bajo_solicitud (la empresa puede ofrecerla).']
+  indexes {
+    (vacante_id, ajuste_id) [pk]
+  }
+}
+
+Table compatibilidad [note: 'Índice de compatibilidad precalculado por par candidato–vacante; se recalcula al cambiar el CV o la vacante.'] {
+  candidato_id bigint [note: 'Candidato.']
+  vacante_id bigint [note: 'Vacante.']
+  puntaje_candidato smallint [not null, note: 'Índice que ve el candidato: 0.40·H + 0.30·A + 0.15·M + 0.15·F (0 a 100).']
+  puntaje_reclutador smallint [not null, note: 'Índice que ve el reclutador, sin el componente A: (0.40·H + 0.15·M + 0.15·F) / 0.70 (0 a 100).']
+  componente_h numeric(4,3) [not null, note: 'Componente de habilidades (0 a 1).']
+  componente_a numeric(4,3) [not null, note: 'Componente de accesibilidad (0 a 1).']
+  componente_m numeric(4,3) [not null, note: 'Componente de modalidad (0 a 1).']
+  componente_f numeric(4,3) [not null, note: 'Componente de formación (0 a 1).']
+  calculado_en timestamptz [not null, default: `now()`, note: 'Fecha del último cálculo.']
+  indexes {
+    (candidato_id, vacante_id) [pk]
+  }
+}
+
+Table postulacion [note: 'Postulaciones de candidatos a vacantes; una por par candidato–vacante.'] {
+  id bigint [pk, increment, note: 'Identificador de la postulación.']
+  candidato_id bigint [not null, note: 'Candidato que se postula.']
+  vacante_id bigint [not null, note: 'Vacante a la que se postula.']
+  estado varchar(16) [not null, default: 'postulada', note: 'Estado: postulada, en_revision, entrevista, aceptada, no_seleccionada o retirada.']
+  mensaje varchar(500) [note: 'Mensaje opcional del candidato (máximo 500 caracteres).']
+  comparte_ajustes boolean [not null, default: `false`, note: 'Consentimiento para mostrar sus necesidades de ajuste a la empresa.']
+  creado_en timestamptz [not null, default: `now()`, note: 'Fecha de postulación.']
+  actualizado_en timestamptz [not null, default: `now()`, note: 'Fecha del último cambio de estado.']
+}
+
+Table historial_postulacion [note: 'Historial de cambios de estado de cada postulación.'] {
+  id bigint [pk, increment, note: 'Identificador del registro.']
+  postulacion_id bigint [not null, note: 'Postulación.']
+  usuario_id bigint [note: 'Usuario que realizó el cambio.']
+  estado_anterior varchar(16) [note: 'Estado previo; nulo en el registro inicial.']
+  estado_nuevo varchar(16) [not null, note: 'Estado resultante.']
+  mensaje varchar(500) [note: 'Mensaje del reclutador visible para el candidato.']
+  creado_en timestamptz [not null, default: `now()`, note: 'Fecha del cambio.']
+}
+
+Table observacion [note: 'Observaciones internas del reclutador sobre una postulación; no visibles para el candidato.'] {
+  id bigint [pk, increment, note: 'Identificador de la observación.']
+  postulacion_id bigint [not null, note: 'Postulación observada.']
+  autor_id bigint [not null, note: 'Reclutador que la registró.']
+  texto varchar(1000) [not null, note: 'Contenido de la observación.']
+  creado_en timestamptz [not null, default: `now()`, note: 'Fecha de registro.']
+}
+
+Table horario_entrevista [note: 'Horarios de entrevista publicados por el reclutador para una vacante.'] {
+  id bigint [pk, increment, note: 'Identificador del horario.']
+  vacante_id bigint [not null, note: 'Vacante a la que corresponde.']
+  reclutador_id bigint [not null, note: 'Reclutador que conduce la entrevista.']
+  inicio timestamptz [not null, note: 'Fecha y hora de inicio.']
+  duracion_min smallint [not null, note: 'Duración en minutos: 30, 45 o 60.']
+  liga varchar(500) [not null, note: 'Liga genérica de Google Meet o Microsoft Teams.']
+  estado varchar(10) [not null, default: 'libre', note: 'Estado: libre, agendado o cancelado.']
+  creado_en timestamptz [not null, default: `now()`, note: 'Fecha de publicación del horario.']
+}
+
+Table entrevista [note: 'Entrevistas agendadas por los candidatos sobre un horario publicado.'] {
+  id bigint [pk, increment, note: 'Identificador de la entrevista.']
+  horario_id bigint [not null, note: 'Horario reservado; solo una entrevista vigente por horario.']
+  postulacion_id bigint [not null, note: 'Postulación a la que corresponde.']
+  estado varchar(12) [not null, default: 'agendada', note: 'Estado: agendada, realizada, no_asistio o cancelada.']
+  motivo_cancelacion varchar(255) [note: 'Motivo de la cancelación.']
+  cancelada_por bigint [note: 'Usuario que canceló la entrevista.']
+  recordatorio_en timestamptz [note: 'Fecha en que se envió el recordatorio de 24 h.']
+  creado_en timestamptz [not null, default: `now()`, note: 'Fecha en que se agendó.']
+}
+
+Table reporte [note: 'Reportes (denuncias) de usuarios sobre una vacante, una empresa o un candidato; se gestionan como incidencias.'] {
+  id bigint [pk, increment, note: 'Identificador del reporte (folio).']
+  reportante_id bigint [not null, note: 'Usuario que reporta.']
+  motivo_reporte_id smallint [not null, note: 'Motivo del reporte.']
+  vacante_id bigint [note: 'Vacante reportada (si aplica).']
+  empresa_id bigint [note: 'Empresa reportada (si aplica).']
+  candidato_id bigint [note: 'Candidato reportado (si aplica).']
+  descripcion varchar(500) [note: 'Descripción del reportante (máximo 500 caracteres).']
+  estado varchar(12) [not null, default: 'abierto', note: 'Estado: abierto, en_revision, resuelto o descartado.']
+  resolucion varchar(1000) [note: 'Resolución del administrador; obligatoria al cerrar.']
+  accion varchar(12) [note: 'Acción tomada: ninguna o suspension.']
+  atendido_por bigint [note: 'Administrador que atendió el reporte.']
+  creado_en timestamptz [not null, default: `now()`, note: 'Fecha del reporte.']
+  cerrado_en timestamptz [note: 'Fecha de cierre.']
+}
+
+Table historial_reporte [note: 'Seguimiento de cambios de estado de cada reporte.'] {
+  id bigint [pk, increment, note: 'Identificador del registro.']
+  reporte_id bigint [not null, note: 'Reporte.']
+  usuario_id bigint [note: 'Administrador que realizó el cambio.']
+  estado_anterior varchar(12) [note: 'Estado previo.']
+  estado_nuevo varchar(12) [not null, note: 'Estado resultante.']
+  comentario varchar(500) [note: 'Comentario del cambio.']
+  creado_en timestamptz [not null, default: `now()`, note: 'Fecha del cambio.']
+}
+
+Ref: bitacora.usuario_id > usuario.id
+Ref: candidato.jornada_id > jornada.id
+Ref: candidato.municipio_id > municipio.id
+Ref: candidato.usuario_id - usuario.id
+Ref: candidato_categoria.candidato_id > candidato.usuario_id
+Ref: candidato_categoria.categoria_id > categoria.id
+Ref: candidato_habilidad.candidato_id > candidato.usuario_id
+Ref: candidato_habilidad.habilidad_id > habilidad.id
+Ref: candidato_modalidad.candidato_id > candidato.usuario_id
+Ref: candidato_modalidad.modalidad_id > modalidad.id
+Ref: candidato_necesidad.ajuste_id > ajuste.id
+Ref: candidato_necesidad.candidato_id > candidato.usuario_id
+Ref: compatibilidad.candidato_id > candidato.usuario_id
+Ref: compatibilidad.vacante_id > vacante.id
+Ref: dispositivo.usuario_id > usuario.id
+Ref: empresa.municipio_id > municipio.id
+Ref: empresa.sector_id > sector.id
+Ref: empresa.tamano_empresa_id > tamano_empresa.id
+Ref: empresa.validada_por > usuario.id
+Ref: entrevista.cancelada_por > usuario.id
+Ref: entrevista.horario_id > horario_entrevista.id
+Ref: entrevista.postulacion_id > postulacion.id
+Ref: experiencia.candidato_id > candidato.usuario_id
+Ref: formacion.candidato_id > candidato.usuario_id
+Ref: formacion.nivel_educativo_id > nivel_educativo.id
+Ref: habilidad.categoria_id > categoria.id
+Ref: historial_postulacion.postulacion_id > postulacion.id
+Ref: historial_postulacion.usuario_id > usuario.id
+Ref: historial_reporte.reporte_id > reporte.id
+Ref: historial_reporte.usuario_id > usuario.id
+Ref: horario_entrevista.reclutador_id > reclutador.usuario_id
+Ref: horario_entrevista.vacante_id > vacante.id
+Ref: municipio.entidad_federativa_id > entidad_federativa.id
+Ref: notificacion.usuario_id > usuario.id
+Ref: observacion.autor_id > reclutador.usuario_id
+Ref: observacion.postulacion_id > postulacion.id
+Ref: postulacion.candidato_id > candidato.usuario_id
+Ref: postulacion.vacante_id > vacante.id
+Ref: preferencia_notificacion.usuario_id > usuario.id
+Ref: reclutador.empresa_id > empresa.id
+Ref: reclutador.usuario_id - usuario.id
+Ref: reporte.atendido_por > usuario.id
+Ref: reporte.candidato_id > candidato.usuario_id
+Ref: reporte.empresa_id > empresa.id
+Ref: reporte.motivo_reporte_id > motivo_reporte.id
+Ref: reporte.reportante_id > usuario.id
+Ref: reporte.vacante_id > vacante.id
+Ref: token_recuperacion.usuario_id > usuario.id
+Ref: usuario.rol_id > rol.id
+Ref: vacante.categoria_id > categoria.id
+Ref: vacante.empresa_id > empresa.id
+Ref: vacante.jornada_id > jornada.id
+Ref: vacante.modalidad_id > modalidad.id
+Ref: vacante.municipio_id > municipio.id
+Ref: vacante.nivel_educativo_id > nivel_educativo.id
+Ref: vacante.reclutador_id > reclutador.usuario_id
+Ref: vacante.tipo_contrato_id > tipo_contrato.id
+Ref: vacante_ajuste.ajuste_id > ajuste.id
+Ref: vacante_ajuste.vacante_id > vacante.id
+Ref: vacante_habilidad.habilidad_id > habilidad.id
+Ref: vacante_habilidad.vacante_id > vacante.id
