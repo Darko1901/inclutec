@@ -1,0 +1,66 @@
+flowchart TB
+  classDef comp fill:#DBEAFE,stroke:#1E40AF,stroke-width:1.4px,color:#111827
+  classDef core fill:#CCFBF1,stroke:#0F766E,stroke-width:1.6px,color:#111827
+  classDef bd fill:#FEF3C7,stroke:#B45309,stroke-width:1.5px,color:#111827
+  classDef ext fill:#F3F4F6,stroke:#6B7280,stroke-dasharray:4 3,color:#111827
+
+  subgraph MOVIL["«dispositivo» Teléfono Android / iOS"]
+    direction TB
+    subgraph APPC["«componente» App móvil · React Native + Expo"]
+      direction TB
+      NAV["Navegación por rol<br/>(React Navigation)"]:::comp
+      UIC["Pantallas<br/>MOV · CAN · REC"]:::comp
+      HTTP1["Cliente HTTP<br/>(Axios + interceptor JWT)"]:::comp
+      SEC["Almacenamiento seguro<br/>(expo-secure-store)"]:::comp
+      NOTI["Notificaciones<br/>(expo-notifications)"]:::comp
+    end
+  end
+
+  subgraph SWEB["«servidor» Servidor web"]
+    direction TB
+    subgraph WEBC["«componente» Panel de administración · Laravel"]
+      direction TB
+      RUT["Rutas y middleware<br/>de sesión"]:::comp
+      CTL["Controladores<br/>WEB-01 a WEB-08"]:::comp
+      BLA["Vistas Blade<br/>accesibles"]:::comp
+      HTTP2["Cliente HTTP<br/>(Http facade + token en sesión)"]:::comp
+    end
+  end
+
+  subgraph SAPI["«servidor» Servidor de aplicaciones"]
+    direction TB
+    subgraph APIC["«componente» API REST · FastAPI /api/v1"]
+      direction TB
+      RTR["Routers<br/>auth · candidatos · empresas · vacantes · postulaciones<br/>entrevistas · notificaciones · reportes · catálogos · admin"]:::core
+      SEG["Seguridad<br/>JWT HS256 · roles · bcrypt"]:::core
+      VAL["Esquemas<br/>Pydantic"]:::core
+      SRV["Servicios de negocio<br/>motor de compatibilidad · transiciones de estado · agenda"]:::core
+      ORM["Acceso a datos<br/>SQLAlchemy"]:::core
+      BG["Tareas en segundo plano<br/>envíos y recordatorios"]:::core
+      FS["Almacén de archivos<br/>logotipos y constancias"]:::core
+    end
+  end
+
+  subgraph SBD["«servidor» Servidor de base de datos"]
+    DB[("PostgreSQL 16<br/>esquema inclutec · 39 tablas<br/>migraciones SQL versionadas")]:::bd
+  end
+
+  SMTP["«externo» Servidor de correo<br/>(SMTP)"]:::ext
+  EXPO["«externo» Expo Push Service"]:::ext
+  MEET["«externo» Google Meet / Microsoft Teams<br/>(solo ligas de entrevista)"]:::ext
+
+  NAV --> UIC --> HTTP1
+  HTTP1 --> SEC
+  NOTI --> NAV
+  RUT --> CTL --> HTTP2
+  CTL --> BLA
+  HTTP1 -- "HTTPS · JSON · Bearer JWT" --> RTR
+  HTTP2 -- "HTTPS · JSON · Bearer JWT" --> RTR
+  RTR --> SEG --> VAL --> SRV --> ORM
+  SRV --> BG
+  SRV --> FS
+  ORM -- "SQL / TCP 5432" --> DB
+  BG -- "SMTP / TLS" --> SMTP
+  BG -- "HTTPS · Expo Push API" --> EXPO
+  EXPO -. "push" .-> NOTI
+  UIC -. "abre la liga" .-> MEET
