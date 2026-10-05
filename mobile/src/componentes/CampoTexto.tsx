@@ -130,7 +130,7 @@ export function CampoTexto({
             ) : null}
             <Texto
               variante="pequeno"
-              color={error ? 'error' : 'textoSecundario'}
+              color={error ? 'error' : 'textoSecundarioSobreGris'}
               accessibilityRole={error ? 'alert' : undefined}
               accessibilityLiveRegion={error ? 'polite' : undefined}
               style={estilos.textoMensaje}
@@ -144,7 +144,7 @@ export function CampoTexto({
         {contador && maxLength ? (
           <Texto
             variante="pequeno"
-            color="textoSecundario"
+            color="textoSecundarioSobreGris"
             accessibilityLabel={`${value?.length ?? 0} de ${maxLength} caracteres`}
           >
             {`${value?.length ?? 0} / ${maxLength}`}

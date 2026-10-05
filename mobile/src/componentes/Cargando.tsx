@@ -22,7 +22,7 @@ export function Cargando({ mensaje = 'Cargando…' }: CargandoProps) {
       style={estilos.contenedor}
     >
       <ActivityIndicator size="large" color={colores.primario} />
-      <Texto color="textoSecundario">{mensaje}</Texto>
+      <Texto color="textoSecundarioSobreGris">{mensaje}</Texto>
     </View>
   );
 }

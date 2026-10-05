@@ -25,14 +25,14 @@ export function PantallaMarcador({ codigo, nombre, children }: PantallaMarcadorP
         <Ionicons
           name="construct-outline"
           size={48}
-          color={colores.textoSecundario}
+          color={colores.textoSecundarioSobreGris}
           accessibilityElementsHidden
           importantForAccessibility="no"
         />
         <Texto variante="subtitulo" accessibilityRole="header" style={estilos.texto}>
           {`${codigo} · ${nombre}`}
         </Texto>
-        <Texto color="textoSecundario">Pendiente</Texto>
+        <Texto color="textoSecundarioSobreGris">Pendiente</Texto>
       </View>
       {children}
     </Pantalla>

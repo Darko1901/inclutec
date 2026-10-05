@@ -47,7 +47,7 @@ export function Boton({
 }: BotonProps) {
   const inactivo = deshabilitado || cargando;
   const colorVariante = estilos_variante[variante];
-  const colorTexto = deshabilitado ? colores.textoSecundario : colorVariante.texto;
+  const colorTexto = deshabilitado ? colores.textoSecundarioSobreGris : colorVariante.texto;
 
   return (
     <Pressable

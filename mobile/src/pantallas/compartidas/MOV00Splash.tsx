@@ -25,7 +25,7 @@ export default function MOV00Splash() {
           style={estilos.carga}
         >
           <ActivityIndicator color={colores.primario} />
-          <Texto variante="pequeno" color="textoSecundario">
+          <Texto variante="pequeno" color="textoSecundarioSobreGris">
             Cargando…
           </Texto>
         </View>
