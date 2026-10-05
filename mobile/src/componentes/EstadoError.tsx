@@ -33,7 +33,7 @@ export function EstadoError({
       >
         {titulo}
       </Texto>
-      <Texto color="textoSecundario" style={estilos.centrado}>
+      <Texto color="textoSecundarioSobreGris" style={estilos.centrado}>
         {mensaje}
       </Texto>
       <Boton titulo="Reintentar" onPress={onReintentar} icono="refresh" />

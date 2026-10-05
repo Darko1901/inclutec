@@ -8,6 +8,8 @@ export const colores = {
   error: '#B91C1C',
   texto: '#111827',
   textoSecundario: '#6B7280',
+  // Texto secundario sobre el fondo gris (#6B7280 solo da 4.36:1 sobre #F3F4F6).
+  textoSecundarioSobreGris: '#4B5563',
   fondo: '#FFFFFF',
   fondoSuave: '#F3F4F6',
   borde: '#6B7280',

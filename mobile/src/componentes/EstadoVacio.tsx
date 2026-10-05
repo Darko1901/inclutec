@@ -24,7 +24,7 @@ export function EstadoVacio({
       <Ionicons
         name={icono}
         size={48}
-        color={colores.textoSecundario}
+        color={colores.textoSecundarioSobreGris}
         accessibilityElementsHidden
         importantForAccessibility="no"
       />
@@ -32,7 +32,7 @@ export function EstadoVacio({
         {titulo}
       </Texto>
       {mensaje ? (
-        <Texto color="textoSecundario" style={estilos.centrado}>
+        <Texto color="textoSecundarioSobreGris" style={estilos.centrado}>
           {mensaje}
         </Texto>
       ) : null}

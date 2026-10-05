@@ -16,6 +16,7 @@ describe('tema', () => {
     ['texto', 'fondo'],
     ['texto', 'fondoSuave'],
     ['textoSecundario', 'fondo'],
+    ['textoSecundarioSobreGris', 'fondoSuave'],
     ['primario', 'fondo'],
     ['secundario', 'fondo'],
     ['exito', 'fondo'],
