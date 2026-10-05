@@ -24,7 +24,7 @@ INSERT INTO reclutador (usuario_id, empresa_id, puesto) VALUES (2, 1, 'Coordinad
 
 INSERT INTO candidato (usuario_id, municipio_id, jornada_id, resumen, consentimiento_sensibles_en, compartir_ajustes, completitud) VALUES
  (3, 2, 1, 'Técnica en sistemas con experiencia en soporte y atención a usuarios.', now(), 'preguntar', 90),
- (4, 3, 1, 'Analista de datos en formación.', NULL, 'nunca', 60);
+ (4, 3, 1, 'Analista de datos en formación.', NULL, 'nunca', 80);
 
 INSERT INTO candidato_modalidad VALUES (3, 2), (3, 3), (4, 1);
 INSERT INTO candidato_categoria VALUES (3, 1), (4, 1), (4, 2);
