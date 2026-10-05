@@ -17,7 +17,7 @@ IncluTec es una plataforma web y móvil que vincula a **personas con discapacida
 
 1. **Solo el API se conecta a la base de datos.** La app móvil y el panel web consumen el API por HTTPS con JSON y un token JWT en el encabezado `Authorization: Bearer`. Laravel **no** usa Eloquent contra PostgreSQL ni tiene conexión de BD propia para datos del negocio.
 2. **El esquema vive solo en `db/`.** Cualquier cambio a la BD es un archivo nuevo `db/migraciones/V00N__descripcion.sql`; nunca se editan migraciones ya existentes. El API mapea las tablas con SQLAlchemy pero **no las crea ni las modifica** (nada de `create_all` ni Alembic).
-3. Endpoints bajo `/api/v1`. Errores con códigos HTTP correctos (400, 401, 403, 404, 409, 422, 423) y cuerpo `{"detail": "mensaje claro en español"}`.
+3. Endpoints bajo `/api/v1`. Errores con códigos HTTP correctos y cuerpo `{"detail": "mensaje claro", "codigo": "...", "campos": {...}}`, según la sección 1 del contrato.
 4. JWT HS256 con vigencia de 8 horas; contraseñas con bcrypt (cost ≥ 10).
 5. No se planea despliegue: todo corre en local con datos de prueba.
 
@@ -57,12 +57,12 @@ Qué hace cada pantalla: `docs/diseno/requerimientos.md` (RF por interfaz) y `do
 
 ## 5. Fase actual: frontend con datos simulados
 
-Hasta el sprint 4 el API no existe. La app móvil y el panel web se programan contra una **capa de servicios** con dos implementaciones intercambiables:
+Hasta el sprint 4 el API no existe, pero su contrato sí. La app móvil y el panel web se programan contra una **capa de servicios** con dos implementaciones intercambiables:
 
 - **Mock:** responde con los mismos datos de `db/semillas/S002__datos_prueba.sql` (Mariana, TecnoQro, la vacante de soporte, 88 % / 83 %), con una latencia corta simulada y los mismos códigos de error que dará el API.
 - **HTTP:** llama al API real.
 
-Se elige con una variable de entorno (`EXPO_PUBLIC_USE_MOCK` en móvil, `INCLUTEC_API_MOCK` en web). Las pantallas **nunca** importan datos de prueba directamente; siempre pasan por la capa de servicios. Las rutas y la forma del JSON siguen `docs/api/contrato.md` (cuando exista) y, mientras tanto, los RF y los nombres de campos de la BD.
+Se elige con una variable de entorno (`EXPO_PUBLIC_USE_MOCK` en móvil, `INCLUTEC_API_MOCK` en web). Las pantallas **nunca** importan datos de prueba directamente; siempre pasan por la capa de servicios. Las rutas, la forma del JSON y los errores siguen exactamente `docs/api/contrato.md` (y `docs/api/openapi.yaml`, de donde se generan los tipos). Los datos simulados son los ejemplos del contrato, que coinciden con `db/semillas/S002__datos_prueba.sql`.
 
 ## 6. Accesibilidad (obligatoria, se evalúa)
 
@@ -101,6 +101,7 @@ Se elige con una variable de entorno (`EXPO_PUBLIC_USE_MOCK` en móvil, `INCLUTE
 
 | Archivo | Contenido |
 |---|---|
+| `docs/api/contrato.md` | Contrato del API: 100 endpoints, reglas de negocio, errores y objetos (y `openapi.yaml`) |
 | `docs/diseno/requerimientos.md` | 156 requerimientos funcionales por interfaz y 43 no funcionales |
 | `docs/diseno/pantallas.md` | Contenido de cada pantalla, campos de BD, catálogos, estados y datos de ejemplo |
 | `docs/diseno/casos_de_uso.md` | 27 casos de uso con flujos, flujos alternos y diagrama de secuencia |
