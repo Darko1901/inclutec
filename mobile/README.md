@@ -49,20 +49,23 @@ Se leen del archivo `.env` (no se sube a git; la plantilla es `.env.example`). D
 
 Son las de `db/semillas/S002__datos_prueba.sql`. La contraseña de todas es **Inclutec2026**.
 
-| Correo                   | Rol                           | Qué ocurre al entrar                                            |
-| ------------------------ | ----------------------------- | --------------------------------------------------------------- |
-| mariana.lopez@correo.mx  | Candidata                     | Llega a Vacantes; la pestaña Notificaciones dice «1 sin leer».  |
-| jorge.ramirez@correo.mx  | Candidato                     | Llega a Vacantes; sin notificaciones.                           |
-| rh@tecnoqro.mx           | Reclutadora (Laura, TecnoQro) | Llega a Mis vacantes; Notificaciones dice «1 sin leer».         |
-| admin@inclutec.mx        | Administrador                 | Muestra «El administrador usa el panel web» y no inicia sesión. |
-| **suspendida@correo.mx** | Candidata suspendida          | Responde 423: «Tu cuenta está suspendida.»                      |
+| Correo                       | Rol                           | Qué ocurre al entrar                                                                                                        |
+| ---------------------------- | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| mariana.lopez@correo.mx      | Candidata                     | Llega a Vacantes; la pestaña Notificaciones dice «1 sin leer».                                                              |
+| jorge.ramirez@correo.mx      | Candidato                     | Llega a Vacantes; sin notificaciones.                                                                                       |
+| rh@tecnoqro.mx               | Reclutadora (Laura, TecnoQro) | Llega a Mis vacantes; Notificaciones dice «1 sin leer».                                                                     |
+| admin@inclutec.mx            | Administrador                 | Muestra «El administrador usa el panel web» y no inicia sesión.                                                             |
+| **suspendida@correo.mx**     | Candidata suspendida          | Responde 423: «Tu cuenta está suspendida.»                                                                                  |
+| **notificaciones@correo.mx** | Candidata (Lucía)             | Llega a Vacantes; tiene 45 notificaciones (5 sin leer) para probar el desplazamiento infinito y «Marcar todas como leídas». |
 
-La cuenta `suspendida@correo.mx` **existe solo en el mock** (no está en la base de datos de prueba); sirve para probar el error 423.
+Las cuentas `suspendida@correo.mx` y `notificaciones@correo.mx` **existen solo en el mock** (no están en la base de datos de prueba). Jorge no tiene notificaciones: sirve para ver el estado vacío.
 
 Otras pruebas con el mock:
 
 - **429:** escribe una contraseña incorrecta 5 veces con el mismo correo; el siguiente intento, aunque sea correcto, responde «Demasiados intentos fallidos. Intenta de nuevo en 15 minutos.» (el bloqueo dura mientras la app esté abierta).
-- **Código de recuperación de contraseña:** el mock siempre genera `482913` (vence a los 15 minutos; 5 intentos; reenvío cada 60 s).
+- **Código de recuperación de contraseña:** en el mock el código válido es siempre **`123456`** (vence a los 15 minutos; después de 5 intentos incorrectos responde 410; el reenvío solo se permite 60 s después del envío anterior). No llega ningún correo.
+- **Registro:** en el mock, `mariana.lopez@correo.mx` (o cualquier correo de la tabla de arriba) responde «correo ya registrado» y el RFC `TQU150312AB1` responde «RFC ya registrado». Cualquier otro dato válido crea la cuenta (el candidato llega a Perfil y el reclutador a Organización; su empresa queda «pendiente»).
+- **Notificaciones push:** el registro del dispositivo (`POST /dispositivos`) se omite en Expo Go, porque ahí las push remotas ya no existen (Android desde el SDK 53). Funciona en una _development build_.
 - Los cambios (registros, notificaciones leídas, contraseñas nuevas) se guardan **en memoria**: al cerrar la app por completo vuelven los datos originales. La sesión sí se conserva (el token está en `expo-secure-store`).
 
 ## Comandos
@@ -108,9 +111,12 @@ mobile/
     │   ├── errores.ts      ApiError
     │   ├── cliente.ts      Cliente Axios
     │   ├── auth.ts · catalogos.ts · notificaciones.ts   Interfaz + implementación HTTP
-    │   ├── index.ts        Elige HTTP o mock
+    │   ├── servicios.ts    Elige HTTP o mock según EXPO_PUBLIC_USE_MOCK
+    │   ├── index.ts        Lo único que importan las pantallas
+    │   ├── useCatalogo.ts  Hook para cargar catálogos (con caché en memoria)
     │   └── mock/           Datos simulados y simulador de respuestas
-    ├── componentes/        Componentes base accesibles (Boton, CampoTexto, ChipEstado, …)
+    ├── componentes/        Componentes base accesibles (Boton, CampoTexto, Selector, Casilla, …)
+    ├── contenido/          Textos largos, como el aviso de privacidad
     ├── pantallas/
     │   ├── compartidas/    MOV-00 a MOV-04
     │   ├── candidato/      CAN-01 a CAN-07
@@ -128,9 +134,14 @@ Las pruebas viven junto al código, en carpetas `__tests__/`.
 | Pantalla                                                                               | Estado                                                    |
 | -------------------------------------------------------------------------------------- | --------------------------------------------------------- |
 | MOV-00 Splash · MOV-01 Inicio de sesión                                                | Listas                                                    |
+| MOV-02 Registro (3 pasos, candidato y reclutador) y el aviso de privacidad completo    | Listas                                                    |
+| MOV-03 Recuperar contraseña (correo, código de 6 dígitos y nueva contraseña)           | Lista                                                     |
+| MOV-04 Notificaciones (lista paginada, marcar leídas y preferencias)                   | Lista                                                     |
 | Barras inferiores de candidato y reclutador (con contador de notificaciones no leídas) | Listas                                                    |
 | «Cerrar sesión» en CAN-03 Perfil y REC-01 Organización                                 | Funcional                                                 |
-| MOV-02, MOV-03, MOV-04, CAN-01 a CAN-07, REC-01 a REC-06                               | Marcador «Pendiente» (se llenan en las siguientes tareas) |
+| CAN-01 a CAN-07, REC-01 a REC-06                                                       | Marcador «Pendiente» (se llenan en las siguientes tareas) |
+
+Al tocar una notificación se abre la pantalla de su referencia pasándole el id (CAN-06, REC-05, REC-06, REC-01 o REC-02); esas pantallas son marcadores que muestran el id recibido.
 
 ## Accesibilidad
 
