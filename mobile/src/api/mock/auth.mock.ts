@@ -138,14 +138,13 @@ export class AuthMock implements AuthServicio {
           },
         );
       }
-      // Responde lo mismo exista o no la cuenta; solo se guarda el código si existe.
-      if (buscarPorCorreo(correo)) {
-        estado.codigos.set(correo, {
-          codigo: CODIGO_RECUPERACION_PRUEBA,
-          creadoEn: Date.now(),
-          intentos: 0,
-        });
-      }
+      // Responde lo mismo exista o no la cuenta. Si no existe, se guarda un registro que nunca
+      // acepta ningún código, para que verificar responda igual que con una cuenta real.
+      estado.codigos.set(correo, {
+        codigo: buscarPorCorreo(correo) ? CODIGO_RECUPERACION_PRUEBA : '',
+        creadoEn: Date.now(),
+        intentos: 0,
+      });
       return { detail: 'Si el correo está registrado, te enviamos un código de 6 dígitos.' };
     });
   }
