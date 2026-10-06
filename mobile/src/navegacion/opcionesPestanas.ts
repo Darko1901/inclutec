@@ -2,7 +2,11 @@ import type { Ionicons } from '@expo/vector-icons';
 import type { BottomTabNavigationOptions } from '@react-navigation/bottom-tabs';
 
 import { colores } from '../tema';
-import { etiquetaNotificaciones } from './useNoLeidas';
+
+/** «Notificaciones, 1 sin leer»: lo que anuncia el lector de pantalla en la pestaña. */
+export function etiquetaNotificaciones(noLeidas: number): string {
+  return noLeidas > 0 ? `Notificaciones, ${noLeidas} sin leer` : 'Notificaciones';
+}
 
 export type IconoPestana = keyof typeof Ionicons.glyphMap;
 
