@@ -24,9 +24,15 @@ cp .env.example .env   # opcional: los valores por omisión ya usan los datos si
 ## Correr en Expo Go
 
 1. Conecta el teléfono y la computadora a la **misma red Wi-Fi**.
-2. Inicia el servidor: `npm start`.
+2. Inicia el servidor en modo Expo Go: `npx expo start --go`. El QR debe mostrar una URL `exp://` con la IP de tu computadora.
 3. Escanea el código QR con Expo Go (Android) o con la cámara (iOS).
-4. Si no conecta (redes con aislamiento de clientes, VPN o firewall): `npx expo start --tunnel`.
+
+Si no conecta:
+
+- **Firewall:** en Linux con `firewalld` abre el puerto de Metro: `sudo firewall-cmd --add-port=8081/tcp`.
+- **Aislamiento de clientes** (redes de escuela, oficina o algunos módems): conecta la computadora al punto de acceso (hotspot) del teléfono y repite el paso 2.
+- **`--tunnel`:** funciona aunque la red aísle los equipos, pero exige una cuenta gratuita de Expo (`npx expo login`). Úsalo solo si no hay otra opción.
+- **«Development build» en lugar de Expo Go:** si la terminal dice «Using development build», presiona `s` o arranca con `--go`. Este proyecto no usa `expo-dev-client`.
 
 También funciona en emulador: `npm run android` / `npm run ios` (este último solo en macOS).
 
