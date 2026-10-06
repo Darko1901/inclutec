@@ -18,7 +18,7 @@ import {
 type Props = NativeStackScreenProps<RootStackParamList, 'InicioSesion'>;
 
 /** MOV-01: inicio de sesión. La redirección por rol ocurre sola al cambiar la sesión. */
-export default function MOV01InicioSesion({ navigation }: Props) {
+export default function MOV01InicioSesion({ navigation, route }: Props) {
   const { iniciarSesion, aviso, limpiarAviso } = useSesion();
   const [correo, setCorreo] = useState('');
   const [contrasena, setContrasena] = useState('');
@@ -61,6 +61,9 @@ export default function MOV01InicioSesion({ navigation }: Props) {
         Iniciar sesión
       </Texto>
 
+      {route.params?.mensajeExito ? (
+        <Aviso variante="exito" mensaje={route.params.mensajeExito} />
+      ) : null}
       {errorGeneral ? <Aviso variante="error" mensaje={errorGeneral.detail} /> : null}
       {!errorGeneral && aviso ? <Aviso variante="advertencia" mensaje={aviso} /> : null}
 
