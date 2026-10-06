@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { ReactNode, RefObject } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -9,9 +9,16 @@ interface PantallaProps {
   /** Con `desplazable` el contenido hace scroll y sube con el teclado (formularios). */
   desplazable?: boolean;
   centrado?: boolean;
+  /** Para volver al inicio de la pantalla, por ejemplo al mostrar errores de un formulario. */
+  scrollRef?: RefObject<ScrollView | null>;
 }
 
-export function Pantalla({ children, desplazable = false, centrado = false }: PantallaProps) {
+export function Pantalla({
+  children,
+  desplazable = false,
+  centrado = false,
+  scrollRef,
+}: PantallaProps) {
   return (
     <SafeAreaView style={estilos.area} edges={['top', 'left', 'right']}>
       {desplazable ? (
@@ -20,6 +27,7 @@ export function Pantalla({ children, desplazable = false, centrado = false }: Pa
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         >
           <ScrollView
+            ref={scrollRef}
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={[estilos.contenido, centrado && estilos.centrado]}
           >

@@ -59,3 +59,43 @@ export function mensajeContrasenaDeLogin(contrasena: string): string | null {
   }
   return null;
 }
+
+export function mensajeContrasenaRegistro(contrasena: string): string | null {
+  if (contrasena.length === 0) return 'Escribe una contraseña.';
+  if (!esContrasenaValida(contrasena)) {
+    return `Usa de ${LONGITUD_MIN_CONTRASENA} a ${LONGITUD_MAX_CONTRASENA} caracteres, con al menos una letra y un número.`;
+  }
+  return null;
+}
+
+export function mensajeConfirmacion(contrasena: string, confirmacion: string): string | null {
+  if (confirmacion.length === 0) return 'Escribe la contraseña otra vez para confirmarla.';
+  if (confirmacion !== contrasena)
+    return 'Las contraseñas no coinciden. Escríbelas igual en los dos campos.';
+  return null;
+}
+
+export function mensajeTelefono(telefono: string): string | null {
+  if (telefono.length === 0) return 'Escribe tu teléfono.';
+  if (!esTelefonoValido(telefono))
+    return 'El teléfono debe tener 10 dígitos, sin espacios ni guiones.';
+  return null;
+}
+
+export function mensajeCodigo(codigo: string): string | null {
+  return esCodigoValido(codigo) ? null : 'Escribe los 6 dígitos del código.';
+}
+
+export function mensajeRfc(rfc: string): string | null {
+  if (rfc.length === 0) return 'Escribe el RFC de la empresa.';
+  if (!esRfcValido(rfc))
+    return 'El RFC tiene 12 o 13 caracteres, en mayúsculas, por ejemplo TQU150312AB1.';
+  return null;
+}
+
+/** Texto obligatorio con límite de caracteres. */
+export function mensajeTexto(valor: string, nombre: string, maximo: number): string | null {
+  if (valor.trim().length === 0) return `Escribe ${nombre}.`;
+  if (valor.length > maximo) return `Escribe máximo ${maximo} caracteres.`;
+  return null;
+}

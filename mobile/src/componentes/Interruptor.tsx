@@ -5,6 +5,8 @@ import { Texto } from './Texto';
 
 interface InterruptorProps {
   etiqueta: string;
+  /** Nombre completo para el lector de pantalla cuando la etiqueta visible es corta. */
+  etiquetaAccesible?: string;
   valor: boolean;
   onCambio: (valor: boolean) => void;
   deshabilitado?: boolean;
@@ -14,6 +16,7 @@ interface InterruptorProps {
 /** Fila con etiqueta y Switch: toda la fila es el control, así que la etiqueta va asociada. */
 export function Interruptor({
   etiqueta,
+  etiquetaAccesible,
   valor,
   onCambio,
   deshabilitado = false,
@@ -25,7 +28,7 @@ export function Interruptor({
       onPress={() => onCambio(!valor)}
       disabled={deshabilitado}
       accessibilityRole="switch"
-      accessibilityLabel={etiqueta}
+      accessibilityLabel={etiquetaAccesible ?? etiqueta}
       accessibilityState={{ checked: valor, disabled: deshabilitado }}
       style={estilos.fila}
     >

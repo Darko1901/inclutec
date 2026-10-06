@@ -9,18 +9,20 @@ import { Texto } from './Texto';
 interface PantallaMarcadorProps {
   codigo: string;
   nombre: string;
+  /** Dato que recibió la pantalla (por ejemplo, el id de una notificación), para comprobarlo. */
+  detalle?: string;
   /** Contenido extra de la tarea actual (por ejemplo, el botón «Cerrar sesión»). */
   children?: ReactNode;
 }
 
 /** Marcador de una pantalla que se programa en una tarea posterior. */
-export function PantallaMarcador({ codigo, nombre, children }: PantallaMarcadorProps) {
+export function PantallaMarcador({ codigo, nombre, detalle, children }: PantallaMarcadorProps) {
   return (
     <Pantalla centrado desplazable>
       <View
         style={estilos.centro}
         accessible
-        accessibilityLabel={`${codigo}, ${nombre}. Pendiente`}
+        accessibilityLabel={`${codigo}, ${nombre}. Pendiente${detalle ? `. ${detalle}` : ''}`}
       >
         <Ionicons
           name="construct-outline"
@@ -33,6 +35,7 @@ export function PantallaMarcador({ codigo, nombre, children }: PantallaMarcadorP
           {`${codigo} · ${nombre}`}
         </Texto>
         <Texto color="textoSecundarioSobreGris">Pendiente</Texto>
+        {detalle ? <Texto variante="cuerpoFuerte">{detalle}</Texto> : null}
       </View>
       {children}
     </Pantalla>
