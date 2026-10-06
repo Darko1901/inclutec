@@ -5,4 +5,4 @@ export {
   MENSAJE_SESION_VENCIDA,
   TIEMPO_MAXIMO_SPLASH_MS,
 } from './SesionContext';
-export type { EstadoSesion } from './SesionContext';
+export type { EstadoSesion, PantallaInicial } from './SesionContext';

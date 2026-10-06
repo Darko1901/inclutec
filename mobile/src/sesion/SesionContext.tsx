@@ -11,8 +11,16 @@ import {
 
 import { ApiError, auth, configurarSesionApi, type Sesion, type Usuario } from '../api';
 import { borrarToken, guardarToken, leerTokenGuardado } from './almacen';
+import { obtenerTokenPush, olvidarTokenPush, registrarDispositivoPush } from './dispositivoPush';
 
 export type EstadoSesion = 'cargando' | 'sin_sesion' | 'activa';
+
+/** Pestaña a la que se lleva al usuario al entrar (por ejemplo, tras registrarse). */
+export type PantallaInicial = 'Perfil' | 'Organizacion';
+
+interface OpcionesInicio {
+  pantallaInicial?: PantallaInicial;
+}
 
 export const MENSAJE_ADMINISTRADOR = 'El administrador usa el panel web';
 export const MENSAJE_SESION_VENCIDA = 'Tu sesión venció. Inicia sesión de nuevo.';
@@ -27,7 +35,9 @@ interface ValorSesion {
   /** MOV-00: valida el token guardado con auth.me. */
   restaurarSesion: () => Promise<void>;
   /** Guarda la sesión que devolvió login o registro. Devuelve false si el rol no puede usar la app. */
-  iniciarSesion: (sesion: Sesion) => Promise<boolean>;
+  iniciarSesion: (sesion: Sesion, opciones?: OpcionesInicio) => Promise<boolean>;
+  /** Pestaña inicial pedida al iniciar sesión; null si debe abrir la predeterminada del rol. */
+  pantallaInicial: PantallaInicial | null;
   cerrarSesion: () => Promise<void>;
 }
 
@@ -37,12 +47,15 @@ export function SesionProvider({ children }: { children: ReactNode }) {
   const [estado, setEstado] = useState<EstadoSesion>('cargando');
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
+  const [pantallaInicial, setPantallaInicial] = useState<PantallaInicial | null>(null);
   const tokenRef = useRef<string | null>(null);
 
   const terminarSesionLocal = useCallback(async (mensaje: string | null = null) => {
     tokenRef.current = null;
+    olvidarTokenPush();
     await borrarToken();
     setUsuario(null);
+    setPantallaInicial(null);
     setAviso(mensaje);
     setEstado('sin_sesion');
   }, []);
@@ -58,7 +71,7 @@ export function SesionProvider({ children }: { children: ReactNode }) {
   }, [terminarSesionLocal]);
 
   const iniciarSesion = useCallback(
-    async (sesion: Sesion) => {
+    async (sesion: Sesion, opciones: OpcionesInicio = {}) => {
       if (sesion.usuario.rol === 'administrador') {
         await terminarSesionLocal(MENSAJE_ADMINISTRADOR);
         return false;
@@ -66,6 +79,7 @@ export function SesionProvider({ children }: { children: ReactNode }) {
       tokenRef.current = sesion.access_token;
       await guardarToken(sesion.access_token);
       setUsuario(sesion.usuario);
+      setPantallaInicial(opciones.pantallaInicial ?? null);
       setAviso(null);
       setEstado('activa');
       return true;
@@ -113,18 +127,42 @@ export function SesionProvider({ children }: { children: ReactNode }) {
 
   const cerrarSesion = useCallback(async () => {
     try {
-      await auth.logout();
+      await auth.logout({ expo_push_token: obtenerTokenPush() ?? undefined });
     } catch {
       // El JWT no se revoca en el servidor; basta con borrarlo aquí.
     }
     await terminarSesionLocal(null);
   }, [terminarSesionLocal]);
 
+  const idUsuario = usuario?.id;
+  useEffect(() => {
+    // Al entrar (login, registro o sesión restaurada) se registra el dispositivo para push.
+    if (idUsuario !== undefined) void registrarDispositivoPush();
+  }, [idUsuario]);
+
   const limpiarAviso = useCallback(() => setAviso(null), []);
 
   const valor = useMemo<ValorSesion>(
-    () => ({ estado, usuario, aviso, limpiarAviso, restaurarSesion, iniciarSesion, cerrarSesion }),
-    [estado, usuario, aviso, limpiarAviso, restaurarSesion, iniciarSesion, cerrarSesion],
+    () => ({
+      estado,
+      usuario,
+      aviso,
+      pantallaInicial,
+      limpiarAviso,
+      restaurarSesion,
+      iniciarSesion,
+      cerrarSesion,
+    }),
+    [
+      estado,
+      usuario,
+      aviso,
+      pantallaInicial,
+      limpiarAviso,
+      restaurarSesion,
+      iniciarSesion,
+      cerrarSesion,
+    ],
   );
 
   return <SesionContext.Provider value={valor}>{children}</SesionContext.Provider>;
