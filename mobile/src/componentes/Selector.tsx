@@ -13,6 +13,8 @@ export interface OpcionSelector {
   nombre: string;
   /** Texto secundario de la opción, por ejemplo el rango de un tamaño de empresa. */
   detalle?: string;
+  /** Lo que lee el lector de pantalla si es distinto de lo que se ve, por ejemplo «40 por ciento». */
+  etiquetaAccesible?: string;
 }
 
 interface SelectorProps {
@@ -86,7 +88,7 @@ export function Selector({
         onPress={abrir}
         disabled={inactivo}
         accessibilityRole="button"
-        accessibilityLabel={`${etiqueta}, ${seleccionada ? seleccionada.nombre : 'sin seleccionar'}`}
+        accessibilityLabel={`${etiqueta}, ${seleccionada ? (seleccionada.etiquetaAccesible ?? seleccionada.nombre) : 'sin seleccionar'}`}
         accessibilityHint={inactivo ? ayuda : (error ?? 'Abre una lista para elegir una opción')}
         accessibilityState={{ disabled: inactivo, expanded: abierto }}
         style={[
@@ -175,7 +177,9 @@ export function Selector({
                   onPress={() => elegir(item.id)}
                   accessibilityRole="radio"
                   accessibilityLabel={
-                    item.detalle ? `${item.nombre}, ${item.detalle}` : item.nombre
+                    item.detalle
+                      ? `${item.etiquetaAccesible ?? item.nombre}, ${item.detalle}`
+                      : (item.etiquetaAccesible ?? item.nombre)
                   }
                   accessibilityState={{ selected: marcada, checked: marcada }}
                   style={[estilos.opcion, marcada && estilos.opcionMarcada]}

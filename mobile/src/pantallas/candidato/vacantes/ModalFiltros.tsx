@@ -15,6 +15,7 @@ import {
 import { colores, espaciado } from '../../../tema';
 import { CATEGORIAS_AJUSTE } from './categoriasAjuste';
 import { OPCIONES_COMPATIBILIDAD, SIN_FILTROS, type Filtros } from './filtros';
+import { porcentajeAccesible } from './textos';
 
 interface Props {
   visible: boolean;
@@ -64,7 +65,11 @@ function Contenido({ filtros, onAplicar, onCerrar }: Omit<Props, 'visible'>) {
 
   const opcionesCompatibilidad: OpcionSelector[] = [
     CUALQUIERA,
-    ...OPCIONES_COMPATIBILIDAD.map((valor) => ({ id: valor, nombre: `${valor} % o más` })),
+    ...OPCIONES_COMPATIBILIDAD.map((valor) => ({
+      id: valor,
+      nombre: `${valor} % o más`,
+      etiquetaAccesible: `${porcentajeAccesible(valor)} o más`,
+    })),
   ];
 
   function cambiar(cambio: Partial<Filtros>) {

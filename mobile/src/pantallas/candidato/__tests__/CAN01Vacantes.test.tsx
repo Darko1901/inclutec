@@ -337,7 +337,7 @@ describe('CAN-01 · Vacantes', () => {
       await elegir(/^Entidad, /, 'Querétaro');
       await elegir(/^Municipio, /, 'Querétaro');
       await fireEvent.changeText(screen.getByLabelText('Salario mínimo (pesos al mes)'), '15000');
-      await elegir(/^Compatibilidad mínima, /, '40 % o más');
+      await elegir(/^Compatibilidad mínima, /, '40 por ciento o más');
       await fireEvent.press(await screen.findByRole('checkbox', { name: 'Acceso con rampa' }));
       await fireEvent.press(screen.getByRole('checkbox', { name: 'Baño accesible' }));
       await fireEvent.press(screen.getByRole('button', { name: 'Aplicar' }));

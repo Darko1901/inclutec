@@ -198,7 +198,7 @@ export default function CAN01Vacantes() {
         <View style={estilos.explicacion}>
           <Aviso
             variante="info"
-            titulo={`Tu perfil está al ${perfil.completitud} %`}
+            titulo="Tu perfil está incompleto"
             mensaje="Completa tu perfil para recibir mejores recomendaciones."
             anunciar={false}
           />
