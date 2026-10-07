@@ -2100,7 +2100,7 @@ export interface components {
         /**
          * @example {
          *       "correo": "mariana.lopez@correo.mx",
-         *       "codigo": "482913"
+         *       "codigo": "123456"
          *     }
          */
         VerificacionCodigo: {
@@ -2112,7 +2112,7 @@ export interface components {
         /**
          * @example {
          *       "correo": "mariana.lopez@correo.mx",
-         *       "codigo": "482913",
+         *       "codigo": "123456",
          *       "contrasena": "NuevaClave2026"
          *     }
          */
@@ -4332,9 +4332,9 @@ export interface components {
         /**
          * @description Exactamente uno de vacante_id, empresa_id o candidato_id.
          * @example {
-         *       "motivo_reporte_id": 4,
-         *       "vacante_id": 1,
-         *       "descripcion": "Me pidieron un depósito para agendar la entrevista."
+         *       "motivo_reporte_id": 2,
+         *       "vacante_id": 5,
+         *       "descripcion": "El salario publicado no coincide con lo que me dijeron por teléfono."
          *     }
          */
         ReporteEntrada: {
@@ -4368,15 +4368,15 @@ export interface components {
          *       },
          *       "indicadores": {
          *         "candidatos_activos": 2,
-         *         "empresas_validadas": 1,
-         *         "vacantes_publicadas": 1,
-         *         "postulaciones": 1,
+         *         "empresas_validadas": 3,
+         *         "vacantes_publicadas": 6,
+         *         "postulaciones": 2,
          *         "contrataciones": 0,
          *         "tasa_colocacion": 0
          *       },
          *       "pendientes": {
-         *         "empresas_por_validar": 0,
-         *         "reportes_abiertos": 0
+         *         "empresas_por_validar": 1,
+         *         "reportes_abiertos": 1
          *       },
          *       "graficas": {
          *         "postulaciones_por_estado": [
@@ -4549,7 +4549,7 @@ export interface components {
          *           "ultimo_acceso_en": "2026-10-02T16:25:00Z"
          *         }
          *       ],
-         *       "total": 4,
+         *       "total": 7,
          *       "page": 1,
          *       "size": 25
          *     }
@@ -4692,7 +4692,7 @@ export interface components {
          *           "creado_en": "2026-09-28T15:00:00Z"
          *         }
          *       ],
-         *       "total": 1,
+         *       "total": 4,
          *       "page": 1,
          *       "size": 25
          *     }
@@ -4927,7 +4927,7 @@ export interface components {
          *           "reportes_abiertos": 0
          *         }
          *       ],
-         *       "total": 1,
+         *       "total": 8,
          *       "page": 1,
          *       "size": 25
          *     }
@@ -5076,12 +5076,12 @@ export interface components {
          *       "id": 1,
          *       "tipo": "vacante",
          *       "objeto": {
-         *         "id": 1,
-         *         "nombre": "Técnico de soporte de TI · TecnoQro"
+         *         "id": 5,
+         *         "nombre": "Ejecutivo de atención telefónica · ConCentro"
          *       },
          *       "motivo": {
-         *         "id": 4,
-         *         "nombre": "Solicitud de pago al candidato"
+         *         "id": 2,
+         *         "nombre": "Información falsa"
          *       },
          *       "reportante": {
          *         "id": 4,
@@ -5119,12 +5119,12 @@ export interface components {
          *           "id": 1,
          *           "tipo": "vacante",
          *           "objeto": {
-         *             "id": 1,
-         *             "nombre": "Técnico de soporte de TI · TecnoQro"
+         *             "id": 5,
+         *             "nombre": "Ejecutivo de atención telefónica · ConCentro"
          *           },
          *           "motivo": {
-         *             "id": 4,
-         *             "nombre": "Solicitud de pago al candidato"
+         *             "id": 2,
+         *             "nombre": "Información falsa"
          *           },
          *           "reportante": {
          *             "id": 4,
@@ -5152,12 +5152,12 @@ export interface components {
          *         "id": 1,
          *         "tipo": "vacante",
          *         "objeto": {
-         *           "id": 1,
-         *           "nombre": "Técnico de soporte de TI · TecnoQro"
+         *           "id": 5,
+         *           "nombre": "Ejecutivo de atención telefónica · ConCentro"
          *         },
          *         "motivo": {
-         *           "id": 4,
-         *           "nombre": "Solicitud de pago al candidato"
+         *           "id": 2,
+         *           "nombre": "Información falsa"
          *         },
          *         "reportante": {
          *           "id": 4,
@@ -5167,7 +5167,7 @@ export interface components {
          *         "estado": "abierto",
          *         "creado_en": "2026-10-03T18:00:00Z"
          *       },
-         *       "descripcion": "Me pidieron un depósito para agendar la entrevista.",
+         *       "descripcion": "El salario publicado no coincide con lo que me dijeron por teléfono.",
          *       "resolucion": null,
          *       "accion": null,
          *       "atendido_por": null,
@@ -5227,7 +5227,7 @@ export interface components {
          * @example {
          *       "estado": "resuelto",
          *       "comentario": null,
-         *       "resolucion": "Se confirmó la solicitud de pago; la vacante fue suspendida.",
+         *       "resolucion": "La empresa corrigió el salario publicado; se le pidió mantener la información actualizada.",
          *       "accion": "suspension"
          *     }
          */
@@ -5758,7 +5758,7 @@ export interface operations {
                 /**
                  * @example {
                  *       "correo": "mariana.lopez@correo.mx",
-                 *       "codigo": "482913"
+                 *       "codigo": "123456"
                  *     }
                  */
                 "application/json": components["schemas"]["VerificacionCodigo"];
@@ -5811,7 +5811,7 @@ export interface operations {
                 /**
                  * @example {
                  *       "correo": "mariana.lopez@correo.mx",
-                 *       "codigo": "482913",
+                 *       "codigo": "123456",
                  *       "contrasena": "NuevaClave2026"
                  *     }
                  */
@@ -11126,9 +11126,9 @@ export interface operations {
             content: {
                 /**
                  * @example {
-                 *       "motivo_reporte_id": 4,
-                 *       "vacante_id": 1,
-                 *       "descripcion": "Me pidieron un depósito para agendar la entrevista."
+                 *       "motivo_reporte_id": 2,
+                 *       "vacante_id": 5,
+                 *       "descripcion": "El salario publicado no coincide con lo que me dijeron por teléfono."
                  *     }
                  */
                 "application/json": components["schemas"]["ReporteEntrada"];
@@ -11217,15 +11217,15 @@ export interface operations {
                      *       },
                      *       "indicadores": {
                      *         "candidatos_activos": 2,
-                     *         "empresas_validadas": 1,
-                     *         "vacantes_publicadas": 1,
-                     *         "postulaciones": 1,
+                     *         "empresas_validadas": 3,
+                     *         "vacantes_publicadas": 6,
+                     *         "postulaciones": 2,
                      *         "contrataciones": 0,
                      *         "tasa_colocacion": 0
                      *       },
                      *       "pendientes": {
-                     *         "empresas_por_validar": 0,
-                     *         "reportes_abiertos": 0
+                     *         "empresas_por_validar": 1,
+                     *         "reportes_abiertos": 1
                      *       },
                      *       "graficas": {
                      *         "postulaciones_por_estado": [
@@ -11404,7 +11404,7 @@ export interface operations {
                      *           "ultimo_acceso_en": "2026-10-02T16:25:00Z"
                      *         }
                      *       ],
-                     *       "total": 4,
+                     *       "total": 7,
                      *       "page": 1,
                      *       "size": 25
                      *     }
@@ -11836,7 +11836,7 @@ export interface operations {
                      *           "creado_en": "2026-09-28T15:00:00Z"
                      *         }
                      *       ],
-                     *       "total": 1,
+                     *       "total": 4,
                      *       "page": 1,
                      *       "size": 25
                      *     }
@@ -12475,7 +12475,7 @@ export interface operations {
                      *           "reportes_abiertos": 0
                      *         }
                      *       ],
-                     *       "total": 1,
+                     *       "total": 8,
                      *       "page": 1,
                      *       "size": 25
                      *     }
@@ -13795,12 +13795,12 @@ export interface operations {
                      *           "id": 1,
                      *           "tipo": "vacante",
                      *           "objeto": {
-                     *             "id": 1,
-                     *             "nombre": "Técnico de soporte de TI · TecnoQro"
+                     *             "id": 5,
+                     *             "nombre": "Ejecutivo de atención telefónica · ConCentro"
                      *           },
                      *           "motivo": {
-                     *             "id": 4,
-                     *             "nombre": "Solicitud de pago al candidato"
+                     *             "id": 2,
+                     *             "nombre": "Información falsa"
                      *           },
                      *           "reportante": {
                      *             "id": 4,
@@ -13862,12 +13862,12 @@ export interface operations {
                      *         "id": 1,
                      *         "tipo": "vacante",
                      *         "objeto": {
-                     *           "id": 1,
-                     *           "nombre": "Técnico de soporte de TI · TecnoQro"
+                     *           "id": 5,
+                     *           "nombre": "Ejecutivo de atención telefónica · ConCentro"
                      *         },
                      *         "motivo": {
-                     *           "id": 4,
-                     *           "nombre": "Solicitud de pago al candidato"
+                     *           "id": 2,
+                     *           "nombre": "Información falsa"
                      *         },
                      *         "reportante": {
                      *           "id": 4,
@@ -13877,7 +13877,7 @@ export interface operations {
                      *         "estado": "abierto",
                      *         "creado_en": "2026-10-03T18:00:00Z"
                      *       },
-                     *       "descripcion": "Me pidieron un depósito para agendar la entrevista.",
+                     *       "descripcion": "El salario publicado no coincide con lo que me dijeron por teléfono.",
                      *       "resolucion": null,
                      *       "accion": null,
                      *       "atendido_por": null,
@@ -13942,7 +13942,7 @@ export interface operations {
                  * @example {
                  *       "estado": "resuelto",
                  *       "comentario": null,
-                 *       "resolucion": "Se confirmó la solicitud de pago; la vacante fue suspendida.",
+                 *       "resolucion": "La empresa corrigió el salario publicado; se le pidió mantener la información actualizada.",
                  *       "accion": "suspension"
                  *     }
                  */
@@ -13962,12 +13962,12 @@ export interface operations {
                      *         "id": 1,
                      *         "tipo": "vacante",
                      *         "objeto": {
-                     *           "id": 1,
-                     *           "nombre": "Técnico de soporte de TI · TecnoQro"
+                     *           "id": 5,
+                     *           "nombre": "Ejecutivo de atención telefónica · ConCentro"
                      *         },
                      *         "motivo": {
-                     *           "id": 4,
-                     *           "nombre": "Solicitud de pago al candidato"
+                     *           "id": 2,
+                     *           "nombre": "Información falsa"
                      *         },
                      *         "reportante": {
                      *           "id": 4,
@@ -13977,8 +13977,8 @@ export interface operations {
                      *         "estado": "resuelto",
                      *         "creado_en": "2026-10-03T18:00:00Z"
                      *       },
-                     *       "descripcion": "Me pidieron un depósito para agendar la entrevista.",
-                     *       "resolucion": "Se confirmó la solicitud de pago; la vacante fue suspendida.",
+                     *       "descripcion": "El salario publicado no coincide con lo que me dijeron por teléfono.",
+                     *       "resolucion": "La empresa corrigió el salario publicado; se le pidió mantener la información actualizada.",
                      *       "accion": "suspension",
                      *       "atendido_por": {
                      *         "id": 1,
@@ -14005,7 +14005,7 @@ export interface operations {
                      *           "creado_en": "2026-10-03T19:00:00Z"
                      *         }
                      *       ],
-                     *       "objeto_estado": "suspendida",
+                     *       "objeto_estado": "publicada",
                      *       "reportes_previos": []
                      *     }
                      */
