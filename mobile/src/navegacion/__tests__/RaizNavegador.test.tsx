@@ -46,7 +46,7 @@ describe('navegación por rol', () => {
   it('el candidato entra a Vacantes y la pestaña Notificaciones anuncia «1 sin leer»', async () => {
     await abrir(<Entrar correo="mariana.lopez@correo.mx" />);
 
-    expect(await screen.findByText('CAN-01 · Vacantes')).toBeOnTheScreen();
+    expect(await screen.findByRole('header', { name: 'Vacantes' })).toBeOnTheScreen();
     expect(
       await screen.findByRole('button', { name: 'Notificaciones, 1 sin leer' }),
     ).toBeOnTheScreen();
@@ -59,7 +59,7 @@ describe('navegación por rol', () => {
     await abrir(<Entrar correo="jorge.ramirez@correo.mx" pantallaInicial="Perfil" />);
 
     expect(await screen.findByText('CAN-03 · Mi perfil')).toBeOnTheScreen();
-    expect(screen.queryByText('CAN-01 · Vacantes')).not.toBeOnTheScreen();
+    expect(screen.queryByRole('header', { name: 'Vacantes' })).not.toBeOnTheScreen();
   });
 
   it('el reclutador entra a Mis vacantes', async () => {
