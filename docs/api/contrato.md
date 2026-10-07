@@ -1,10 +1,12 @@
 # Contrato del API de IncluTec
 
-Versión 1.0 · 3 de octubre de 2026 · Base: `http://localhost:8000/api/v1`
+Versión 1.1 · 7 de octubre de 2026 · Base: `http://localhost:8000/api/v1`
 
 Este documento define cada endpoint del API: ruta, rol que puede usarlo, parámetros, cuerpo, respuesta y errores. La app móvil y el panel web lo usan para sus datos simulados mientras el API no existe, y el API lo implementa en los sprints 4 y 5. Si al implementar algo el contrato no alcanza o no funciona, se reporta y se actualiza el contrato antes de cambiar el código; el código nunca se aparta de él en silencio.
 
 La versión para herramientas está en [`openapi.yaml`](openapi.yaml) (OpenAPI 3.1): se puede abrir en https://editor.swagger.io y sirve para generar los tipos de TypeScript de la app (`npx openapi-typescript docs/api/openapi.yaml -o src/api/tipos.ts`).
+
+**Cambios en la versión 1.1:** los ejemplos se actualizaron con los datos de prueba ampliados (tres empresas validadas, una pendiente, ocho vacantes y un reporte abierto) y el código de recuperación de ejemplo es `123456`, igual que en el mock. Ningún endpoint ni objeto cambió.
 
 Los ejemplos usan los datos de `db/semillas/S002__datos_prueba.sql`: Mariana (candidata, id 3), Laura (reclutadora de TecnoQro, id 2), Jorge (candidato, id 4), el administrador (id 1), la vacante «Técnico de soporte de TI» (id 1) y la postulación de Mariana (id 1), con compatibilidad de 88 % para ella y 83 % para la reclutadora.
 
@@ -578,7 +580,7 @@ Comprueba el código sin consumirlo, para pasar al paso de nueva contraseña. Ca
 ```json
 {
   "correo": "mariana.lopez@correo.mx",
-  "codigo": "482913"
+  "codigo": "123456"
 }
 ```
 
@@ -604,7 +606,7 @@ Valida de nuevo el código, guarda la nueva contraseña y marca el código como 
 ```json
 {
   "correo": "mariana.lopez@correo.mx",
-  "codigo": "482913",
+  "codigo": "123456",
   "contrasena": "NuevaClave2026"
 }
 ```
@@ -3834,9 +3836,9 @@ El candidato reporta vacantes o empresas; el reclutador reporta candidatos que s
 
 ```json
 {
-  "motivo_reporte_id": 4,
-  "vacante_id": 1,
-  "descripcion": "Me pidieron un depósito para agendar la entrevista."
+  "motivo_reporte_id": 2,
+  "vacante_id": 5,
+  "descripcion": "El salario publicado no coincide con lo que me dijeron por teléfono."
 }
 ```
 
@@ -3876,15 +3878,15 @@ Por omisión, los últimos 30 días.
   },
   "indicadores": {
     "candidatos_activos": 2,
-    "empresas_validadas": 1,
-    "vacantes_publicadas": 1,
-    "postulaciones": 1,
+    "empresas_validadas": 3,
+    "vacantes_publicadas": 6,
+    "postulaciones": 2,
     "contrataciones": 0,
     "tasa_colocacion": 0.0
   },
   "pendientes": {
-    "empresas_por_validar": 0,
-    "reportes_abiertos": 0
+    "empresas_por_validar": 1,
+    "reportes_abiertos": 1
   },
   "graficas": {
     "postulaciones_por_estado": [
@@ -4007,7 +4009,7 @@ Más recientes primero.
       "ultimo_acceso_en": "2026-10-02T16:25:00Z"
     }
   ],
-  "total": 4,
+  "total": 7,
   "page": 1,
   "size": 25
 }
@@ -4228,7 +4230,7 @@ Las pendientes primero, de la más antigua a la más reciente; después las dem�
       "creado_en": "2026-09-28T15:00:00Z"
     }
   ],
-  "total": 1,
+  "total": 4,
   "page": 1,
   "size": 25
 }
@@ -4601,7 +4603,7 @@ El detalle se consulta con `GET /vacantes/{id}`.
       "reportes_abiertos": 0
     }
   ],
-  "total": 1,
+  "total": 8,
   "page": 1,
   "size": 25
 }
@@ -5214,12 +5216,12 @@ Por omisión, los más antiguos primero.
       "id": 1,
       "tipo": "vacante",
       "objeto": {
-        "id": 1,
-        "nombre": "Técnico de soporte de TI · TecnoQro"
+        "id": 5,
+        "nombre": "Ejecutivo de atención telefónica · ConCentro"
       },
       "motivo": {
-        "id": 4,
-        "nombre": "Solicitud de pago al candidato"
+        "id": 2,
+        "nombre": "Información falsa"
       },
       "reportante": {
         "id": 4,
@@ -5255,12 +5257,12 @@ Por omisión, los más antiguos primero.
     "id": 1,
     "tipo": "vacante",
     "objeto": {
-      "id": 1,
-      "nombre": "Técnico de soporte de TI · TecnoQro"
+      "id": 5,
+      "nombre": "Ejecutivo de atención telefónica · ConCentro"
     },
     "motivo": {
-      "id": 4,
-      "nombre": "Solicitud de pago al candidato"
+      "id": 2,
+      "nombre": "Información falsa"
     },
     "reportante": {
       "id": 4,
@@ -5270,7 +5272,7 @@ Por omisión, los más antiguos primero.
     "estado": "abierto",
     "creado_en": "2026-10-03T18:00:00Z"
   },
-  "descripcion": "Me pidieron un depósito para agendar la entrevista.",
+  "descripcion": "El salario publicado no coincide con lo que me dijeron por teléfono.",
   "resolucion": null,
   "accion": null,
   "atendido_por": null,
@@ -5308,7 +5310,7 @@ abierto → en_revision → resuelto o descartado (también abierto → descarta
 {
   "estado": "resuelto",
   "comentario": null,
-  "resolucion": "Se confirmó la solicitud de pago; la vacante fue suspendida.",
+  "resolucion": "La empresa corrigió el salario publicado; se le pidió mantener la información actualizada.",
   "accion": "suspension"
 }
 ```
@@ -5321,12 +5323,12 @@ abierto → en_revision → resuelto o descartado (también abierto → descarta
     "id": 1,
     "tipo": "vacante",
     "objeto": {
-      "id": 1,
-      "nombre": "Técnico de soporte de TI · TecnoQro"
+      "id": 5,
+      "nombre": "Ejecutivo de atención telefónica · ConCentro"
     },
     "motivo": {
-      "id": 4,
-      "nombre": "Solicitud de pago al candidato"
+      "id": 2,
+      "nombre": "Información falsa"
     },
     "reportante": {
       "id": 4,
@@ -5336,8 +5338,8 @@ abierto → en_revision → resuelto o descartado (también abierto → descarta
     "estado": "resuelto",
     "creado_en": "2026-10-03T18:00:00Z"
   },
-  "descripcion": "Me pidieron un depósito para agendar la entrevista.",
-  "resolucion": "Se confirmó la solicitud de pago; la vacante fue suspendida.",
+  "descripcion": "El salario publicado no coincide con lo que me dijeron por teléfono.",
+  "resolucion": "La empresa corrigió el salario publicado; se le pidió mantener la información actualizada.",
   "accion": "suspension",
   "atendido_por": {
     "id": 1,
@@ -5364,7 +5366,7 @@ abierto → en_revision → resuelto o descartado (también abierto → descarta
       "creado_en": "2026-10-03T19:00:00Z"
     }
   ],
-  "objeto_estado": "suspendida",
+  "objeto_estado": "publicada",
   "reportes_previos": []
 }
 ```
