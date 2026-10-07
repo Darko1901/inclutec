@@ -104,7 +104,7 @@ Otras pruebas con el mock:
 
 ## Capa de servicios
 
-Las pantallas y los componentes **nunca** importan datos de prueba; solo usan los servicios de `src/api` (`auth`, `catalogos`, `notificaciones`):
+Las pantallas y los componentes **nunca** importan datos de prueba; solo usan los servicios de `src/api` (`auth`, `catalogos`, `notificaciones`, `vacantes`, `postulaciones`, `reportes`, `candidatos`):
 
 ```ts
 import { auth, ApiError } from '../../api';
@@ -114,7 +114,7 @@ const sesion = await auth.login({ correo, contrasena });
 
 Cada servicio tiene una interfaz y dos implementaciones, y `src/api/index.ts` elige una según `EXPO_PUBLIC_USE_MOCK`:
 
-- **HTTP** (`auth.ts`, `catalogos.ts`, `notificaciones.ts`): usa el cliente Axios de `cliente.ts`, que agrega `Authorization: Bearer`, convierte toda respuesta de error en `ApiError { status, codigo, detail, campos }` y, ante un `401 no_autenticado`, avisa a la sesión para que se cierre. Los errores de red y los 5xx se convierten en `error_interno` con el mensaje «El servicio no está disponible; intenta más tarde».
+- **HTTP** (`auth.ts`, `catalogos.ts`, `notificaciones.ts`, `vacantes.ts`, `postulaciones.ts`, `reportes.ts`, `candidatos.ts`): usa el cliente Axios de `cliente.ts`, que agrega `Authorization: Bearer`, convierte toda respuesta de error en `ApiError { status, codigo, detail, campos }` y, ante un `401 no_autenticado`, avisa a la sesión para que se cierre. Los errores de red y los 5xx se convierten en `error_interno` con el mensaje «El servicio no está disponible; intenta más tarde».
 - **Mock** (`api/mock/`): responde con las mismas rutas lógicas, códigos HTTP, `codigo` de error y JSON del contrato, con latencia de 300 a 700 ms. ESLint impide importar `api/mock/` desde `pantallas/`, `componentes/`, `navegacion/` y `sesion/`.
 
 ## Estructura de carpetas
@@ -129,11 +129,11 @@ mobile/
     │   ├── tipos.ts        Nombres de los tipos del contrato
     │   ├── errores.ts      ApiError
     │   ├── cliente.ts      Cliente Axios
-    │   ├── auth.ts · catalogos.ts · notificaciones.ts   Interfaz + implementación HTTP
+    │   ├── auth.ts · catalogos.ts · notificaciones.ts · vacantes.ts · postulaciones.ts · reportes.ts · candidatos.ts   Interfaz + implementación HTTP
     │   ├── servicios.ts    Elige HTTP o mock según EXPO_PUBLIC_USE_MOCK
     │   ├── index.ts        Lo único que importan las pantallas
     │   ├── useCatalogo.ts  Hook para cargar catálogos (con caché en memoria)
-    │   └── mock/           Datos simulados y simulador de respuestas
+    │   └── mock/           Datos simulados (S002), motor de compatibilidad y simulador de respuestas
     ├── componentes/        Componentes base accesibles (Boton, CampoTexto, Selector, Casilla, …)
     ├── contenido/          Textos largos, como el aviso de privacidad
     ├── pantallas/
@@ -158,7 +158,20 @@ Las pruebas viven junto al código, en carpetas `__tests__/`.
 | MOV-04 Notificaciones (lista paginada, marcar leídas y preferencias)                   | Lista                                                     |
 | Barras inferiores de candidato y reclutador (con contador de notificaciones no leídas) | Listas                                                    |
 | «Cerrar sesión» en CAN-03 Perfil y REC-01 Organización                                 | Funcional                                                 |
-| CAN-01 a CAN-07, REC-01 a REC-06                                                       | Marcador «Pendiente» (se llenan en las siguientes tareas) |
+| CAN-01 Vacantes (recomendadas, búsqueda, filtros y «cubre mis necesidades»)            | Lista                                                     |
+| CAN-02 Detalle de vacante (desglose, postulación y reporte)                            | Lista                                                     |
+| CAN-03 a CAN-07, REC-01 a REC-06                                                       | Marcador «Pendiente» (se llenan en las siguientes tareas) |
+
+### Cómo probar CAN-01 y CAN-02 en el teléfono
+
+1. Entra como **mariana.lopez@correo.mx**: la lista abre con «Técnico de soporte de TI» (88 %) y su tarjeta dice «Ya te postulaste». Escribe «soporte» en el buscador (busca 400 ms después de dejar de escribir) y queda solo esa vacante.
+2. Abre **Filtros**: elige Modalidad «Remoto» y toca «Aplicar» (quedan las vacantes 4 y 6; el botón dice «Filtros (1)»). Con el ajuste «Intérprete de Lengua de Señas Mexicana» quedan la 2 y la 6. «Limpiar» y «Aplicar» regresan a la lista completa.
+3. Activa el chip **«Solo las que cubren mis necesidades»**: quedan las vacantes 1 y 2.
+4. Entra como **jorge.ramirez@correo.mx** (sin consentimiento): el chip se ve deshabilitado y explica por qué, con acceso a Perfil.
+5. Abre una vacante: el detalle muestra el desglose en texto y la accesibilidad en sus dos grupos. «Ejecutivo de atención telefónica» (ConCentro) muestra la declaración de «sin condiciones».
+6. Como Mariana, abre «Auxiliar de almacén» y toca **Postularme**: elige Sí o No (su preferencia es «preguntar»), confirma y el botón cambia a «Ver mi postulación».
+7. Menú **⋮ › Reportar vacante**: elige un motivo, envía y aparece «Gracias, revisaremos tu reporte».
+8. Para ver el bloqueo por perfil incompleto entra como **notificaciones@correo.mx** (perfil vacío): «Postularme» queda deshabilitado y dice qué falta.
 
 Al tocar una notificación se abre la pantalla de su referencia pasándole el id (CAN-06, REC-05, REC-06, REC-01 o REC-02); esas pantallas son marcadores que muestran el id recibido.
 
