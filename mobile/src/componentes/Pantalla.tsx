@@ -13,6 +13,11 @@ interface PantallaProps {
   scrollRef?: RefObject<ScrollView | null>;
 }
 
+/** Deja libre el indicador de inicio del iPhone solo cuando nada más (barra de pestañas) lo cubre. */
+function EspacioInferior() {
+  return <SafeAreaView edges={['bottom']} />;
+}
+
 export function Pantalla({
   children,
   desplazable = false,
@@ -32,11 +37,13 @@ export function Pantalla({
             contentContainerStyle={[estilos.contenido, centrado && estilos.centrado]}
           >
             {children}
+            <EspacioInferior />
           </ScrollView>
         </KeyboardAvoidingView>
       ) : (
         <View style={[estilos.area, estilos.contenido, centrado && estilos.centrado]}>
           {children}
+          <EspacioInferior />
         </View>
       )}
     </SafeAreaView>
