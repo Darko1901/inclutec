@@ -27,6 +27,22 @@ export type ConsultaNotificaciones = NonNullable<
   operations['get_notificaciones']['parameters']['query']
 >;
 
+export type AjusteRef = Esquemas['AjusteRef'];
+export type VacanteResumen = Esquemas['VacanteResumen'];
+export type PaginaVacantes = Esquemas['PaginaVacantes'];
+export type VacanteDetalle = Esquemas['VacanteDetalle'];
+export type Compatibilidad = Esquemas['Compatibilidad'];
+export type ConsultaRecomendadas = NonNullable<
+  operations['get_vacantes_recomendadas']['parameters']['query']
+>;
+export type ConsultaVacantes = NonNullable<operations['get_vacantes']['parameters']['query']>;
+
+export type PerfilCandidato = Esquemas['PerfilCandidato'];
+export type PostulacionEntrada = Esquemas['PostulacionEntrada'];
+export type PostulacionDetalle = Esquemas['PostulacionDetalle'];
+export type ReporteEntrada = Esquemas['ReporteEntrada'];
+export type ReporteCreado = Esquemas['ReporteCreado'];
+
 export type RolUsuario = Usuario['rol'];
 export type EstadoUsuario = Usuario['estado'];
 export type TipoNotificacion = Notificacion['tipo'];
