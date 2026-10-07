@@ -39,7 +39,7 @@ describe('notificaciones mock', () => {
   it('cada usuario ve solo las suyas, de la más reciente a la más antigua', async () => {
     conSesion(2, 'reclutador');
     const pagina = await notificaciones.listar();
-    expect(pagina.items.map((n) => n.id).sort()).toEqual([2, 4, 5]);
+    expect(pagina.items.map((n) => n.id).sort()).toEqual([2, 91, 92]);
     const fechas = pagina.items.map((n) => n.creado_en);
     expect(fechas).toEqual([...fechas].sort().reverse());
 
@@ -48,7 +48,7 @@ describe('notificaciones mock', () => {
   });
 
   it('Lucía tiene 45 notificaciones: 5 sin leer y varias páginas de 20', async () => {
-    conSesion(6, 'candidato');
+    conSesion(101, 'candidato');
     expect(await notificaciones.resumen()).toEqual({ no_leidas: 5 });
 
     const primera = await notificaciones.listar();
@@ -74,7 +74,7 @@ describe('notificaciones mock', () => {
   });
 
   it('marca todas como leídas', async () => {
-    conSesion(6, 'candidato');
+    conSesion(101, 'candidato');
     await notificaciones.marcarTodasLeidas();
     expect(await notificaciones.resumen()).toEqual({ no_leidas: 0 });
   });

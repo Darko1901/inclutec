@@ -32,6 +32,22 @@ describe('Selector', () => {
     jest.restoreAllMocks();
   });
 
+  it('lee la etiqueta accesible de una opción cuando es distinta del texto visible', async () => {
+    const { resultado } = dibujar({
+      etiqueta: 'Compatibilidad mínima',
+      opciones: [{ id: 40, nombre: '40 % o más', etiquetaAccesible: '40 por ciento o más' }],
+      valor: 40,
+    });
+    await resultado;
+
+    expect(
+      screen.getByRole('button', { name: 'Compatibilidad mínima, 40 por ciento o más' }),
+    ).toBeOnTheScreen();
+    await fireEvent.press(screen.getByRole('button', { name: /^Compatibilidad mínima/ }));
+    expect(await screen.findByRole('radio', { name: '40 por ciento o más' })).toBeOnTheScreen();
+    expect(screen.getAllByText('40 % o más', { hidden: true }).length).toBeGreaterThan(0);
+  });
+
   it('muestra la etiqueta visible y se anuncia como botón con su valor actual', async () => {
     const { resultado } = dibujar({ valor: 3 });
     await resultado;

@@ -49,16 +49,35 @@ Se leen del archivo `.env` (no se sube a git; la plantilla es `.env.example`). D
 
 Son las de `db/semillas/S002__datos_prueba.sql`. La contraseña de todas es **Inclutec2026**.
 
-| Correo                       | Rol                           | Qué ocurre al entrar                                                                                                        |
-| ---------------------------- | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| mariana.lopez@correo.mx      | Candidata                     | Llega a Vacantes; la pestaña Notificaciones dice «1 sin leer».                                                              |
-| jorge.ramirez@correo.mx      | Candidato                     | Llega a Vacantes; sin notificaciones.                                                                                       |
-| rh@tecnoqro.mx               | Reclutadora (Laura, TecnoQro) | Llega a Mis vacantes; Notificaciones dice «1 sin leer».                                                                     |
-| admin@inclutec.mx            | Administrador                 | Muestra «El administrador usa el panel web» y no inicia sesión.                                                             |
-| **suspendida@correo.mx**     | Candidata suspendida          | Responde 423: «Tu cuenta está suspendida.»                                                                                  |
-| **notificaciones@correo.mx** | Candidata (Lucía)             | Llega a Vacantes; tiene 45 notificaciones (5 sin leer) para probar el desplazamiento infinito y «Marcar todas como leídas». |
+| Correo                       | Rol                                | Qué ocurre al entrar                                                                                                        |
+| ---------------------------- | ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| mariana.lopez@correo.mx      | Candidata                          | Llega a Vacantes; la pestaña Notificaciones dice «1 sin leer».                                                              |
+| jorge.ramirez@correo.mx      | Candidato                          | Llega a Vacantes; sin notificaciones.                                                                                       |
+| rh@tecnoqro.mx               | Reclutadora (Laura, TecnoQro)      | Llega a Mis vacantes; Notificaciones dice «1 sin leer».                                                                     |
+| rh@logibajio.mx              | Reclutador (Roberto, LogiBajío)    | Llega a Mis vacantes; Notificaciones dice «1 sin leer» (la postulación de Jorge).                                           |
+| talento@concentro.mx         | Reclutadora (Patricia, ConCentro)  | Llega a Mis vacantes; sin notificaciones.                                                                                   |
+| contacto@estudiotrazo.mx     | Reclutador (Daniel, Estudio Trazo) | Llega a Organización; su empresa está **pendiente** de validar (solo puede crear borradores).                               |
+| admin@inclutec.mx            | Administrador                      | Muestra «El administrador usa el panel web» y no inicia sesión.                                                             |
+| **suspendida@correo.mx**     | Candidata suspendida               | Responde 423: «Tu cuenta está suspendida.»                                                                                  |
+| **notificaciones@correo.mx** | Candidata (Lucía)                  | Llega a Vacantes; tiene 45 notificaciones (5 sin leer) para probar el desplazamiento infinito y «Marcar todas como leídas». |
 
-Las cuentas `suspendida@correo.mx` y `notificaciones@correo.mx` **existen solo en el mock** (no están en la base de datos de prueba). Jorge no tiene notificaciones: sirve para ver el estado vacío.
+Las cuentas `suspendida@correo.mx` y `notificaciones@correo.mx` **existen solo en el mock** (no están en la base de datos de prueba). Sus ids son **100 y 101** (los de S002 van del 1 al 7) para que nunca choquen con la base de datos; las cuentas que se registren en la app reciben ids desde el 102. Jorge no tiene notificaciones: sirve para ver el estado vacío. Las notificaciones extra del mock tienen id 90 en adelante (la de Roberto, id 3, sí es de S002).
+
+Las dos cuentas solo del mock tienen el perfil vacío (sin habilidades ni formación), así que sirven para probar que «Postularme» se bloquea cuando el perfil está incompleto. Igual pasa con cualquier cuenta que se registre en la app.
+
+### Datos de prueba de vacantes
+
+Los datos simulados de negocio son los de S002: 4 empresas (TecnoQro, LogiBajío y ConCentro validadas; Estudio Trazo pendiente), 8 vacantes (6 publicadas y 2 borradores), la postulación de Mariana a la vacante 1 (en «Entrevista»), la de Jorge a la 3 y el reporte 1 de la vacante 5. La compatibilidad no se lee de una tabla: la calcula el motor de `src/api/mock/compatibilidad.ts` con las reglas del contrato, y su prueba comprueba que reproduce las 12 filas guardadas en S002.
+
+| Vacante | Empresa   | Modalidad  | Para probar                                                               |
+| ------- | --------- | ---------- | ------------------------------------------------------------------------- |
+| 1       | TecnoQro  | Híbrido    | Mariana: 88 %, ya postulada («Ver mi postulación»); Jorge: 57 %           |
+| 2       | LogiBajío | Presencial | Cubre las necesidades de Mariana; ofrece intérprete de LSM bajo solicitud |
+| 3       | LogiBajío | Híbrido    | Jorge ya se postuló (79 %)                                                |
+| 4       | ConCentro | Remoto     | No muestra salario                                                        |
+| 5       | ConCentro | Presencial | Declara que el lugar **no** cuenta con condiciones de accesibilidad       |
+| 6       | TecnoQro  | Remoto     | Con intérprete de LSM bajo solicitud                                      |
+| 7 y 8   | —         | —          | Borradores: nunca aparecen en la lista del candidato                      |
 
 Otras pruebas con el mock:
 
@@ -85,7 +104,7 @@ Otras pruebas con el mock:
 
 ## Capa de servicios
 
-Las pantallas y los componentes **nunca** importan datos de prueba; solo usan los servicios de `src/api` (`auth`, `catalogos`, `notificaciones`):
+Las pantallas y los componentes **nunca** importan datos de prueba; solo usan los servicios de `src/api` (`auth`, `catalogos`, `notificaciones`, `vacantes`, `postulaciones`, `reportes`, `candidatos`):
 
 ```ts
 import { auth, ApiError } from '../../api';
@@ -95,7 +114,7 @@ const sesion = await auth.login({ correo, contrasena });
 
 Cada servicio tiene una interfaz y dos implementaciones, y `src/api/index.ts` elige una según `EXPO_PUBLIC_USE_MOCK`:
 
-- **HTTP** (`auth.ts`, `catalogos.ts`, `notificaciones.ts`): usa el cliente Axios de `cliente.ts`, que agrega `Authorization: Bearer`, convierte toda respuesta de error en `ApiError { status, codigo, detail, campos }` y, ante un `401 no_autenticado`, avisa a la sesión para que se cierre. Los errores de red y los 5xx se convierten en `error_interno` con el mensaje «El servicio no está disponible; intenta más tarde».
+- **HTTP** (`auth.ts`, `catalogos.ts`, `notificaciones.ts`, `vacantes.ts`, `postulaciones.ts`, `reportes.ts`, `candidatos.ts`): usa el cliente Axios de `cliente.ts`, que agrega `Authorization: Bearer`, convierte toda respuesta de error en `ApiError { status, codigo, detail, campos }` y, ante un `401 no_autenticado`, avisa a la sesión para que se cierre. Los errores de red y los 5xx se convierten en `error_interno` con el mensaje «El servicio no está disponible; intenta más tarde».
 - **Mock** (`api/mock/`): responde con las mismas rutas lógicas, códigos HTTP, `codigo` de error y JSON del contrato, con latencia de 300 a 700 ms. ESLint impide importar `api/mock/` desde `pantallas/`, `componentes/`, `navegacion/` y `sesion/`.
 
 ## Estructura de carpetas
@@ -110,11 +129,11 @@ mobile/
     │   ├── tipos.ts        Nombres de los tipos del contrato
     │   ├── errores.ts      ApiError
     │   ├── cliente.ts      Cliente Axios
-    │   ├── auth.ts · catalogos.ts · notificaciones.ts   Interfaz + implementación HTTP
+    │   ├── auth.ts · catalogos.ts · notificaciones.ts · vacantes.ts · postulaciones.ts · reportes.ts · candidatos.ts   Interfaz + implementación HTTP
     │   ├── servicios.ts    Elige HTTP o mock según EXPO_PUBLIC_USE_MOCK
     │   ├── index.ts        Lo único que importan las pantallas
     │   ├── useCatalogo.ts  Hook para cargar catálogos (con caché en memoria)
-    │   └── mock/           Datos simulados y simulador de respuestas
+    │   └── mock/           Datos simulados (S002), motor de compatibilidad y simulador de respuestas
     ├── componentes/        Componentes base accesibles (Boton, CampoTexto, Selector, Casilla, …)
     ├── contenido/          Textos largos, como el aviso de privacidad
     ├── pantallas/
@@ -139,7 +158,20 @@ Las pruebas viven junto al código, en carpetas `__tests__/`.
 | MOV-04 Notificaciones (lista paginada, marcar leídas y preferencias)                   | Lista                                                     |
 | Barras inferiores de candidato y reclutador (con contador de notificaciones no leídas) | Listas                                                    |
 | «Cerrar sesión» en CAN-03 Perfil y REC-01 Organización                                 | Funcional                                                 |
-| CAN-01 a CAN-07, REC-01 a REC-06                                                       | Marcador «Pendiente» (se llenan en las siguientes tareas) |
+| CAN-01 Vacantes (recomendadas, búsqueda, filtros y «cubre mis necesidades»)            | Lista                                                     |
+| CAN-02 Detalle de vacante (desglose, postulación y reporte)                            | Lista                                                     |
+| CAN-03 a CAN-07, REC-01 a REC-06                                                       | Marcador «Pendiente» (se llenan en las siguientes tareas) |
+
+### Cómo probar CAN-01 y CAN-02 en el teléfono
+
+1. Entra como **mariana.lopez@correo.mx**: la lista abre con «Técnico de soporte de TI» (88 %) y su tarjeta dice «Ya te postulaste». Escribe «soporte» en el buscador (busca 400 ms después de dejar de escribir) y queda solo esa vacante.
+2. Abre **Filtros**: elige Modalidad «Remoto» y toca «Aplicar» (quedan las vacantes 4 y 6; el botón dice «Filtros (1)»). Con el ajuste «Intérprete de Lengua de Señas Mexicana» quedan la 2 y la 6. «Limpiar» y «Aplicar» regresan a la lista completa.
+3. Activa el chip **«Solo las que cubren mis necesidades»**: quedan las vacantes 1 y 2.
+4. Entra como **jorge.ramirez@correo.mx** (sin consentimiento): el chip se ve deshabilitado y explica por qué, con acceso a Perfil.
+5. Abre una vacante: el detalle muestra el desglose en texto y la accesibilidad en sus dos grupos. «Ejecutivo de atención telefónica» (ConCentro) muestra la declaración de «sin condiciones».
+6. Como Mariana, abre «Auxiliar de almacén» y toca **Postularme**: elige Sí o No (su preferencia es «preguntar»), confirma y el botón cambia a «Ver mi postulación».
+7. Menú **⋮ › Reportar vacante**: elige un motivo, envía y aparece «Gracias, revisaremos tu reporte».
+8. Para ver el bloqueo por perfil incompleto entra como **notificaciones@correo.mx** (perfil vacío): «Postularme» queda deshabilitado y dice qué falta.
 
 Al tocar una notificación se abre la pantalla de su referencia pasándole el id (CAN-06, REC-05, REC-06, REC-01 o REC-02); esas pantallas son marcadores que muestran el id recibido.
 

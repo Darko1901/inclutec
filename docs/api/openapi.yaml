@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: API de IncluTec
-  version: '1.0'
+  version: '1.1'
   description: 'Contrato del API REST de IncluTec. Fuente: docs/api/contrato.md.'
 servers:
 - url: http://localhost:8000/api/v1
@@ -404,7 +404,7 @@ paths:
               $ref: '#/components/schemas/VerificacionCodigo'
             example:
               correo: mariana.lopez@correo.mx
-              codigo: '482913'
+              codigo: '123456'
       responses:
         '200':
           description: OK
@@ -455,7 +455,7 @@ paths:
               $ref: '#/components/schemas/Restablecimiento'
             example:
               correo: mariana.lopez@correo.mx
-              codigo: '482913'
+              codigo: '123456'
               contrasena: NuevaClave2026
       responses:
         '200':
@@ -5749,9 +5749,9 @@ paths:
             schema:
               $ref: '#/components/schemas/ReporteEntrada'
             example:
-              motivo_reporte_id: 4
-              vacante_id: 1
-              descripcion: Me pidieron un depósito para agendar la entrevista.
+              motivo_reporte_id: 2
+              vacante_id: 5
+              descripcion: El salario publicado no coincide con lo que me dijeron por teléfono.
       responses:
         '201':
           description: Creado
@@ -5847,14 +5847,14 @@ paths:
                   hasta: '2026-10-03'
                 indicadores:
                   candidatos_activos: 2
-                  empresas_validadas: 1
-                  vacantes_publicadas: 1
-                  postulaciones: 1
+                  empresas_validadas: 3
+                  vacantes_publicadas: 6
+                  postulaciones: 2
                   contrataciones: 0
                   tasa_colocacion: 0.0
                 pendientes:
-                  empresas_por_validar: 0
-                  reportes_abiertos: 0
+                  empresas_por_validar: 1
+                  reportes_abiertos: 1
                 graficas:
                   postulaciones_por_estado:
                   - etiqueta: entrevista
@@ -6041,7 +6041,7 @@ paths:
                     nombre_comercial: TecnoQro
                   creado_en: '2026-09-28T15:00:00Z'
                   ultimo_acceso_en: '2026-10-02T16:25:00Z'
-                total: 4
+                total: 7
                 page: 1
                 size: 25
         '401':
@@ -6524,7 +6524,7 @@ paths:
                   vacantes_activas: 1
                   documento: true
                   creado_en: '2026-09-28T15:00:00Z'
-                total: 1
+                total: 4
                 page: 1
                 size: 25
         '401':
@@ -7211,7 +7211,7 @@ paths:
                   publicada_en: '2026-09-29T15:00:00Z'
                   postulados: 1
                   reportes_abiertos: 0
-                total: 1
+                total: 8
                 page: 1
                 size: 25
         '401':
@@ -8665,11 +8665,11 @@ paths:
                 - id: 1
                   tipo: vacante
                   objeto:
-                    id: 1
-                    nombre: Técnico de soporte de TI · TecnoQro
+                    id: 5
+                    nombre: Ejecutivo de atención telefónica · ConCentro
                   motivo:
-                    id: 4
-                    nombre: Solicitud de pago al candidato
+                    id: 2
+                    nombre: Información falsa
                   reportante:
                     id: 4
                     nombre: Jorge
@@ -8730,18 +8730,18 @@ paths:
                   id: 1
                   tipo: vacante
                   objeto:
-                    id: 1
-                    nombre: Técnico de soporte de TI · TecnoQro
+                    id: 5
+                    nombre: Ejecutivo de atención telefónica · ConCentro
                   motivo:
-                    id: 4
-                    nombre: Solicitud de pago al candidato
+                    id: 2
+                    nombre: Información falsa
                   reportante:
                     id: 4
                     nombre: Jorge
                     apellidos: Ramírez Soto
                   estado: abierto
                   creado_en: '2026-10-03T18:00:00Z'
-                descripcion: Me pidieron un depósito para agendar la entrevista.
+                descripcion: El salario publicado no coincide con lo que me dijeron por teléfono.
                 resolucion: null
                 accion: null
                 atendido_por: null
@@ -8816,7 +8816,7 @@ paths:
             example:
               estado: resuelto
               comentario: null
-              resolucion: Se confirmó la solicitud de pago; la vacante fue suspendida.
+              resolucion: La empresa corrigió el salario publicado; se le pidió mantener la información actualizada.
               accion: suspension
       responses:
         '200':
@@ -8830,19 +8830,19 @@ paths:
                   id: 1
                   tipo: vacante
                   objeto:
-                    id: 1
-                    nombre: Técnico de soporte de TI · TecnoQro
+                    id: 5
+                    nombre: Ejecutivo de atención telefónica · ConCentro
                   motivo:
-                    id: 4
-                    nombre: Solicitud de pago al candidato
+                    id: 2
+                    nombre: Información falsa
                   reportante:
                     id: 4
                     nombre: Jorge
                     apellidos: Ramírez Soto
                   estado: resuelto
                   creado_en: '2026-10-03T18:00:00Z'
-                descripcion: Me pidieron un depósito para agendar la entrevista.
-                resolucion: Se confirmó la solicitud de pago; la vacante fue suspendida.
+                descripcion: El salario publicado no coincide con lo que me dijeron por teléfono.
+                resolucion: La empresa corrigió el salario publicado; se le pidió mantener la información actualizada.
                 accion: suspension
                 atendido_por:
                   id: 1
@@ -8862,7 +8862,7 @@ paths:
                     id: 1
                     nombre: Admin
                   creado_en: '2026-10-03T19:00:00Z'
-                objeto_estado: suspendida
+                objeto_estado: publicada
                 reportes_previos: []
         '401':
           description: '`no_autenticado`: Falta el token, es inválido o ya venció.'
@@ -9472,7 +9472,7 @@ components:
       additionalProperties: false
       examples:
       - correo: mariana.lopez@correo.mx
-        codigo: '482913'
+        codigo: '123456'
     Restablecimiento:
       type: object
       properties:
@@ -9493,7 +9493,7 @@ components:
       additionalProperties: false
       examples:
       - correo: mariana.lopez@correo.mx
-        codigo: '482913'
+        codigo: '123456'
         contrasena: NuevaClave2026
     CambioContrasena:
       type: object
@@ -12792,9 +12792,9 @@ components:
       additionalProperties: false
       description: Exactamente uno de vacante_id, empresa_id o candidato_id.
       examples:
-      - motivo_reporte_id: 4
-        vacante_id: 1
-        descripcion: Me pidieron un depósito para agendar la entrevista.
+      - motivo_reporte_id: 2
+        vacante_id: 5
+        descripcion: El salario publicado no coincide con lo que me dijeron por teléfono.
     ReporteCreado:
       type: object
       properties:
@@ -12987,14 +12987,14 @@ components:
           hasta: '2026-10-03'
         indicadores:
           candidatos_activos: 2
-          empresas_validadas: 1
-          vacantes_publicadas: 1
-          postulaciones: 1
+          empresas_validadas: 3
+          vacantes_publicadas: 6
+          postulaciones: 2
           contrataciones: 0
           tasa_colocacion: 0.0
         pendientes:
-          empresas_por_validar: 0
-          reportes_abiertos: 0
+          empresas_por_validar: 1
+          reportes_abiertos: 1
         graficas:
           postulaciones_por_estado:
           - etiqueta: entrevista
@@ -13135,7 +13135,7 @@ components:
             nombre_comercial: TecnoQro
           creado_en: '2026-09-28T15:00:00Z'
           ultimo_acceso_en: '2026-10-02T16:25:00Z'
-        total: 4
+        total: 7
         page: 1
         size: 25
     UsuarioAdminDetalle:
@@ -13367,7 +13367,7 @@ components:
           vacantes_activas: 1
           documento: true
           creado_en: '2026-09-28T15:00:00Z'
-        total: 1
+        total: 4
         page: 1
         size: 25
     EmpresaAdminDetalle:
@@ -13699,7 +13699,7 @@ components:
           publicada_en: '2026-09-29T15:00:00Z'
           postulados: 1
           reportes_abiertos: 0
-        total: 1
+        total: 8
         page: 1
         size: 25
     ModeracionVacante:
@@ -13995,11 +13995,11 @@ components:
       - id: 1
         tipo: vacante
         objeto:
-          id: 1
-          nombre: Técnico de soporte de TI · TecnoQro
+          id: 5
+          nombre: Ejecutivo de atención telefónica · ConCentro
         motivo:
-          id: 4
-          nombre: Solicitud de pago al candidato
+          id: 2
+          nombre: Información falsa
         reportante:
           id: 4
           nombre: Jorge
@@ -14030,11 +14030,11 @@ components:
         - id: 1
           tipo: vacante
           objeto:
-            id: 1
-            nombre: Técnico de soporte de TI · TecnoQro
+            id: 5
+            nombre: Ejecutivo de atención telefónica · ConCentro
           motivo:
-            id: 4
-            nombre: Solicitud de pago al candidato
+            id: 2
+            nombre: Información falsa
           reportante:
             id: 4
             nombre: Jorge
@@ -14180,18 +14180,18 @@ components:
           id: 1
           tipo: vacante
           objeto:
-            id: 1
-            nombre: Técnico de soporte de TI · TecnoQro
+            id: 5
+            nombre: Ejecutivo de atención telefónica · ConCentro
           motivo:
-            id: 4
-            nombre: Solicitud de pago al candidato
+            id: 2
+            nombre: Información falsa
           reportante:
             id: 4
             nombre: Jorge
             apellidos: Ramírez Soto
           estado: abierto
           creado_en: '2026-10-03T18:00:00Z'
-        descripcion: Me pidieron un depósito para agendar la entrevista.
+        descripcion: El salario publicado no coincide con lo que me dijeron por teléfono.
         resolucion: null
         accion: null
         atendido_por: null
@@ -14239,7 +14239,7 @@ components:
       examples:
       - estado: resuelto
         comentario: null
-        resolucion: Se confirmó la solicitud de pago; la vacante fue suspendida.
+        resolucion: La empresa corrigió el salario publicado; se le pidió mantener la información actualizada.
         accion: suspension
     EmpresaPublica:
       type: object

@@ -1,10 +1,10 @@
 import type { NavigatorScreenParams } from '@react-navigation/native';
 
-// Aún no hay parámetros: se agregan en las tareas de cada pantalla (por ejemplo, el id de la vacante).
+// El parámetro opcional de Empresas llega desde CAN-02 al tocar el nombre de la empresa.
 export type CandidatoTabsParamList = {
   Vacantes: undefined;
   Postulaciones: undefined;
-  Empresas: undefined;
+  Empresas: { empresa_id?: number } | undefined;
   Notificaciones: undefined;
   Perfil: undefined;
 };
