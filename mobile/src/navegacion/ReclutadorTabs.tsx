@@ -7,7 +7,7 @@ import REC02MisVacantes from '../pantallas/reclutador/REC02MisVacantes';
 import REC06Agenda from '../pantallas/reclutador/REC06Agenda';
 import type { ReclutadorTabsParamList } from './tipos';
 import { opcionesBarra, opcionesNotificaciones, type IconoPestana } from './opcionesPestanas';
-import { useNoLeidas } from './useNoLeidas';
+import { useNoLeidas } from './NoLeidasContext';
 
 const Pestanas = createBottomTabNavigator<ReclutadorTabsParamList>();
 

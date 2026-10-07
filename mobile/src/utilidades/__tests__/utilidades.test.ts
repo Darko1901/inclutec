@@ -65,9 +65,12 @@ describe('fechas', () => {
   it('da tiempos relativos para listas', () => {
     const ahora = new Date('2026-10-02T18:00:00Z');
     expect(formatearRelativo('2026-10-02T17:59:30Z', ahora)).toBe('ahora');
-    expect(formatearRelativo('2026-10-02T17:30:00Z', ahora)).toBe('hace 30 min');
-    expect(formatearRelativo('2026-10-02T15:00:00Z', ahora)).toBe('hace 3 h');
+    expect(formatearRelativo('2026-10-02T17:59:00Z', ahora)).toBe('hace 1 minuto');
+    expect(formatearRelativo('2026-10-02T17:30:00Z', ahora)).toBe('hace 30 minutos');
+    expect(formatearRelativo('2026-10-02T17:00:00Z', ahora)).toBe('hace 1 hora');
+    expect(formatearRelativo('2026-10-02T15:00:00Z', ahora)).toBe('hace 3 horas');
     expect(formatearRelativo('2026-10-01T12:00:00Z', ahora)).toBe('ayer');
+    expect(formatearRelativo('2026-09-29T12:00:00Z', ahora)).toBe('hace 3 días');
     expect(formatearRelativo('2026-09-20T12:00:00Z', ahora)).toBe('20 sep 2026');
   });
 });

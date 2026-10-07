@@ -8,7 +8,7 @@ import CAN07Empresas from '../pantallas/candidato/CAN07Empresas';
 import MOV04Notificaciones from '../pantallas/compartidas/MOV04Notificaciones';
 import type { CandidatoTabsParamList } from './tipos';
 import { opcionesBarra, opcionesNotificaciones, type IconoPestana } from './opcionesPestanas';
-import { useNoLeidas } from './useNoLeidas';
+import { useNoLeidas } from './NoLeidasContext';
 
 const Pestanas = createBottomTabNavigator<CandidatoTabsParamList>();
 

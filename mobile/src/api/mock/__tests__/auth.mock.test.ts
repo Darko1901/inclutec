@@ -176,7 +176,7 @@ describe('auth mock · registro', () => {
   it('registra un candidato, inicia su sesión y permite volver a entrar', async () => {
     const sesion = await auth.registrarCandidato(candidato);
     expect(sesion.usuario).toMatchObject({
-      id: 6,
+      id: 7,
       rol: 'candidato',
       estado: 'activo',
       consentimiento_sensibles: false,
@@ -186,7 +186,17 @@ describe('auth mock · registro', () => {
       correo: candidato.correo,
       contrasena: candidato.contrasena,
     });
-    expect(otraVez.usuario.id).toBe(6);
+    expect(otraVez.usuario.id).toBe(7);
+  });
+
+  it('registra un candidato que no da el consentimiento para necesidades de ajuste', async () => {
+    const sesion = await auth.registrarCandidato(candidato);
+    expect(sesion.usuario.consentimiento_sensibles).toBe(false);
+  });
+
+  it('registra un candidato con consentimiento', async () => {
+    const sesion = await auth.registrarCandidato({ ...candidato, consentimiento_sensibles: true });
+    expect(sesion.usuario.consentimiento_sensibles).toBe(true);
   });
 
   it('responde 409 correo_duplicado con un correo ya registrado', async () => {
@@ -278,6 +288,42 @@ describe('auth mock · recuperar contraseña', () => {
     expect(existe.detail).toBe('Si el correo está registrado, te enviamos un código de 6 dígitos.');
   });
 
+  it('con un correo que no existe, verificar responde como con una cuenta real y nunca acepta el código', async () => {
+    const inexistente = 'nadie@correo.mx';
+    await auth.solicitarCodigo({ correo: inexistente });
+
+    const error = await errorDe(auth.verificarCodigo({ correo: inexistente, codigo: '123456' }));
+
+    expect(error).toMatchObject({ status: 400, codigo: 'codigo_invalido' });
+  });
+
+  it('el código de prueba vence a los 15 minutos', async () => {
+    jest.useFakeTimers({ doNotFake: ['setTimeout', 'queueMicrotask'], now: Date.now() });
+    try {
+      await auth.solicitarCodigo({ correo });
+      jest.setSystemTime(Date.now() + 16 * 60 * 1000);
+
+      expect(await errorDe(auth.verificarCodigo({ correo, codigo: '123456' }))).toMatchObject({
+        status: 410,
+        codigo: 'codigo_vencido',
+      });
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('permite pedir otro código después de 60 s', async () => {
+    jest.useFakeTimers({ doNotFake: ['setTimeout', 'queueMicrotask'], now: Date.now() });
+    try {
+      await auth.solicitarCodigo({ correo });
+      jest.setSystemTime(Date.now() + 61 * 1000);
+
+      await expect(auth.solicitarCodigo({ correo })).resolves.toHaveProperty('detail');
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
   it('responde 429 reenvio_prematuro antes de 60 s', async () => {
     await auth.solicitarCodigo({ correo });
     const error = await errorDe(auth.solicitarCodigo({ correo }));
@@ -292,15 +338,15 @@ describe('auth mock · recuperar contraseña', () => {
     expect(mal).toMatchObject({ status: 400, codigo: 'codigo_invalido' });
     expect(mal.detail).toContain('4 intentos');
 
-    await expect(auth.verificarCodigo({ correo, codigo: '482913' })).resolves.toEqual({
+    await expect(auth.verificarCodigo({ correo, codigo: '123456' })).resolves.toEqual({
       detail: 'Código correcto.',
     });
     await expect(
-      auth.restablecerContrasena({ correo, codigo: '482913', contrasena: 'NuevaClave2026' }),
+      auth.restablecerContrasena({ correo, codigo: '123456', contrasena: 'NuevaClave2026' }),
     ).resolves.toEqual({ detail: 'Tu contraseña se actualizó. Ya puedes iniciar sesión.' });
 
     // El código ya se usó, y la contraseña nueva sirve.
-    expect(await errorDe(auth.verificarCodigo({ correo, codigo: '482913' }))).toMatchObject({
+    expect(await errorDe(auth.verificarCodigo({ correo, codigo: '123456' }))).toMatchObject({
       status: 410,
       codigo: 'codigo_vencido',
     });

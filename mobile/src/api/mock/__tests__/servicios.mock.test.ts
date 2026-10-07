@@ -13,11 +13,12 @@ function conSesion(id: number, rol: 'candidato' | 'reclutador' | 'administrador'
 }
 
 describe('notificaciones mock', () => {
-  it('Mariana tiene 1 sin leer y su listado coincide con el contrato', async () => {
+  it('Mariana tiene 1 sin leer y su notificación coincide con el contrato', async () => {
     conSesion(3, 'candidato');
 
     expect(await notificaciones.resumen()).toEqual({ no_leidas: 1 });
-    expect(await notificaciones.listar()).toEqual({
+    const pagina = await notificaciones.listar({ solo_no_leidas: true });
+    expect(pagina).toEqual({
       items: [
         {
           id: 1,
@@ -35,13 +36,26 @@ describe('notificaciones mock', () => {
     });
   });
 
-  it('cada usuario ve solo las suyas', async () => {
+  it('cada usuario ve solo las suyas, de la más reciente a la más antigua', async () => {
     conSesion(2, 'reclutador');
     const pagina = await notificaciones.listar();
-    expect(pagina.items.map((n) => n.id)).toEqual([2]);
+    expect(pagina.items.map((n) => n.id).sort()).toEqual([2, 4, 5]);
+    const fechas = pagina.items.map((n) => n.creado_en);
+    expect(fechas).toEqual([...fechas].sort().reverse());
 
     conSesion(4, 'candidato');
     expect((await notificaciones.listar()).total).toBe(0);
+  });
+
+  it('Lucía tiene 45 notificaciones: 5 sin leer y varias páginas de 20', async () => {
+    conSesion(6, 'candidato');
+    expect(await notificaciones.resumen()).toEqual({ no_leidas: 5 });
+
+    const primera = await notificaciones.listar();
+    const segunda = await notificaciones.listar({ page: 2 });
+    const tercera = await notificaciones.listar({ page: 3 });
+    expect([primera.items.length, segunda.items.length, tercera.items.length]).toEqual([20, 20, 5]);
+    expect(primera.total).toBe(45);
   });
 
   it('marca una como leída y baja el contador', async () => {
@@ -60,7 +74,7 @@ describe('notificaciones mock', () => {
   });
 
   it('marca todas como leídas', async () => {
-    conSesion(2, 'reclutador');
+    conSesion(6, 'candidato');
     await notificaciones.marcarTodasLeidas();
     expect(await notificaciones.resumen()).toEqual({ no_leidas: 0 });
   });
@@ -68,7 +82,8 @@ describe('notificaciones mock', () => {
   it('pagina con page y size', async () => {
     conSesion(3, 'candidato');
     const pagina = await notificaciones.listar({ page: 2, size: 1 });
-    expect(pagina).toMatchObject({ items: [], total: 1, page: 2, size: 1 });
+    expect(pagina).toMatchObject({ total: 2, page: 2, size: 1 });
+    expect(pagina.items).toHaveLength(1);
     await expect(notificaciones.listar({ size: 101 })).rejects.toMatchObject({ status: 422 });
   });
 

@@ -3,6 +3,7 @@ import * as SecureStore from 'expo-secure-store';
 import type { ReactNode } from 'react';
 
 import { auth } from '../../api';
+import * as dispositivoPush from '../dispositivoPush';
 import { MENSAJE_ADMINISTRADOR, MENSAJE_SESION_VENCIDA, SesionProvider, useSesion } from '..';
 
 const envoltorio = ({ children }: { children: ReactNode }) => (
@@ -89,6 +90,34 @@ describe('sesión', () => {
 
     expect(result.current.estado).toBe('sin_sesion');
     expect(result.current.aviso).toBe(MENSAJE_ADMINISTRADOR);
+  });
+
+  it('al cerrar sesión envía el token push a POST /auth/logout', async () => {
+    jest.spyOn(dispositivoPush, 'obtenerTokenPush').mockReturnValue('ExponentPushToken[abc]');
+    const alCerrar = jest.spyOn(auth, 'logout');
+    const { result } = await iniciar();
+    const sesion = await login('mariana.lopez@correo.mx');
+    await act(async () => {
+      await result.current.iniciarSesion(sesion);
+    });
+
+    await act(() => result.current.cerrarSesion());
+
+    expect(alCerrar).toHaveBeenCalledWith({ expo_push_token: 'ExponentPushToken[abc]' });
+    alCerrar.mockRestore();
+  });
+
+  it('iniciarSesion guarda la pestaña inicial pedida y cerrar sesión la borra', async () => {
+    const { result } = await iniciar();
+    const sesion = await login('mariana.lopez@correo.mx');
+
+    await act(async () => {
+      await result.current.iniciarSesion(sesion, { pantallaInicial: 'Perfil' });
+    });
+    expect(result.current.pantallaInicial).toBe('Perfil');
+
+    await act(() => result.current.cerrarSesion());
+    expect(result.current.pantallaInicial).toBeNull();
   });
 
   it('cerrar sesión borra el token y el usuario', async () => {

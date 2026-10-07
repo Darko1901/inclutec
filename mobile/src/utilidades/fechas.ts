@@ -41,15 +41,21 @@ export function formatearFechaHora(iso: string): string {
   return fecha && hora ? `${fecha}, ${hora}` : '';
 }
 
-/** Texto corto para listas: "hace 5 min", "hace 3 h", "ayer" o la fecha. */
+function plural(cantidad: number, singular: string, plural: string): string {
+  return `${cantidad} ${cantidad === 1 ? singular : plural}`;
+}
+
+/** Texto para listas: "hace 2 horas", "ayer", "hace 3 días" o la fecha. */
 export function formatearRelativo(iso: string, ahora: Date = new Date()): string {
   const fecha = aFecha(iso);
   if (!fecha) return '';
   const minutos = Math.floor((ahora.getTime() - fecha.getTime()) / 60000);
   if (minutos < 1) return 'ahora';
-  if (minutos < 60) return `hace ${minutos} min`;
+  if (minutos < 60) return `hace ${plural(minutos, 'minuto', 'minutos')}`;
   const horas = Math.floor(minutos / 60);
-  if (horas < 24) return `hace ${horas} h`;
+  if (horas < 24) return `hace ${plural(horas, 'hora', 'horas')}`;
   if (horas < 48) return 'ayer';
+  const dias = Math.floor(horas / 24);
+  if (dias < 7) return `hace ${plural(dias, 'día', 'días')}`;
   return formatearFecha(iso);
 }

@@ -12,7 +12,7 @@ import { leerToken } from './tokens';
 // Datos de los ejemplos del contrato y de db/semillas/S002__datos_prueba.sql.
 // La contraseña de todas las cuentas es Inclutec2026.
 export const CONTRASENA_PRUEBA = 'Inclutec2026';
-export const CODIGO_RECUPERACION_PRUEBA = '482913';
+export const CODIGO_RECUPERACION_PRUEBA = '123456';
 
 export interface UsuarioMock {
   usuario: Usuario;
@@ -129,7 +129,8 @@ function crearEstadoInicial(): EstadoMock {
         consentimiento_sensibles: false,
       },
     },
-    // Solo existe en el mock, para probar el error 423 (no está en la base de datos de prueba).
+    // Las cuentas 5 y 6 existen solo en el mock (no están en la base de datos de prueba):
+    // la suspendida prueba el error 423 y la de las 45 notificaciones prueba la paginación.
     {
       contrasena: CONTRASENA_PRUEBA,
       usuario: {
@@ -144,8 +145,26 @@ function crearEstadoInicial(): EstadoMock {
         consentimiento_sensibles: false,
       },
     },
+    {
+      contrasena: CONTRASENA_PRUEBA,
+      usuario: {
+        id: 6,
+        correo: 'notificaciones@correo.mx',
+        nombre: 'Lucía',
+        apellidos: 'Muchas Notificaciones',
+        telefono: '4425551111',
+        rol: 'candidato',
+        estado: 'activo',
+        empresa: null,
+        consentimiento_sensibles: true,
+      },
+    },
   ];
 
+  const hace = (horas: number) =>
+    new Date(Date.now() - horas * 3600 * 1000).toISOString().replace(/\.\d{3}Z$/, 'Z');
+
+  // Las dos primeras son las de S002; el resto son datos extra (ya leídos) para ver más tipos.
   const notificaciones: NotificacionMock[] = [
     {
       usuario_id: 3,
@@ -167,12 +186,59 @@ function crearEstadoInicial(): EstadoMock {
       leida: false,
       creado_en: '2026-10-02T17:00:00Z',
     },
+    {
+      usuario_id: 3,
+      id: 3,
+      tipo: 'recordatorio_entrevista',
+      titulo: 'Tienes una entrevista mañana',
+      mensaje: 'Tu entrevista para Técnico de soporte de TI es mañana a las 10:00.',
+      referencia: { tipo: 'postulacion', id: 1 },
+      leida: true,
+      creado_en: hace(30),
+    },
+    {
+      usuario_id: 2,
+      id: 4,
+      tipo: 'nueva_postulacion',
+      titulo: 'Nueva postulación',
+      mensaje: 'Mariana López García se postuló a Técnico de soporte de TI.',
+      referencia: { tipo: 'postulacion', id: 1 },
+      leida: true,
+      creado_en: hace(72),
+    },
+    {
+      usuario_id: 2,
+      id: 5,
+      tipo: 'empresa_validada',
+      titulo: 'Tu empresa fue validada',
+      mensaje: 'TecnoQro ya puede publicar vacantes.',
+      referencia: { tipo: 'empresa', id: 1 },
+      leida: true,
+      creado_en: hace(120),
+    },
   ];
+
+  // Lucía: 45 notificaciones (las 5 más recientes sin leer) para probar el desplazamiento infinito.
+  const tiposCandidato = TIPOS_POR_ROL.candidato;
+  for (let indice = 0; indice < 45; indice++) {
+    const tipo = tiposCandidato[indice % tiposCandidato.length];
+    notificaciones.push({
+      usuario_id: 6,
+      id: 100 + indice,
+      tipo,
+      titulo: `Aviso ${indice + 1}`,
+      mensaje: `Notificación de prueba número ${indice + 1} (${tipo}).`,
+      referencia:
+        tipo === 'reporte_resuelto' ? { tipo: 'reporte', id: 1 } : { tipo: 'postulacion', id: 1 },
+      leida: indice >= 5,
+      creado_en: hace(indice * 3 + 1),
+    });
+  }
 
   return {
     usuarios,
     rfcRegistrados: ['TQU150312AB1'],
-    siguienteIdUsuario: 6,
+    siguienteIdUsuario: 7,
     siguienteIdEmpresa: 2,
     notificaciones,
     preferencias: new Map(),
