@@ -134,7 +134,7 @@ describe('auth mock · sesión', () => {
   });
 
   it('me responde 423 si la cuenta se suspendió después de emitir el token', async () => {
-    const { token } = crearToken(5, 'candidato');
+    const { token } = crearToken(100, 'candidato');
     configurarSesionApi({ obtenerToken: () => token });
 
     expect(await errorDe(auth.me())).toMatchObject({ status: 423, codigo: 'cuenta_suspendida' });
@@ -176,7 +176,7 @@ describe('auth mock · registro', () => {
   it('registra un candidato, inicia su sesión y permite volver a entrar', async () => {
     const sesion = await auth.registrarCandidato(candidato);
     expect(sesion.usuario).toMatchObject({
-      id: 7,
+      id: 102,
       rol: 'candidato',
       estado: 'activo',
       consentimiento_sensibles: false,
@@ -186,7 +186,7 @@ describe('auth mock · registro', () => {
       correo: candidato.correo,
       contrasena: candidato.contrasena,
     });
-    expect(otraVez.usuario.id).toBe(7);
+    expect(otraVez.usuario.id).toBe(102);
   });
 
   it('registra un candidato que no da el consentimiento para necesidades de ajuste', async () => {
@@ -245,7 +245,7 @@ describe('auth mock · registro', () => {
     });
     expect(sesion.usuario.rol).toBe('reclutador');
     expect(sesion.usuario.empresa).toEqual({
-      id: 2,
+      id: 5,
       nombre_comercial: 'SolBajío',
       estado: 'pendiente',
     });

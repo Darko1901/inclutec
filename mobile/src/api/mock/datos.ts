@@ -6,6 +6,7 @@ import type {
   TipoNotificacion,
   Usuario,
 } from '../tipos';
+import { crearNegocioInicial, type NegocioMock } from './negocio.datos';
 import { fallo } from './simulador';
 import { leerToken } from './tokens';
 
@@ -34,8 +35,11 @@ interface CodigoRecuperacion {
   intentos: number;
 }
 
-export interface EstadoMock {
+export interface EstadoMock extends NegocioMock {
   usuarios: UsuarioMock[];
+  siguienteIdPostulacion: number;
+  siguienteIdReporte: number;
+  siguienteIdNotificacion: number;
   rfcRegistrados: string[];
   siguienteIdUsuario: number;
   siguienteIdEmpresa: number;
@@ -129,12 +133,56 @@ function crearEstadoInicial(): EstadoMock {
         consentimiento_sensibles: false,
       },
     },
-    // Las cuentas 5 y 6 existen solo en el mock (no están en la base de datos de prueba):
-    // la suspendida prueba el error 423 y la de las 45 notificaciones prueba la paginación.
+    // Reclutadores de las empresas que amplían S002 (Estudio Trazo sigue pendiente de validar).
     {
       contrasena: CONTRASENA_PRUEBA,
       usuario: {
         id: 5,
+        correo: 'rh@logibajio.mx',
+        nombre: 'Roberto',
+        apellidos: 'Sánchez Mejía',
+        telefono: '4422345678',
+        rol: 'reclutador',
+        estado: 'activo',
+        empresa: { id: 2, nombre_comercial: 'LogiBajío', estado: 'validada' },
+        consentimiento_sensibles: null,
+      },
+    },
+    {
+      contrasena: CONTRASENA_PRUEBA,
+      usuario: {
+        id: 6,
+        correo: 'talento@concentro.mx',
+        nombre: 'Patricia',
+        apellidos: 'Núñez Ortega',
+        telefono: '4423456789',
+        rol: 'reclutador',
+        estado: 'activo',
+        empresa: { id: 3, nombre_comercial: 'ConCentro', estado: 'validada' },
+        consentimiento_sensibles: null,
+      },
+    },
+    {
+      contrasena: CONTRASENA_PRUEBA,
+      usuario: {
+        id: 7,
+        correo: 'contacto@estudiotrazo.mx',
+        nombre: 'Daniel',
+        apellidos: 'Ortiz Vega',
+        telefono: '4424567890',
+        rol: 'reclutador',
+        estado: 'activo',
+        empresa: { id: 4, nombre_comercial: 'Estudio Trazo', estado: 'pendiente' },
+        consentimiento_sensibles: null,
+      },
+    },
+    // Las cuentas 100 y 101 existen solo en el mock (no están en la base de datos de prueba; sus
+    // ids empiezan en 100 para no chocar con los de S002): la suspendida prueba el error 423 y la
+    // de las 45 notificaciones prueba la paginación.
+    {
+      contrasena: CONTRASENA_PRUEBA,
+      usuario: {
+        id: 100,
         correo: 'suspendida@correo.mx',
         nombre: 'Sofía',
         apellidos: 'Cuenta Suspendida',
@@ -148,7 +196,7 @@ function crearEstadoInicial(): EstadoMock {
     {
       contrasena: CONTRASENA_PRUEBA,
       usuario: {
-        id: 6,
+        id: 101,
         correo: 'notificaciones@correo.mx',
         nombre: 'Lucía',
         apellidos: 'Muchas Notificaciones',
@@ -164,7 +212,8 @@ function crearEstadoInicial(): EstadoMock {
   const hace = (horas: number) =>
     new Date(Date.now() - horas * 3600 * 1000).toISOString().replace(/\.\d{3}Z$/, 'Z');
 
-  // Las dos primeras son las de S002; el resto son datos extra (ya leídos) para ver más tipos.
+  // Las tres primeras son las de S002 (la tercera es la de Roberto); las de id 90 en adelante son
+  // datos extra solo del mock (ya leídos) para ver más tipos.
   const notificaciones: NotificacionMock[] = [
     {
       usuario_id: 3,
@@ -187,8 +236,18 @@ function crearEstadoInicial(): EstadoMock {
       creado_en: '2026-10-02T17:00:00Z',
     },
     {
-      usuario_id: 3,
+      usuario_id: 5,
       id: 3,
+      tipo: 'nueva_postulacion',
+      titulo: 'Nueva postulación',
+      mensaje: 'Jorge Ramírez Soto se postuló a Analista de datos de operaciones.',
+      referencia: { tipo: 'postulacion', id: 2 },
+      leida: false,
+      creado_en: '2026-10-05T17:30:00Z',
+    },
+    {
+      usuario_id: 3,
+      id: 90,
       tipo: 'recordatorio_entrevista',
       titulo: 'Tienes una entrevista mañana',
       mensaje: 'Tu entrevista para Técnico de soporte de TI es mañana a las 10:00.',
@@ -198,7 +257,7 @@ function crearEstadoInicial(): EstadoMock {
     },
     {
       usuario_id: 2,
-      id: 4,
+      id: 91,
       tipo: 'nueva_postulacion',
       titulo: 'Nueva postulación',
       mensaje: 'Mariana López García se postuló a Técnico de soporte de TI.',
@@ -208,7 +267,7 @@ function crearEstadoInicial(): EstadoMock {
     },
     {
       usuario_id: 2,
-      id: 5,
+      id: 92,
       tipo: 'empresa_validada',
       titulo: 'Tu empresa fue validada',
       mensaje: 'TecnoQro ya puede publicar vacantes.',
@@ -223,7 +282,7 @@ function crearEstadoInicial(): EstadoMock {
   for (let indice = 0; indice < 45; indice++) {
     const tipo = tiposCandidato[indice % tiposCandidato.length];
     notificaciones.push({
-      usuario_id: 6,
+      usuario_id: 101,
       id: 100 + indice,
       tipo,
       titulo: `Aviso ${indice + 1}`,
@@ -237,9 +296,14 @@ function crearEstadoInicial(): EstadoMock {
 
   return {
     usuarios,
-    rfcRegistrados: ['TQU150312AB1'],
-    siguienteIdUsuario: 7,
-    siguienteIdEmpresa: 2,
+    rfcRegistrados: ['TQU150312AB1', 'LBN180725KQ3', 'CAC0904158T2', 'ETR2101119P4'],
+    // Después de los ids de S002 (1 a 7) y de las cuentas solo del mock (100 y 101).
+    siguienteIdUsuario: 102,
+    siguienteIdEmpresa: 5,
+    siguienteIdPostulacion: 3,
+    siguienteIdReporte: 2,
+    siguienteIdNotificacion: 200,
+    ...crearNegocioInicial(),
     notificaciones,
     preferencias: new Map(),
     dispositivos: new Map(),

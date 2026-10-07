@@ -28,6 +28,7 @@ import {
   obtenerEstado,
   preferenciasPorOmision,
 } from './datos';
+import { aIso, perfilVacio } from './negocio.datos';
 import { fallo, simular } from './simulador';
 import { crearToken } from './tokens';
 
@@ -211,6 +212,13 @@ export class AuthMock implements AuthServicio {
       };
       estado.usuarios.push({ usuario, contrasena: datos.contrasena });
       estado.preferencias.set(usuario.id, preferenciasPorOmision('candidato'));
+      estado.candidatos.push(
+        perfilVacio(
+          usuario.id,
+          datos.municipio_id,
+          usuario.consentimiento_sensibles ? aIso(new Date()) : null,
+        ),
+      );
       return sesionPara(usuario);
     });
   }

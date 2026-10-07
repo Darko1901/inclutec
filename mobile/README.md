@@ -49,16 +49,35 @@ Se leen del archivo `.env` (no se sube a git; la plantilla es `.env.example`). D
 
 Son las de `db/semillas/S002__datos_prueba.sql`. La contraseña de todas es **Inclutec2026**.
 
-| Correo                       | Rol                           | Qué ocurre al entrar                                                                                                        |
-| ---------------------------- | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| mariana.lopez@correo.mx      | Candidata                     | Llega a Vacantes; la pestaña Notificaciones dice «1 sin leer».                                                              |
-| jorge.ramirez@correo.mx      | Candidato                     | Llega a Vacantes; sin notificaciones.                                                                                       |
-| rh@tecnoqro.mx               | Reclutadora (Laura, TecnoQro) | Llega a Mis vacantes; Notificaciones dice «1 sin leer».                                                                     |
-| admin@inclutec.mx            | Administrador                 | Muestra «El administrador usa el panel web» y no inicia sesión.                                                             |
-| **suspendida@correo.mx**     | Candidata suspendida          | Responde 423: «Tu cuenta está suspendida.»                                                                                  |
-| **notificaciones@correo.mx** | Candidata (Lucía)             | Llega a Vacantes; tiene 45 notificaciones (5 sin leer) para probar el desplazamiento infinito y «Marcar todas como leídas». |
+| Correo                       | Rol                                | Qué ocurre al entrar                                                                                                        |
+| ---------------------------- | ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| mariana.lopez@correo.mx      | Candidata                          | Llega a Vacantes; la pestaña Notificaciones dice «1 sin leer».                                                              |
+| jorge.ramirez@correo.mx      | Candidato                          | Llega a Vacantes; sin notificaciones.                                                                                       |
+| rh@tecnoqro.mx               | Reclutadora (Laura, TecnoQro)      | Llega a Mis vacantes; Notificaciones dice «1 sin leer».                                                                     |
+| rh@logibajio.mx              | Reclutador (Roberto, LogiBajío)    | Llega a Mis vacantes; Notificaciones dice «1 sin leer» (la postulación de Jorge).                                           |
+| talento@concentro.mx         | Reclutadora (Patricia, ConCentro)  | Llega a Mis vacantes; sin notificaciones.                                                                                   |
+| contacto@estudiotrazo.mx     | Reclutador (Daniel, Estudio Trazo) | Llega a Organización; su empresa está **pendiente** de validar (solo puede crear borradores).                               |
+| admin@inclutec.mx            | Administrador                      | Muestra «El administrador usa el panel web» y no inicia sesión.                                                             |
+| **suspendida@correo.mx**     | Candidata suspendida               | Responde 423: «Tu cuenta está suspendida.»                                                                                  |
+| **notificaciones@correo.mx** | Candidata (Lucía)                  | Llega a Vacantes; tiene 45 notificaciones (5 sin leer) para probar el desplazamiento infinito y «Marcar todas como leídas». |
 
-Las cuentas `suspendida@correo.mx` y `notificaciones@correo.mx` **existen solo en el mock** (no están en la base de datos de prueba). Jorge no tiene notificaciones: sirve para ver el estado vacío.
+Las cuentas `suspendida@correo.mx` y `notificaciones@correo.mx` **existen solo en el mock** (no están en la base de datos de prueba). Sus ids son **100 y 101** (los de S002 van del 1 al 7) para que nunca choquen con la base de datos; las cuentas que se registren en la app reciben ids desde el 102. Jorge no tiene notificaciones: sirve para ver el estado vacío. Las notificaciones extra del mock tienen id 90 en adelante (la de Roberto, id 3, sí es de S002).
+
+Las dos cuentas solo del mock tienen el perfil vacío (sin habilidades ni formación), así que sirven para probar que «Postularme» se bloquea cuando el perfil está incompleto. Igual pasa con cualquier cuenta que se registre en la app.
+
+### Datos de prueba de vacantes
+
+Los datos simulados de negocio son los de S002: 4 empresas (TecnoQro, LogiBajío y ConCentro validadas; Estudio Trazo pendiente), 8 vacantes (6 publicadas y 2 borradores), la postulación de Mariana a la vacante 1 (en «Entrevista»), la de Jorge a la 3 y el reporte 1 de la vacante 5. La compatibilidad no se lee de una tabla: la calcula el motor de `src/api/mock/compatibilidad.ts` con las reglas del contrato, y su prueba comprueba que reproduce las 12 filas guardadas en S002.
+
+| Vacante | Empresa   | Modalidad  | Para probar                                                               |
+| ------- | --------- | ---------- | ------------------------------------------------------------------------- |
+| 1       | TecnoQro  | Híbrido    | Mariana: 88 %, ya postulada («Ver mi postulación»); Jorge: 57 %           |
+| 2       | LogiBajío | Presencial | Cubre las necesidades de Mariana; ofrece intérprete de LSM bajo solicitud |
+| 3       | LogiBajío | Híbrido    | Jorge ya se postuló (79 %)                                                |
+| 4       | ConCentro | Remoto     | No muestra salario                                                        |
+| 5       | ConCentro | Presencial | Declara que el lugar **no** cuenta con condiciones de accesibilidad       |
+| 6       | TecnoQro  | Remoto     | Con intérprete de LSM bajo solicitud                                      |
+| 7 y 8   | —         | —          | Borradores: nunca aparecen en la lista del candidato                      |
 
 Otras pruebas con el mock:
 
