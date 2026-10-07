@@ -1,8 +1,10 @@
-import { Modal, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { colores, espaciado, radio } from '../tema';
 import { Boton } from './Boton';
 import { Texto } from './Texto';
+import { useFocoEnTitulo } from './useFocoEnTitulo';
+import { VentanaModal } from './VentanaModal';
 
 interface ModalConfirmacionProps {
   visible: boolean;
@@ -17,6 +19,44 @@ interface ModalConfirmacionProps {
   onCancelar: () => void;
 }
 
+function Contenido({
+  titulo,
+  mensaje,
+  textoConfirmar,
+  textoCancelar,
+  peligro,
+  cargando,
+  onConfirmar,
+  onCancelar,
+}: Required<Omit<ModalConfirmacionProps, 'visible'>>) {
+  const referenciaTitulo = useFocoEnTitulo();
+  return (
+    <View style={estilos.fondo}>
+      <View accessibilityViewIsModal accessibilityRole="alert" style={estilos.cuadro}>
+        <Texto ref={referenciaTitulo} variante="subtitulo" accessibilityRole="header">
+          {titulo}
+        </Texto>
+        <Texto>{mensaje}</Texto>
+        <View style={estilos.acciones}>
+          <Boton
+            titulo={textoConfirmar}
+            onPress={onConfirmar}
+            variante={peligro ? 'peligro' : 'primario'}
+            cargando={cargando}
+          />
+          <Boton
+            titulo={textoCancelar}
+            onPress={onCancelar}
+            variante="secundario"
+            deshabilitado={cargando}
+          />
+        </View>
+      </View>
+    </View>
+  );
+}
+
+/** Diálogo de confirmación («¿Seguro que…?»). El botón atrás de Android equivale a cancelar. */
 export function ModalConfirmacion({
   visible,
   titulo,
@@ -29,30 +69,23 @@ export function ModalConfirmacion({
   onCancelar,
 }: ModalConfirmacionProps) {
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancelar}>
-      <View style={estilos.fondo}>
-        <View accessibilityViewIsModal accessibilityRole="alert" style={estilos.cuadro}>
-          <Texto variante="subtitulo" accessibilityRole="header">
-            {titulo}
-          </Texto>
-          <Texto>{mensaje}</Texto>
-          <View style={estilos.acciones}>
-            <Boton
-              titulo={textoConfirmar}
-              onPress={onConfirmar}
-              variante={peligro ? 'peligro' : 'primario'}
-              cargando={cargando}
-            />
-            <Boton
-              titulo={textoCancelar}
-              onPress={onCancelar}
-              variante="secundario"
-              deshabilitado={cargando}
-            />
-          </View>
-        </View>
-      </View>
-    </Modal>
+    <VentanaModal
+      visible={visible}
+      tipo="dialogo"
+      onCerrar={onCancelar}
+      testID="modal-confirmacion"
+    >
+      <Contenido
+        titulo={titulo}
+        mensaje={mensaje}
+        textoConfirmar={textoConfirmar}
+        textoCancelar={textoCancelar}
+        peligro={peligro}
+        cargando={cargando}
+        onConfirmar={onConfirmar}
+        onCancelar={onCancelar}
+      />
+    </VentanaModal>
   );
 }
 
@@ -61,7 +94,6 @@ const estilos = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: espaciado.xl,
-    backgroundColor: colores.superposicion,
   },
   cuadro: {
     gap: espaciado.lg,

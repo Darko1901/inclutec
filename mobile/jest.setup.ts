@@ -19,6 +19,13 @@ jest.mock('expo-secure-store', () => {
   };
 });
 
+// SafeAreaProvider no dibuja nada hasta recibir las medidas del dispositivo; en las pruebas se
+// usa el simulacro de la librería, con medidas fijas.
+jest.mock(
+  'react-native-safe-area-context',
+  () => jest.requireActual('react-native-safe-area-context/jest/mock').default,
+);
+
 // Por omisión, sin permiso de notificaciones: así las pruebas no registran dispositivos ni
 // disparan las advertencias de expo-notifications.
 jest.mock('expo-notifications', () => ({
