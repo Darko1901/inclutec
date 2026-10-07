@@ -57,6 +57,28 @@ describe('Selector', () => {
     expect(screen.getByRole('radio', { name: 'Corregidora' })).not.toBeSelected();
   });
 
+  it('la lista tiene el nombre del campo como encabezado y «Volver» la cierra sin elegir', async () => {
+    const { alCambiar, resultado } = dibujar({ valor: 2 });
+    await resultado;
+    await fireEvent.press(screen.getByRole('button', { name: /^Municipio/ }));
+
+    expect(screen.getByRole('header', { name: 'Municipio' })).toBeOnTheScreen();
+    await fireEvent.press(screen.getByRole('button', { name: 'Volver' }));
+
+    expect(screen.queryAllByRole('radio')).toHaveLength(0);
+    expect(alCambiar).not.toHaveBeenCalled();
+  });
+
+  it('el botón atrás de Android (onRequestClose) cierra la lista', async () => {
+    await dibujar({ testID: 'selector' }).resultado;
+    await fireEvent.press(screen.getByRole('button', { name: /^Municipio/ }));
+    expect(screen.getAllByRole('radio')).toHaveLength(4);
+
+    await fireEvent(screen.getByTestId('selector-modal'), 'requestClose');
+
+    expect(screen.queryAllByRole('radio')).toHaveLength(0);
+  });
+
   it('al elegir una opción avisa el id y cierra la lista', async () => {
     const { alCambiar, resultado } = dibujar();
     await resultado;

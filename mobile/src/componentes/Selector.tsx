@@ -1,12 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useMemo, useState } from 'react';
-import { AccessibilityInfo, FlatList, Modal, Pressable, StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { AccessibilityInfo, FlatList, Pressable, StyleSheet, View } from 'react-native';
 
 import { AREA_TACTIL_MINIMA, colores, espaciado, radio } from '../tema';
-import { Boton } from './Boton';
 import { CampoTexto } from './CampoTexto';
+import { EncabezadoModal } from './EncabezadoModal';
 import { Texto } from './Texto';
+import { VentanaModal } from './VentanaModal';
 
 export interface OpcionSelector {
   id: number;
@@ -140,19 +140,13 @@ export function Selector({
         </View>
       ) : null}
 
-      <Modal visible={abierto} animationType="slide" onRequestClose={() => setAbierto(false)}>
-        <SafeAreaView style={estilos.modal} accessibilityViewIsModal>
-          <View style={estilos.encabezado}>
-            <Texto variante="subtitulo" accessibilityRole="header" style={estilos.titulo}>
-              {etiqueta}
-            </Texto>
-            <Boton
-              titulo="Cerrar"
-              accessibilityLabel={`Cerrar la lista de ${etiqueta}`}
-              variante="texto"
-              onPress={() => setAbierto(false)}
-            />
-          </View>
+      <VentanaModal
+        visible={abierto}
+        onCerrar={() => setAbierto(false)}
+        testID={testID ? `${testID}-modal` : undefined}
+      >
+        <>
+          <EncabezadoModal titulo={etiqueta} onVolver={() => setAbierto(false)} />
           {buscable ? (
             <View style={estilos.busqueda}>
               <CampoTexto
@@ -216,8 +210,8 @@ export function Selector({
               );
             }}
           />
-        </SafeAreaView>
-      </Modal>
+        </>
+      </VentanaModal>
     </View>
   );
 }
@@ -237,16 +231,6 @@ const estilos = StyleSheet.create({
   valor: { flex: 1 },
   error: { flexDirection: 'row', alignItems: 'flex-start', gap: espaciado.xs },
   textoError: { flexShrink: 1 },
-  modal: { flex: 1, backgroundColor: colores.fondo },
-  encabezado: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: espaciado.lg,
-    paddingVertical: espaciado.sm,
-    gap: espaciado.sm,
-  },
-  titulo: { flex: 1 },
   busqueda: { paddingHorizontal: espaciado.lg, paddingBottom: espaciado.sm },
   lista: { paddingHorizontal: espaciado.lg, paddingBottom: espaciado.xl },
   opcion: {

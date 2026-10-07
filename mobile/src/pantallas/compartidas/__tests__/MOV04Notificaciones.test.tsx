@@ -187,7 +187,7 @@ describe('MOV-04 · Notificaciones', () => {
       await fireEvent.press(
         screen.getByRole('switch', { name: 'Cambios en mis postulaciones: aviso en el teléfono' }),
       );
-      await fireEvent.press(screen.getByRole('button', { name: 'Cerrar' }));
+      await fireEvent.press(screen.getByRole('button', { name: 'Volver' }));
 
       expect(await screen.findByText('Preferencias guardadas')).toBeOnTheScreen();
       expect(guardar).toHaveBeenCalledTimes(1);
@@ -200,6 +200,42 @@ describe('MOV-04 · Notificaciones', () => {
       expect(guardadas.find((p) => p.tipo === 'cambio_estado')?.push).toBe(false);
     });
 
+    it('el modal tiene su título y «Volver» regresa a la lista de notificaciones', async () => {
+      await abrir('mariana.lopez@correo.mx');
+      await screen.findByRole('button', { name: /Tu postulación avanzó/ });
+      await fireEvent.press(screen.getByRole('button', { name: 'Preferencias de notificaciones' }));
+
+      expect(
+        await screen.findByRole('header', { name: 'Preferencias de avisos' }),
+      ).toBeOnTheScreen();
+      expect(screen.getByRole('button', { name: 'Volver' }).props.accessibilityHint).toBe(
+        'Guarda tus cambios y regresa a las notificaciones',
+      );
+
+      await fireEvent.press(screen.getByRole('button', { name: 'Volver' }));
+
+      expect(
+        screen.queryByRole('header', { name: 'Preferencias de avisos' }),
+      ).not.toBeOnTheScreen();
+      expect(screen.getByRole('button', { name: /Tu postulación avanzó/ })).toBeOnTheScreen();
+    });
+
+    it('el botón atrás de Android también guarda los cambios y cierra', async () => {
+      const guardar = jest.spyOn(notificaciones, 'guardarPreferencias');
+      await abrir('mariana.lopez@correo.mx');
+      await screen.findByRole('button', { name: /Tu postulación avanzó/ });
+      await fireEvent.press(screen.getByRole('button', { name: 'Preferencias de notificaciones' }));
+      await screen.findByText('Cambios en mis postulaciones');
+      await fireEvent.press(
+        screen.getByRole('switch', { name: 'Cambios en mis postulaciones: correo electrónico' }),
+      );
+
+      await fireEvent(screen.getByTestId('modal-preferencias'), 'requestClose');
+
+      expect(await screen.findByText('Preferencias guardadas')).toBeOnTheScreen();
+      expect(guardar).toHaveBeenCalledTimes(1);
+    });
+
     it('si no cambió nada, cierra sin llamar al API ni avisar', async () => {
       const guardar = jest.spyOn(notificaciones, 'guardarPreferencias');
       await abrir('mariana.lopez@correo.mx');
@@ -207,7 +243,7 @@ describe('MOV-04 · Notificaciones', () => {
       await fireEvent.press(screen.getByRole('button', { name: 'Preferencias de notificaciones' }));
       await screen.findByText('Cambios en mis postulaciones');
 
-      await fireEvent.press(screen.getByRole('button', { name: 'Cerrar' }));
+      await fireEvent.press(screen.getByRole('button', { name: 'Volver' }));
 
       expect(guardar).not.toHaveBeenCalled();
       expect(screen.queryByText('Preferencias guardadas')).not.toBeOnTheScreen();
@@ -225,7 +261,7 @@ describe('MOV-04 · Notificaciones', () => {
       await fireEvent.press(
         screen.getByRole('switch', { name: 'Cambios en mis postulaciones: correo electrónico' }),
       );
-      await fireEvent.press(screen.getByRole('button', { name: 'Cerrar' }));
+      await fireEvent.press(screen.getByRole('button', { name: 'Volver' }));
 
       expect(
         await screen.findByText('El servicio no está disponible; intenta más tarde'),
