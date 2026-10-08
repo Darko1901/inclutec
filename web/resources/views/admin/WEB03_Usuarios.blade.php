@@ -6,9 +6,9 @@
     search: '',
     filterRole: 'Todos',
     users: [
-        { id: 1, name: 'Juan PÃ©rez', email: 'juan.perez@correo.com', role: 'Candidato', status: 'Activo' },
-        { id: 2, name: 'MarÃ­a LÃ³pez', email: 'm.lopez@innovatech.com', role: 'Reclutador', status: 'RevisiÃ³n' },
-        { id: 3, name: 'Carlos SÃ¡nchez', email: 'carlos@mail.com', role: 'Candidato', status: 'Bloqueado' }
+        { id: 1, name: 'Juan Pérez', email: 'juan.perez@correo.com', role: 'Candidato', status: 'Activo' },
+        { id: 2, name: 'María López', email: 'm.lopez@innovatech.com', role: 'Reclutador', status: 'Revisión' },
+        { id: 3, name: 'Carlos Sánchez', email: 'carlos@mail.com', role: 'Candidato', status: 'Bloqueado' }
     ],
     get filteredUsers() {
         return this.users.filter(u => {
@@ -31,7 +31,7 @@
     }
 }">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem;">
-        <div><h1>GestiÃ³n de Usuarios</h1><p style="color: #6B7280; font-weight:500;">Administra los candidatos y reclutadores registrados.</p></div>
+        <div><h1>Gestión de Usuarios</h1><p style="color: #6B7280; font-weight:500;">Administra los candidatos y reclutadores registrados.</p></div>
     </div>
     <div class="card" style="display: flex; gap: 1rem; padding: 1.25rem; align-items:center;">
         <input type="text" class="form-control" placeholder="Buscar por nombre o correo..." x-model="search">
@@ -52,7 +52,7 @@
     </div>
     <div class="table-wrapper">
         <table>
-            <thead><tr><th>Nombre Completo</th><th>Correo ElectrÃ³nico</th><th>Rol</th><th>Estado</th><th>Acciones</th></tr></thead>
+            <thead><tr><th>Nombre Completo</th><th>Correo Electrónico</th><th>Rol</th><th>Estado</th><th>Acciones</th></tr></thead>
             <tbody>
                 <template x-for="user in filteredUsers" :key="user.id">
                     <tr x-transition>
@@ -62,13 +62,13 @@
                         <td>
                             <span class="badge" :class="{
                                 'badge-active': user.status === 'Activo',
-                                'badge-pending': user.status === 'RevisiÃ³n',
+                                'badge-pending': user.status === 'Revisión',
                                 'badge-banned': user.status === 'Bloqueado'
                             }" x-text="user.status"></span>
                         </td>
                         <td>
                             <button x-show="user.status === 'Activo'" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size:0.8rem;" @click="selectedUser = user; showBlockModal = true">Bloquear</button>
-                            <button x-show="user.status === 'RevisiÃ³n'" class="btn btn-success" style="padding: 0.4rem 0.8rem; font-size:0.8rem;" @click="approveUser(user)">Aprobar</button>
+                            <button x-show="user.status === 'Revisión'" class="btn btn-success" style="padding: 0.4rem 0.8rem; font-size:0.8rem;" @click="approveUser(user)">Aprobar</button>
                             <button x-show="user.status === 'Bloqueado'" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size:0.8rem;" @click="unblockUser(user)">Desbloquear</button>
                         </td>
                     </tr>
@@ -80,7 +80,7 @@
     <div class="modal-overlay" x-show="showBlockModal" style="display: none;" x-transition>
         <div class="modal-content" @click.away="showBlockModal = false">
             <h2 class="modal-title">Bloquear Usuario</h2>
-            <p>Â¿EstÃ¡s seguro que deseas bloquear el acceso a <strong x-text="selectedUser?.name"></strong>?</p>
+            <p>¿Estás seguro que deseas bloquear el acceso a <strong x-text="selectedUser?.name"></strong>?</p>
             <div class="form-group" style="margin-top: 1.5rem;"><label class="form-label">Motivo del bloqueo</label><textarea class="form-control" rows="3" placeholder="Escribe el motivo..." x-model="motivoBloqueo"></textarea></div>
             <div class="modal-actions"><button class="btn btn-outline" @click="showBlockModal = false">Cancelar</button><button class="btn btn-danger" @click="confirmBlock()">Confirmar Bloqueo</button></div>
         </div>
