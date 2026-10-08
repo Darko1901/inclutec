@@ -279,3 +279,37 @@ body.dark .btn-outline:hover { background: var(--hover-bg); }
 .toast-success { border-left: 4px solid #10B981; }
 .toast-error { border-left: 4px solid #EF4444; }
 .toast-warning { border-left: 4px solid #F59E0B; }
+
+/* Buttons in Dark Mode explicitly fixed */
+body.dark .btn { color: #FFF; } /* Default for standard colored buttons */
+body.dark .btn-outline { color: var(--text-main); border-color: var(--border-color); background: transparent; }
+body.dark .btn-outline:hover { background: var(--hover-bg); color: var(--text-main); }
+body.dark .btn-primary { background: var(--primary); color: #FFF; border: none; }
+body.dark .btn-primary:hover { background: #2563EB; }
+body.dark .btn-success { background: var(--success); color: #FFF; border: none; }
+body.dark .btn-success:hover { background: #059669; }
+body.dark .btn-danger { background: var(--danger); color: #FFF; border: none; }
+body.dark .btn-danger:hover { background: #DC2626; }
+
+/* Dashboard and Inline Text fixes for Dark Mode */
+body.dark .stat-card [style*="color:#6B7280"], 
+body.dark .stat-card [style*="color: #6B7280"],
+body.dark td [style*="color:#6B7280"],
+body.dark td [style*="color: #6B7280"],
+body.dark p[style*="color:#6B7280"],
+body.dark p[style*="color: #6B7280"] {
+    color: var(--text-muted) !important;
+}
+
+body.dark .stat-card h3 { color: var(--text-main); }
+body.dark .stat-card .value { color: var(--text-main); }
+
+/* Fix table inline borders */
+body.dark td[style*="border-bottom: 1px solid #E5E7EB"] {
+    border-bottom: 1px solid var(--border-color) !important;
+}
+
+/* Fix distribution bars background */
+body.dark div[style*="background:#E5E7EB"] {
+    background: var(--hover-bg) !important;
+}
