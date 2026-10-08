@@ -2,6 +2,7 @@
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () { return view('auth.WEB01_Login'); });
+Route::get('/recuperar', function () { return view('auth.WEB01B_Recuperar'); });
 Route::get('/dashboard', function () { return view('admin.WEB02_Dashboard'); });
 Route::get('/usuarios', function () { return view('admin.WEB03_Usuarios'); });
 Route::get('/empresas', function () { return view('admin.WEB04_Empresas'); });
