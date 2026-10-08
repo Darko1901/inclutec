@@ -106,3 +106,10 @@ tr:hover { background-color: var(--sidebar-hover); }
 .tab-btn { padding: 0.75rem 0.5rem; background: none; border: none; cursor: pointer; font-size: 0.875rem; color: var(--text-muted); font-weight: 500; border-bottom: 3px solid transparent; transition: 0.2s; outline: none; }
 .tab-btn:hover { color: var(--primary); }
 .tab-btn.active { border-bottom: 3px solid var(--primary); color: var(--primary); font-weight: 600; }
+
+/* Auth Layout */
+.auth-wrapper { display: flex; min-height: 100vh; background-color: var(--bg-color); align-items: center; justify-content: center; }
+.auth-card { background-color: #FFF; padding: 3rem; width: 100%; max-width: 440px; border-radius: 8px; box-shadow: 0 1px 3px 0 rgba(60,64,67,0.3), 0 4px 8px 3px rgba(60,64,67,0.15); text-align: left; }
+.auth-logo { text-align: center; margin-bottom: 2rem; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+.auth-logo img { width: 64px; height: 64px; border-radius: 8px; }
+.auth-logo span { font-size: 1.75rem; font-weight: 500; font-family: 'Google Sans', sans-serif; color: #202124; letter-spacing: -0.5px; }

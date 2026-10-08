@@ -3,28 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="view-transition" content="same-origin">
     <title>IncluTec - Recuperar Contraseña</title>
+    <link rel="icon" href="/img/icon.png">
     <link rel="stylesheet" href="/css/admin.css">
 </head>
 <body>
     <div class="auth-wrapper">
-        <div class="auth-card" style="box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); border:none;">
-            <div class="auth-logo" style="font-size:1.5rem;">
-                Recuperación de Acceso
+        <div class="auth-card">
+            <div class="auth-logo" style="margin-bottom: 1rem;">
+                <img src="/img/icon.png" alt="IncluTec Logo">
+                <span>Recuperación</span>
             </div>
-            <p style="color: #6B7280; text-align:center; margin-bottom: 2rem; font-size:0.95rem;">
-                Ingresa tu correo de administrador. Te enviaremos instrucciones de seguridad para restablecer tu contraseña maestra.
-            </p>
+            <p style="text-align:center; color:var(--text-muted); margin-bottom:2rem; line-height:1.5;">Ingresa el correo electrónico asociado a tu cuenta maestra y te enviaremos instrucciones.</p>
             
             <form action="/" method="GET">
-                <div class="form-group">
+                <div class="form-group" style="margin-bottom: 2rem;">
                     <label class="form-label" for="email">Correo Electrónico</label>
                     <input type="email" id="email" class="form-control" placeholder="admin@inclutec.com" required>
                 </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%; font-size:1rem; padding: 0.8rem; margin-bottom: 1rem;">Enviar Enlace de Recuperación</button>
-                <div style="text-align: center;">
-                    <a href="/" style="font-size: 0.9rem; font-weight: 600; color:#6B7280;">← Volver al inicio de sesión</a>
+                <div style="display:flex; gap:1rem;">
+                    <a href="/" class="btn btn-outline" style="flex:1;">Cancelar</a>
+                    <button type="submit" class="btn btn-primary" style="flex:1;">Enviar Enlace</button>
                 </div>
             </form>
         </div>
