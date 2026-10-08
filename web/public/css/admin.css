@@ -191,3 +191,52 @@ tr:hover { background-color: #F9FAFB; }
     .auth-logo img { width: 56px; height: 56px; }
     .auth-logo span { font-size: 1.5rem; }
 }
+
+/* =========================================
+   DARK MODE & WOW FACTORS
+========================================= */
+body.dark {
+    --bg-color: #111827;
+    --text-main: #F9FAFB;
+    --text-muted: #9CA3AF;
+    --card-bg: #1F2937;
+    --border-color: #374151;
+    --hover-bg: #374151;
+}
+
+body.dark .sidebar { background-color: #111827; border-right: 1px solid var(--border-color); }
+body.dark .topbar { background-color: var(--card-bg); border-bottom: 1px solid var(--border-color); }
+body.dark .card, body.dark .stat-card { background-color: var(--card-bg); box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+body.dark .modal-content { background-color: var(--card-bg); }
+body.dark input, body.dark select { background-color: #374151; color: #FFF; border-color: #4B5563; }
+body.dark th { background-color: #374151; color: #D1D5DB; }
+body.dark td { border-bottom: 1px solid #374151; }
+
+/* Profile Dropdown */
+.profile-dropdown-menu {
+    position: absolute; right: 0; top: 100%; margin-top: 0.5rem;
+    background: var(--card-bg); border: 1px solid var(--border-color);
+    border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+    min-width: 200px; z-index: 100; overflow: hidden;
+}
+.profile-dropdown-menu a {
+    display: flex; align-items: center; gap: 0.75rem;
+    padding: 0.75rem 1rem; color: var(--text-main); text-decoration: none;
+    transition: background 0.2s; font-size: 0.9rem;
+}
+.profile-dropdown-menu a:hover { background: var(--hover-bg); }
+.profile-dropdown-menu hr { border: none; border-top: 1px solid var(--border-color); margin: 0; }
+
+/* Export Buttons */
+.export-btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: #FFF; color: var(--text-main); border: 1px solid var(--border-color);
+    padding: 0.5rem 1rem; border-radius: 6px; font-weight: 500; cursor: pointer; transition: all 0.2s;
+}
+body.dark .export-btn { background: #374151; }
+.export-btn:hover { background: var(--bg-color); border-color: var(--primary); color: var(--primary); }
+
+/* Toasts Extended */
+.toast-success { border-left: 4px solid #10B981; }
+.toast-error { border-left: 4px solid #EF4444; }
+.toast-warning { border-left: 4px solid #F59E0B; }

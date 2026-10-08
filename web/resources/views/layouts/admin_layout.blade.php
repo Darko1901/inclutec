@@ -9,7 +9,7 @@
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
 </head>
-<body x-data="{ toasts: [], sidebarOpen: false }" @notify.window="toasts.push({ id: Date.now(), msg: $event.detail.msg, type: $event.detail.type }); setTimeout(() => { toasts.shift() }, 3000)">
+<body x-data="{ toasts: [], sidebarOpen: false, darkMode: false, profileOpen: false }" x-init="darkMode = JSON.parse(localStorage.getItem('darkMode') || false); `$watch('darkMode', val => localStorage.setItem('darkMode', val))" :class="{'dark': darkMode}" @notify.window="toasts.push({ id: Date.now(), msg: $event.detail.msg, type: $event.detail.type }); setTimeout(() => { toasts.shift() }, 3000)">
 
     <div class="toast-container">
         <template x-for="toast in toasts" :key="toast.id">
@@ -50,7 +50,7 @@
                 </a>
                 <a href="/catalogos" class="sidebar-link {{ request()->is('catalogos') ? 'active' : '' }}">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
-                    Catálogos
+                    CatÃ¡logos
                 </a>
                 <a href="/reportes" class="sidebar-link {{ request()->is('reportes') ? 'active' : '' }}">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
@@ -68,7 +68,7 @@
                     </a>
                     <a href="/" class="sidebar-link">
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                        Cerrar Sesión
+                        Cerrar SesiÃ³n
                     </a>
                 </div>
             </nav>
@@ -79,7 +79,7 @@
                 <button class="mobile-menu-btn" @click="sidebarOpen = true">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                 </button>
-                <div style="font-weight: 500; font-family:'Google Sans', sans-serif; color: #5F6368;">Administración Central</div>
+                <div style="font-weight: 500; font-family:'Google Sans', sans-serif; color: #5F6368;">AdministraciÃ³n Central</div>
                 <div class="topbar-right" style="display:flex; align-items:center; gap:1rem;">
                     <span style="font-weight:500; font-size:0.875rem;">Admin General</span>
                     <div style="width:36px; height:36px; background-color:var(--primary); color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700;">AG</div>
