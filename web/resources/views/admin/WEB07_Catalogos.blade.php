@@ -27,16 +27,12 @@
         </button>
     </div>
 
-    <!-- Pestañas Clásicas Elegantes -->
-    <div style="display:flex; border-bottom: 1px solid var(--border-color); margin-bottom:2rem; gap: 2rem;">
-        <button @click="tab = 'discapacidad'" 
-                :style="tab === 'discapacidad' ? 'border-bottom: 2px solid var(--primary); color:var(--primary); font-weight:700; margin-bottom:-1px;' : 'color:#6B7280; font-weight:600; border-bottom: 2px solid transparent;'" 
-                style="padding: 0.75rem 0.5rem; background:none; cursor:pointer; font-size:1.05rem; transition:0.2s;">
+    <!-- Pestañas -->
+    <div class="tabs-container">
+        <button @click="tab = 'discapacidad'" class="tab-btn" :class="{ 'active': tab === 'discapacidad' }">
             Tipos de Discapacidad
         </button>
-        <button @click="tab = 'sectores'" 
-                :style="tab === 'sectores' ? 'border-bottom: 2px solid var(--primary); color:var(--primary); font-weight:700; margin-bottom:-1px;' : 'color:#6B7280; font-weight:600; border-bottom: 2px solid transparent;'" 
-                style="padding: 0.75rem 0.5rem; background:none; cursor:pointer; font-size:1.05rem; transition:0.2s;">
+        <button @click="tab = 'sectores'" class="tab-btn" :class="{ 'active': tab === 'sectores' }">
             Sectores Industriales
         </button>
     </div>
