@@ -313,3 +313,10 @@ body.dark td[style*="border-bottom: 1px solid #E5E7EB"] {
 body.dark div[style*="background:#E5E7EB"] {
     background: var(--hover-bg) !important;
 }
+
+/* Fix Labels in Dark Mode */
+body.dark label,
+body.dark .form-label,
+body.dark .form-group label {
+    color: var(--text-main) !important;
+}
