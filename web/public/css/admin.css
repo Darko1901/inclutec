@@ -121,3 +121,73 @@ tr:hover { background-color: #F9FAFB; }
 .tab-btn { padding: 1rem 0.5rem; background: none; border: none; cursor: pointer; font-size: 0.875rem; color: var(--text-muted); font-weight: 600; border-bottom: 3px solid transparent; transition: 0.2s; outline: none; }
 .tab-btn:hover { color: var(--primary); }
 .tab-btn.active { border-bottom: 3px solid var(--primary); color: var(--primary); }
+
+/* =========================================
+   RESPONSIVE DESIGN (Mobile & Tablets)
+========================================= */
+.mobile-menu-btn { display: none; }
+.close-sidebar-btn { display: none; }
+.sidebar-overlay { display: none; }
+
+@media (max-width: 992px) {
+    .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+    /* Hamburger Menu */
+    .mobile-menu-btn { 
+        display: flex; align-items: center; justify-content: center;
+        background: transparent; border: none; padding: 0.5rem; 
+        cursor: pointer; color: var(--text-color); margin-right: 1rem;
+    }
+    .mobile-menu-btn svg { width: 28px; height: 28px; }
+
+    /* Overlay */
+    .sidebar-overlay {
+        display: block; position: fixed; inset: 0; background: rgba(17,24,39,0.5);
+        z-index: 40; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+        backdrop-filter: blur(2px);
+    }
+    .sidebar-overlay.open { opacity: 1; pointer-events: auto; }
+
+    /* Sidebar (Off-canvas) */
+    .sidebar { 
+        position: fixed; left: -280px; top: 0; bottom: 0; width: 280px; 
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 50;
+    }
+    .sidebar.open { transform: translateX(280px); }
+    
+    .close-sidebar-btn { 
+        display: block; position: absolute; top: 1.5rem; right: 1rem; 
+        background: transparent; border: none; color: #FFF; font-size: 2rem; cursor: pointer; 
+        line-height: 1;
+    }
+
+    /* Layout Adjustments */
+    .topbar { padding: 0 1rem; height: 60px; justify-content: flex-start; }
+    .topbar-right { margin-left: auto; }
+    .content-body { padding: 1.25rem 1rem; }
+    h1 { font-size: 1.5rem; margin-bottom: 1rem; }
+    
+    /* Cards & Grids */
+    .dashboard-grid { grid-template-columns: 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+    .card, .stat-card { padding: 1.25rem; }
+    
+    /* Modals */
+    .modal-content { padding: 1.5rem; width: 90%; max-width: 400px; }
+    .modal-actions { flex-direction: column-reverse; gap: 0.5rem; }
+    .modal-actions .btn { width: 100%; justify-content: center; }
+    .modal-actions > div { display: flex; flex-direction: column; width: 100%; gap: 0.5rem; }
+    
+    /* Toasts */
+    .toast-container { left: 1rem; right: 1rem; bottom: 1rem; }
+    
+    /* Tables */
+    .table-wrapper { border-radius: 8px; }
+    th, td { padding: 0.75rem 1rem; font-size: 0.8rem; white-space: nowrap; }
+    
+    /* Auth Views */
+    .auth-card { padding: 2rem; margin: 1rem; }
+    .auth-logo img { width: 56px; height: 56px; }
+    .auth-logo span { font-size: 1.5rem; }
+}

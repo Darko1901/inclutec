@@ -9,7 +9,7 @@
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
 </head>
-<body x-data="{ toasts: [] }" @notify.window="toasts.push({ id: Date.now(), msg: $event.detail.msg, type: $event.detail.type }); setTimeout(() => { toasts.shift() }, 3000)">
+<body x-data="{ toasts: [], sidebarOpen: false }" @notify.window="toasts.push({ id: Date.now(), msg: $event.detail.msg, type: $event.detail.type }); setTimeout(() => { toasts.shift() }, 3000)">
 
     <div class="toast-container">
         <template x-for="toast in toasts" :key="toast.id">
@@ -20,8 +20,10 @@
     </div>
 
     <div class="admin-layout">
-        <aside class="sidebar">
+        <div class="sidebar-overlay" :class="{'open': sidebarOpen}" @click="sidebarOpen = false"></div>
+        <aside class="sidebar" :class="{'open': sidebarOpen}">
             <div class="sidebar-header">
+                <button class="close-sidebar-btn" @click="sidebarOpen = false">&times;</button>
                 <img src="/img/icon.png" alt="IncluTec Logo">
                 <span>IncluTec Admin</span>
             </div>
@@ -74,8 +76,11 @@
 
         <main class="main-content" role="main">
             <header class="topbar">
+                <button class="mobile-menu-btn" @click="sidebarOpen = true">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
                 <div style="font-weight: 500; font-family:'Google Sans', sans-serif; color: #5F6368;">Administración Central</div>
-                <div style="display:flex; align-items:center; gap:1rem;">
+                <div class="topbar-right" style="display:flex; align-items:center; gap:1rem;">
                     <span style="font-weight:500; font-size:0.875rem;">Admin General</span>
                     <div style="width:36px; height:36px; background-color:var(--primary); color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700;">AG</div>
                 </div>
