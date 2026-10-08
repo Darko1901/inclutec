@@ -1,6 +1,6 @@
 @extends('layouts.admin_layout')
 @section('content')
-<div x-data="{ 
+<div x-data="{ motivoBloqueo: '', 
     showBlockModal: false, 
     selectedUser: null,
     search: '',
@@ -20,9 +20,14 @@
     approveUser(user) { user.status = 'Activo'; $dispatch('notify', {msg: 'Usuario aprobado exitosamente', type: 'success'}); },
     unblockUser(user) { user.status = 'Activo'; $dispatch('notify', {msg: 'Usuario desbloqueado', type: 'success'}); },
     confirmBlock() {
+        if(this.motivoBloqueo.trim() === '') {
+            $dispatch('notify', {msg: 'Error de validación: Debes escribir el motivo del bloqueo.', type: 'error'});
+            return;
+        }
         if(this.selectedUser) this.selectedUser.status = 'Bloqueado';
         this.showBlockModal = false;
-        $dispatch('notify', {msg: 'Usuario bloqueado', type: 'error'});
+        this.motivoBloqueo = '';
+        $dispatch('notify', {msg: 'Usuario bloqueado correctamente', type: 'success'});
     }
 }">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem;">
@@ -31,6 +36,19 @@
     <div class="card" style="display: flex; gap: 1rem; padding: 1.25rem; align-items:center;">
         <input type="text" class="form-control" placeholder="Buscar por nombre o correo..." x-model="search">
         <select class="form-control" style="width: 200px;" x-model="filterRole"><option>Todos</option><option>Candidato</option><option>Reclutador</option></select>
+    </div>
+    <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:1rem;">
+        <div style="display:flex; gap:0.5rem;">
+            <button class="export-btn" @click="$dispatch('notify', {msg:'Generando archivo Excel...', type:'success'})">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg> Exportar a Excel
+            </button>
+            <button class="export-btn" @click="$dispatch('notify', {msg:'Generando reporte PDF...', type:'success'})">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg> Exportar a PDF
+            </button>
+        </div>
+        <button class="btn btn-outline" @click="$dispatch('notify', {msg:'Error: Solo el SuperAdmin puede purgar registros.', type:'error'})" style="border-color:#EF4444; color:#EF4444;">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg> Purgar Sistema
+        </button>
     </div>
     <div class="table-wrapper">
         <table>
@@ -63,7 +81,7 @@
         <div class="modal-content" @click.away="showBlockModal = false">
             <h2 class="modal-title">Bloquear Usuario</h2>
             <p>Â¿EstÃ¡s seguro que deseas bloquear el acceso a <strong x-text="selectedUser?.name"></strong>?</p>
-            <div class="form-group" style="margin-top: 1.5rem;"><label class="form-label">Motivo del bloqueo</label><textarea class="form-control" rows="3" placeholder="Escribe el motivo..."></textarea></div>
+            <div class="form-group" style="margin-top: 1.5rem;"><label class="form-label">Motivo del bloqueo</label><textarea class="form-control" rows="3" placeholder="Escribe el motivo..." x-model="motivoBloqueo"></textarea></div>
             <div class="modal-actions"><button class="btn btn-outline" @click="showBlockModal = false">Cancelar</button><button class="btn btn-danger" @click="confirmBlock()">Confirmar Bloqueo</button></div>
         </div>
     </div>
