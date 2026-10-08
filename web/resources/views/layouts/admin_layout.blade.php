@@ -8,7 +8,18 @@
     <link rel="stylesheet" href="/css/admin.css">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
-<body>
+<body x-data="{ toasts: [] }" @notify.window="toasts.push({ id: Date.now(), msg: $event.detail.msg, type: $event.detail.type }); setTimeout(() => { toasts.shift() }, 3000)">
+    
+    <!-- Sistema de Notificaciones (Toasts) -->
+    <div class="toast-container">
+        <template x-for="toast in toasts" :key="toast.id">
+            <div class="toast" :class="toast.type === 'success' ? 'toast-success' : 'toast-error'" x-transition.duration.300ms>
+                <svg x-show="toast.type === 'success'" fill="none" stroke="var(--success)" viewBox="0 0 24 24" style="width:20px;height:20px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                <span x-text="toast.msg"></span>
+            </div>
+        </template>
+    </div>
+
     <div class="admin-layout">
         <aside class="sidebar" aria-label="Menú principal">
             <div class="sidebar-header">
@@ -45,7 +56,7 @@
                     Reportes
                 </a>
                 
-                <div style="margin: 1rem 1.5rem; font-size:0.75rem; color:#64748B; font-weight:700; text-transform:uppercase;">Sistema</div>
+                <div style="margin: 1.5rem 1.5rem 0.5rem; font-size:0.75rem; color:#475569; font-weight:800; text-transform:uppercase; letter-spacing: 1px;">Sistema</div>
                 
                 <a href="/perfil" class="sidebar-link {{ request()->is('perfil') ? 'active' : '' }}" aria-label="Mi Perfil">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
@@ -56,8 +67,8 @@
                     Configuración
                 </a>
             </nav>
-            <div style="padding: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
-                <a href="/" class="btn btn-outline" style="width: 100%; border-color: #4B5563; color: #E5E7EB;">Cerrar Sesión</a>
+            <div style="padding: 1.5rem; border-top: 1px solid rgba(255,255,255,0.05);">
+                <a href="/" class="btn btn-outline" style="width: 100%; border-color: #334155; color: #94A3B8;">Cerrar Sesión</a>
             </div>
         </aside>
 
@@ -66,15 +77,15 @@
                 <div></div>
                 <div style="display:flex; align-items:center; gap: 1rem;">
                     <div style="text-align: right;">
-                        <div style="font-weight: 700; font-size: 0.9rem;">Admin General</div>
-                        <div style="font-size: 0.8rem; color: #6B7280;">admin@inclutec.com</div>
+                        <div style="font-weight: 800; font-size: 0.95rem;">Admin General</div>
+                        <div style="font-size: 0.8rem; color: #6B7280; font-weight:500;">admin@inclutec.com</div>
                     </div>
-                    <div style="width:40px; height:40px; background:var(--primary); color:#FFF; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1.2rem;">
+                    <div style="width:40px; height:40px; border-radius:50%; background:var(--primary); color:#FFF; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1.2rem; box-shadow: 0 4px 6px -1px rgba(0,82,255,0.3);">
                         A
                     </div>
                 </div>
             </header>
-            <div class="content-body">
+            <div class="content-body" x-data>
                 @yield('content')
             </div>
         </main>
