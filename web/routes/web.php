@@ -10,3 +10,5 @@ Route::get('/vacantes', function () { return view('admin.WEB05_Vacantes'); });
 Route::get('/habilidades', function () { return view('admin.WEB06_Habilidades'); });
 Route::get('/catalogos', function () { return view('admin.WEB07_Catalogos'); });
 Route::get('/reportes', function () { return view('admin.WEB08_Reportes'); });
+Route::get('/perfil', function () { return view('admin.WEB09_Perfil'); });
+Route::get('/configuracion', function () { return view('admin.WEB10_Configuracion'); });
