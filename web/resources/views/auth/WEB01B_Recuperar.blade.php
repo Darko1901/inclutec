@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="es">
+<html lang="es-MX">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -24,7 +24,7 @@
             <form action="/" method="GET">
                 <div class="form-group" style="margin-bottom: 2rem;">
                     <label class="form-label" for="email">Correo Electrónico</label>
-                    <input type="email" id="email" class="form-control" placeholder="admin@inclutec.com" required>
+                    <input type="email" id="email" class="form-control" aria-required="true" placeholder="admin@inclutec.com" required>
                 </div>
                 <div style="display:flex; gap:1rem;">
                     <a href="/" class="btn btn-outline" style="flex:1;">Cancelar</a>

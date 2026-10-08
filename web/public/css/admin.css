@@ -401,3 +401,12 @@ body.dark .sidebar-link.active {
 
 body.dark .btn-outline { border-color: #334155; color: #F8FAFC; }
 body.dark .btn-outline:hover { background-color: #334155; }
+/* Accessibility: Skip to Content */
+.skip-link:focus {
+    position: static !important;
+    width: auto !important;
+    height: auto !important;
+    display: block;
+    text-align: center;
+    font-weight: bold;
+}

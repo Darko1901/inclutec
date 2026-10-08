@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="es">
+<html lang="es-MX">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -24,11 +24,11 @@
             <form action="/dashboard" method="GET">
                 <div class="form-group">
                     <label class="form-label" for="email">Correo Electrónico</label>
-                    <input type="email" id="email" class="form-control" placeholder="admin@inclutec.com" required>
+                    <input type="email" id="email" class="form-control" aria-required="true" placeholder="admin@inclutec.com" required>
                 </div>
                 <div class="form-group" style="margin-bottom: 0.5rem;">
                     <label class="form-label" for="password">Contraseña</label>
-                    <input type="password" id="password" class="form-control" placeholder="••••••••" required>
+                    <input type="password" id="password" class="form-control" aria-required="true" placeholder="••••••••" required>
                 </div>
                 <div style="text-align: right; margin-bottom: 2rem;">
                     <a href="/recuperar" style="font-size: 0.875rem; font-weight: 500;">¿Olvidaste tu contraseña?</a>

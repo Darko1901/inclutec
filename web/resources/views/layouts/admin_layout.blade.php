@@ -1,5 +1,5 @@
-<!DOCTYPE html>
-<html lang="es">
+﻿<!DOCTYPE html>
+<html lang="es-MX">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,7 +23,7 @@
         <div class="sidebar-overlay" :class="{'open': sidebarOpen}" @click="sidebarOpen = false"></div>
         <aside class="sidebar" :class="{'open': sidebarOpen}">
             <div class="sidebar-header">
-                <button class="close-sidebar-btn" @click="sidebarOpen = false">&times;</button>
+                <button class="close-sidebar-btn" @click="sidebarOpen = false" aria-label="Cerrar menú principal">&times;</button>
                 <img src="/img/icon.png" alt="IncluTec Logo">
                 <span>IncluTec Admin</span>
             </div>
@@ -76,7 +76,7 @@
 
         <main class="main-content" role="main">
             <header class="topbar">
-                <button class="mobile-menu-btn" @click="sidebarOpen = true">
+                <button class="mobile-menu-btn" @click="sidebarOpen = true" aria-expanded="false" :aria-expanded="sidebarOpen.toString()" aria-controls="menu-lateral" aria-label="Abrir menú principal">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                 </button>
                 <div style="font-weight: 500; font-family:'Google Sans', sans-serif; color: #5F6368;">Administración Central</div>
@@ -100,7 +100,7 @@
                     </div>
                 </div>
             </header>
-            <div class="content-body">
+            <main id="contenido" class="content-body" tabindex="-1">
                 @yield('content')
             </div>
         </main>
