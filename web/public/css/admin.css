@@ -410,3 +410,71 @@ body.dark .btn-outline:hover { background-color: #334155; }
     text-align: center;
     font-weight: bold;
 }
+/* Migas de pan (Breadcrumbs) */
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+    font-weight: 500;
+}
+.breadcrumb a {
+    color: var(--primary);
+    text-decoration: none;
+}
+.breadcrumb a:hover {
+    text-decoration: underline;
+}
+.breadcrumb svg {
+    color: #9CA3AF;
+}
+
+/* Paginación */
+.pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    border-top: 1px solid var(--border-color);
+    margin-top: 1rem;
+    font-size: 0.875rem;
+}
+.pagination-controls {
+    display: flex;
+    gap: 0.25rem;
+}
+.page-btn {
+    min-width: 36px;
+    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-color);
+    background: var(--bg-white);
+    color: var(--text-color);
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+}
+.page-btn:hover { background: var(--bg-light); }
+.page-btn.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+.page-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+body.dark .page-btn {
+    background: #1E293B;
+    border-color: #334155;
+    color: #F8FAFC;
+}
+body.dark .page-btn:hover { background: #334155; }
+body.dark .page-btn.active {
+    background: var(--primary);
+    border-color: var(--primary);
+}

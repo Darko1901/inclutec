@@ -76,8 +76,8 @@
         </table>
     </div>
     <div class="modal-overlay" x-show="showBlockModal" style="display: none;" x-transition>
-        <div class="modal-content" @click.away="showBlockModal = false">
-            <h2 class="modal-title">Bloquear Usuario</h2>
+        <div class="modal-content" @click.away="showBlockModal = false" x-trap.noscroll="showBlockModal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+            <h2 class="modal-title" id="modal-title">Bloquear Usuario</h2>
             <p>¿Estás seguro que deseas bloquear el acceso a <strong x-text="selectedUser?.name"></strong>?</p>
             <div class="form-group" style="margin-top: 1.5rem;"><label class="form-label">Motivo del bloqueo</label><textarea class="form-control" rows="3" placeholder="Escribe el motivo..." x-model="motivoBloqueo"></textarea></div>
             <div class="modal-actions"><button class="btn btn-outline" @click="showBlockModal = false">Cancelar</button><button class="btn btn-danger" @click="confirmBlock()">Confirmar Bloqueo</button></div>
