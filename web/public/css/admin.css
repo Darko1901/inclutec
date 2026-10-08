@@ -1,4 +1,4 @@
-﻿@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 /* View Transitions */
 @view-transition { navigation: auto; }
@@ -319,4 +319,87 @@ body.dark label,
 body.dark .form-label,
 body.dark .form-group label {
     color: var(--text-main) !important;
+}
+
+/* =========================================
+   PREMIUM WOW FACTORS & ANIMATIONS
+========================================= */
+/* Fade up animation */
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.wow-animate-fade-up {
+    animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Glassmorphism & Soft Shadows for Cards */
+.card, .stat-card, .auth-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.card:hover, .stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+}
+body.dark .card:hover, body.dark .stat-card:hover {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+}
+
+/* Auth background dynamic gradient */
+.auth-wrapper {
+    background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);
+    position: relative;
+    overflow: hidden;
+}
+.auth-wrapper::before {
+    content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+    background: radial-gradient(circle, rgba(59,130,246,0.05) 0%, transparent 60%);
+    animation: pulseGlow 15s infinite alternate linear;
+}
+@keyframes pulseGlow {
+    0% { transform: scale(1) translate(0, 0); }
+    100% { transform: scale(1.1) translate(5%, 5%); }
+}
+
+body.dark .auth-wrapper {
+    background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+}
+body.dark .auth-wrapper::before {
+    background: radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 60%);
+}
+
+/* Glowing Input Focus */
+.form-control {
+    transition: all 0.3s ease;
+}
+.form-control:focus {
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+}
+body.dark .form-control:focus {
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.3);
+}
+
+/* Smooth Sidebar Active Glow */
+.sidebar-link.active {
+    position: relative;
+    overflow: hidden;
+}
+.sidebar-link.active::after {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+    background: var(--primary);
+    box-shadow: 0 0 10px var(--primary);
+}
+
+/* Login specific wow */
+.auth-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+}
+body.dark .auth-card {
+    background: rgba(30, 41, 59, 0.85);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
