@@ -196,21 +196,56 @@ tr:hover { background-color: #F9FAFB; }
    DARK MODE & WOW FACTORS
 ========================================= */
 body.dark {
-    --bg-color: #111827;
-    --text-main: #F9FAFB;
-    --text-muted: #9CA3AF;
-    --card-bg: #1F2937;
-    --border-color: #374151;
-    --hover-bg: #374151;
+    --bg-color: #0F172A;
+    --text-main: #F8FAFC;
+    --text-muted: #94A3B8;
+    --card-bg: #1E293B;
+    --border-color: #334155;
+    --hover-bg: #334155;
+    --primary: #3B82F6;
+    background-color: var(--bg-color);
+    color: var(--text-main);
 }
 
-body.dark .sidebar { background-color: #111827; border-right: 1px solid var(--border-color); }
-body.dark .topbar { background-color: var(--card-bg); border-bottom: 1px solid var(--border-color); }
-body.dark .card, body.dark .stat-card { background-color: var(--card-bg); box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
-body.dark .modal-content { background-color: var(--card-bg); }
-body.dark input, body.dark select { background-color: #374151; color: #FFF; border-color: #4B5563; }
-body.dark th { background-color: #374151; color: #D1D5DB; }
-body.dark td { border-bottom: 1px solid #374151; }
+/* Base structural colors in dark mode */
+body.dark .admin-layout, 
+body.dark .main-content, 
+body.dark .content-body {
+    background-color: var(--bg-color);
+}
+
+/* Sidebar and Topbar */
+body.dark .sidebar { background-color: #0F172A; border-right: 1px solid var(--border-color); }
+body.dark .topbar { background-color: var(--card-bg); border-bottom: 1px solid var(--border-color); color: var(--text-main); }
+body.dark .sidebar-link { color: var(--text-muted); }
+body.dark .sidebar-link:hover { background-color: var(--hover-bg); color: var(--text-main); }
+body.dark .sidebar-link.active { background-color: rgba(59, 130, 246, 0.1); color: var(--primary); }
+body.dark .topbar > div { color: var(--text-main) !important; } /* override inline styles */
+
+/* Cards and Modals */
+body.dark .card, body.dark .stat-card { background-color: var(--card-bg); border: 1px solid var(--border-color); box-shadow: 0 4px 6px rgba(0,0,0,0.4); color: var(--text-main); }
+body.dark .stat-card p { color: var(--text-muted) !important; } /* override inline styles */
+body.dark .stat-card h3 { color: var(--text-main); }
+body.dark .modal-content { background-color: var(--card-bg); color: var(--text-main); border: 1px solid var(--border-color); box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+body.dark .modal-title { color: var(--text-main); }
+
+/* Forms and Inputs */
+body.dark input, body.dark select, body.dark textarea { 
+    background-color: #0F172A; color: var(--text-main); border: 1px solid var(--border-color); 
+}
+body.dark input:focus, body.dark select:focus, body.dark textarea:focus { 
+    border-color: var(--primary); outline: none; 
+}
+
+/* Tables */
+body.dark table { color: var(--text-main); }
+body.dark th { background-color: #0F172A; color: var(--text-muted); border-bottom: 1px solid var(--border-color); }
+body.dark td { border-bottom: 1px solid var(--border-color); }
+body.dark tbody tr:hover { background-color: rgba(255,255,255,0.02); }
+
+/* Generic texts */
+body.dark h1, body.dark h2, body.dark h3 { color: var(--text-main); }
+body.dark p { color: var(--text-muted) !important; }
 
 /* Profile Dropdown */
 .profile-dropdown-menu {
@@ -230,11 +265,13 @@ body.dark td { border-bottom: 1px solid #374151; }
 /* Export Buttons */
 .export-btn {
     display: inline-flex; align-items: center; gap: 0.5rem;
-    background: #FFF; color: var(--text-main); border: 1px solid var(--border-color);
+    background: var(--card-bg); color: var(--text-main); border: 1px solid var(--border-color);
     padding: 0.5rem 1rem; border-radius: 6px; font-weight: 500; cursor: pointer; transition: all 0.2s;
 }
-body.dark .export-btn { background: #374151; }
-.export-btn:hover { background: var(--bg-color); border-color: var(--primary); color: var(--primary); }
+body.dark .export-btn { background: #1E293B; border-color: var(--border-color); color: var(--text-main); }
+.export-btn:hover { background: var(--hover-bg); border-color: var(--primary); color: var(--primary); }
+body.dark .btn-outline { color: var(--text-main); border-color: var(--border-color); }
+body.dark .btn-outline:hover { background: var(--hover-bg); }
 
 /* Toasts Extended */
 .toast-success { border-left: 4px solid #10B981; }
