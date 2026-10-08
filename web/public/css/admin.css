@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+﻿@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 /* View Transitions */
 @view-transition { navigation: auto; }
@@ -238,10 +238,12 @@ body.dark input:focus, body.dark select:focus, body.dark textarea:focus {
 }
 
 /* Tables */
-body.dark table { color: var(--text-main); }
+body.dark .table-wrapper { background-color: var(--card-bg); border-color: var(--border-color); }
+body.dark table { color: var(--text-main); background-color: transparent; }
+body.dark tbody tr { background-color: transparent; }
 body.dark th { background-color: #0F172A; color: var(--text-muted); border-bottom: 1px solid var(--border-color); }
-body.dark td { border-bottom: 1px solid var(--border-color); }
-body.dark tbody tr:hover { background-color: rgba(255,255,255,0.02); }
+body.dark td { border-bottom: 1px solid var(--border-color); color: var(--text-main); }
+body.dark tbody tr:hover { background-color: rgba(255,255,255,0.05) !important; color: var(--text-main); }
 
 /* Generic texts */
 body.dark h1, body.dark h2, body.dark h3 { color: var(--text-main); }
