@@ -1,4 +1,4 @@
-﻿@extends('layouts.admin_layout')
+@extends('layouts.admin_layout')
 @section('content')
 <div x-data="{ showSkillModal: false }">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem;">

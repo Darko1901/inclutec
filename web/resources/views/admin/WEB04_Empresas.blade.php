@@ -1,4 +1,4 @@
-﻿@extends('layouts.admin_layout')
+@extends('layouts.admin_layout')
 @section('content')
 <div x-data="{ showValidateModal: false, selectedEmpresa: '' }">
     <div style="margin-bottom:2rem;">
