@@ -28,9 +28,15 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
 body { background-color: var(--bg-color); color: var(--text-color); font-size: 14px; -webkit-font-smoothing: antialiased; }
+
+/* Transición suave para cambio de tema (día/noche) */
+body, .sidebar, .topbar, .card, .stat-card, .modal-content, th, td, input, textarea, select, .sidebar-link, p, h1, h2, h3, .table-wrapper, .admin-layout, .main-content, .content-body, .auth-wrapper, .auth-card, .auth-logo span {
+    transition: background-color 0.9s ease-in-out, color 0.9s ease-in-out, border-color 0.9s ease-in-out, box-shadow 0.9s ease-in-out;
+}
+
 h1, h2, h3 { font-weight: 700; color: var(--text-color); letter-spacing: -0.5px; }
 h1 { font-size: 1.75rem; margin-bottom: 1.5rem; }
-a { color: var(--primary); text-decoration: none; }
+a { color: var(--primary); text-decoration: none; transition: color 0.3s ease; }
 a:hover { text-decoration: underline; }
 
 /* Botones */
@@ -383,7 +389,7 @@ input:focus, select:focus, textarea:focus {
     background-color: var(--bg-light);
 }
 body.dark .auth-wrapper {
-    background-color: #0F172A;
+    background: transparent;
 }
 .auth-card {
     background-color: var(--bg-white);
@@ -392,8 +398,13 @@ body.dark .auth-wrapper {
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 body.dark .auth-card {
-    background-color: #1E293B;
-    border-color: #334155;
+    background-color: rgba(30, 41, 59, 0.8);
+    backdrop-filter: blur(24px);
+    border: 1px solid rgba(255,255,255,0.15);
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+}
+body.dark .auth-logo span {
+    color: var(--text-main);
 }
 
 /* Strict Sidebar Active State */
