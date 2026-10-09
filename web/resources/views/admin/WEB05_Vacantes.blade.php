@@ -35,8 +35,8 @@
         </table>
     </div>
     <div class="modal-overlay" x-show="showReviewModal" style="display: none;" x-transition>
-        <div class="modal-content" @click.away="showReviewModal = false">
-            <h2 class="modal-title">Detalle de Reportes</h2>
+        <div class="modal-content" @click.away="showReviewModal = false" x-trap.noscroll="showReviewModal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+            <h2 class="modal-title" id="modal-title">Detalle de Reportes</h2>
             <p style="margin-bottom:1rem;">Analizando vacante: <strong x-text="selectedVacante?.title"></strong></p>
             <div style="background:#FEE2E2; border:1px solid #FECACA; padding:1rem; border-radius:4px; margin-bottom:1.5rem; color:#B91C1C;">
                 <strong>Motivo principal:</strong> "La vacante exige esfuerzo físico no relacionado al puesto, discriminando a personas con discapacidad motriz."

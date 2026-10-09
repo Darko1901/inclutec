@@ -38,8 +38,8 @@
         </table>
     </div>
     <div class="modal-overlay" x-show="showValidateModal" style="display: none;" x-transition>
-        <div class="modal-content" @click.away="showValidateModal = false">
-            <h2 class="modal-title">Dictamen de Empresa</h2>
+        <div class="modal-content" @click.away="showValidateModal = false" x-trap.noscroll="showValidateModal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+            <h2 class="modal-title" id="modal-title">Dictamen de Empresa</h2>
             <p>Selecciona el resultado de la revisión para <strong x-text="selectedEmpresa?.name"></strong>.</p>
             <div class="form-group" style="margin-top: 1.5rem;"><label class="form-label">Notas del dictamen (opcional)</label><textarea class="form-control" rows="3"></textarea></div>
             <div class="modal-actions" style="justify-content: space-between;">
