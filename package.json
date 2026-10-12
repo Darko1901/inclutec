@@ -1,0 +1,27 @@
+{
+  "name": "inclutec",
+  "version": "1.0.0",
+  "description": "Plataforma web y móvil para vincular de manera equitativa a personas con discapacidad con oportunidades laborales, considerando competencias, características de las vacantes, modalidad de trabajo, condiciones de accesibilidad y ajustes razonables.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Darko1901/inclutec.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Darko1901/inclutec/issues"
+  },
+  "homepage": "https://github.com/Darko1901/inclutec#readme",
+  "dependencies": {
+    "exceljs": "^4.4.0"
+  }
+}
