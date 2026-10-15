@@ -8,7 +8,7 @@ Esta carpeta es la **única fuente del esquema** de la base de datos: 39 tablas 
 |---|---|
 | `migraciones/V001__esquema_inicial.sql` | Crea las 39 tablas. Los cambios futuros van en archivos nuevos (`V002__...`, `V003__...`); los ya existentes no se editan. |
 | `semillas/S001__catalogos.sql` | Catálogos que la plataforma necesita para funcionar: roles, entidades, modalidades, habilidades, ajustes razonables y motivos de reporte. |
-| `semillas/S002__datos_prueba.sql` | Datos de desarrollo: 4 cuentas, la empresa TecnoQro, una vacante, una postulación con entrevista. Son los mismos que usan los mocks de `mobile/` y `web/`. |
+| `semillas/S002__datos_prueba.sql` | Datos de desarrollo: 7 cuentas, 4 empresas (una pendiente de validar), 8 vacantes (6 publicadas y 2 borradores) y una postulación con entrevista. Son los mismos que usan los mocks de `mobile/` y `web/`. |
 | `pruebas/P001__restricciones.sql` | 8 operaciones que la BD debe rechazar y 1 que debe aceptar. |
 | `pruebas/P002__compatibilidad.sql` | Recalcula el índice de compatibilidad en SQL (referencia para el motor del API: 88 % / 83 %). |
 | `modelo/diccionario.md` | Diccionario de datos de las 39 tablas. |
@@ -33,7 +33,17 @@ docker compose up -d db              # crea la BD la primera vez que arranca
 docker compose down -v               # borra el volumen para empezar de cero
 ```
 
-Cuentas de prueba: `admin@inclutec.mx`, `rh@tecnoqro.mx`, `mariana.lopez@correo.mx` y `jorge.ramirez@correo.mx`, todas con la contraseña `Inclutec2026`.
+Cuentas de prueba (todas con la contraseña `Inclutec2026`):
+
+| Correo | Rol | Persona y empresa | Estado de la empresa |
+|---|---|---|---|
+| `admin@inclutec.mx` | Administrador | Admin IncluTec | — |
+| `rh@tecnoqro.mx` | Reclutador | Laura Hernández Ruiz · TecnoQro | Validada |
+| `rh@logibajio.mx` | Reclutador | Roberto Sánchez Mejía · LogiBajío | Validada |
+| `talento@concentro.mx` | Reclutador | Patricia Núñez Ortega · ConCentro | Validada |
+| `contacto@estudiotrazo.mx` | Reclutador | Daniel Ortiz Vega · Estudio Trazo | Pendiente de validar (solo puede crear borradores) |
+| `mariana.lopez@correo.mx` | Candidato | Mariana López García · perfil completo (88 % con la vacante de soporte de TI) | — |
+| `jorge.ramirez@correo.mx` | Candidato | Jorge Ramírez Soto · sin necesidades de ajuste registradas | — |
 
 ## Por qué la base de datos está en su propia carpeta y no dentro de `api/`
 
