@@ -59,7 +59,7 @@ Qué hace cada pantalla: `docs/diseno/requerimientos.md` (RF por interfaz) y `do
 
 Hasta el sprint 4 el API no existe, pero su contrato sí. La app móvil y el panel web se programan contra una **capa de servicios** con dos implementaciones intercambiables:
 
-- **Mock:** responde con los mismos datos de `db/semillas/S002__datos_prueba.sql` (Mariana, TecnoQro, la vacante de soporte, 88 % / 83 %), con una latencia corta simulada y los mismos códigos de error que dará el API.
+- **Mock:** responde con los mismos datos de `db/semillas/S002__datos_prueba.sql` (sección 9), con una latencia corta simulada y los mismos códigos de error que dará el API.
 - **HTTP:** llama al API real.
 
 Se elige con una variable de entorno (`EXPO_PUBLIC_USE_MOCK` en móvil, `INCLUTEC_API_MOCK` en web). Las pantallas **nunca** importan datos de prueba directamente; siempre pasan por la capa de servicios. Las rutas, la forma del JSON y los errores siguen exactamente `docs/api/contrato.md` (y `docs/api/openapi.yaml`, de donde se generan los tipos). Los datos simulados son los ejemplos del contrato, que coinciden con `db/semillas/S002__datos_prueba.sql`.
@@ -90,12 +90,19 @@ Se elige con una variable de entorno (`EXPO_PUBLIC_USE_MOCK` en móvil, `INCLUTE
 
 ## 9. Datos de prueba
 
-| Cuenta | Rol | Contraseña |
+Vienen de `db/semillas/S002__datos_prueba.sql`; la contraseña de todas las cuentas es `Inclutec2026`.
+
+| Cuenta | Rol | Quién |
 |---|---|---|
-| admin@inclutec.mx | Administrador | Inclutec2026 |
-| rh@tecnoqro.mx | Reclutadora (Laura Hernández Ruiz, TecnoQro) | Inclutec2026 |
-| mariana.lopez@correo.mx | Candidata (perfil completo, 88 % con la vacante) | Inclutec2026 |
-| jorge.ramirez@correo.mx | Candidato (sin necesidades de ajuste registradas) | Inclutec2026 |
+| admin@inclutec.mx | Administrador | Admin IncluTec |
+| rh@tecnoqro.mx | Reclutadora | Laura Hernández Ruiz · TecnoQro (validada) |
+| rh@logibajio.mx | Reclutador | Roberto Sánchez Mejía · LogiBajío (validada) |
+| talento@concentro.mx | Reclutadora | Patricia Núñez Ortega · ConCentro (validada) |
+| contacto@estudiotrazo.mx | Reclutador | Daniel Ortiz Vega · Estudio Trazo (pendiente de validar: solo crea borradores) |
+| mariana.lopez@correo.mx | Candidata | Mariana López García · perfil al 90 %, 88 % con la vacante «Técnico de soporte de TI» |
+| jorge.ramirez@correo.mx | Candidato | Jorge Ramírez Soto · sin consentimiento ni necesidades de ajuste; postulado a «Analista de datos de operaciones» |
+
+Además hay 8 vacantes (6 publicadas y 2 borradores), las compatibilidades de los dos candidatos con las publicadas y un reporte abierto. Los mocks agregan cuentas que solo existen en ellos (ids 100 en adelante), documentadas en el README de cada componente.
 
 ## 10. Documentación de diseño
 
