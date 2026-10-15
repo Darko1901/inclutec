@@ -42,3 +42,13 @@ htmlcov/
 Thumbs.db
 *.swp
 *.log
+
+# Raíz del repositorio: los documentos del proyecto (reportes, PDF, hojas de cálculo
+# exportadas, etc.) se comparten fuera del repositorio, no se suben aquí.
+/*.docx
+/*.zip
+/*.pdf
+/*.ps1
+/temp_*/
+/node_modules/
+/package*.json
