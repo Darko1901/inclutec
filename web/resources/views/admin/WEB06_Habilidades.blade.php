@@ -35,7 +35,7 @@
                 <template x-for="h in habilidades" :key="h.id">
                     <tr x-transition>
                         <td x-text="h.name" style="font-weight:600;"></td>
-                        <td><span class="badge" :style="ackground:+h.color+; color:+h.text+; border:none;" x-text="h.cat"></span></td>
+                        <td><span class="badge" :style="'background:' + h.color + '; color:' + h.text + '; border:none;'" x-text="h.cat"></span></td>
                         <td x-text="h.users + ' Usuarios'"></td>
                         <td>
                             <button class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size:0.8rem;" @click="openEdit(h)">Editar</button> 
