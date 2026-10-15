@@ -1,9 +1,13 @@
+import { configure } from '@testing-library/react-native';
 import * as SecureStore from 'expo-secure-store';
 
 import { reiniciarMock } from './src/api/mock/datos';
 import { configurarLatencia } from './src/api/mock/simulador';
 import { configurarSesionApi } from './src/api/sesionApi';
 import { limpiarCatalogosGuardados } from './src/api/useCatalogo';
+
+// Con la caché de Jest vacía el primer render tarda más de 1 s (el valor por omisión de findBy y waitFor).
+configure({ asyncUtilTimeout: 10000 });
 
 // Almacén seguro en memoria (en el teléfono lo da el sistema).
 jest.mock('expo-secure-store', () => {
