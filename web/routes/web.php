@@ -1,14 +1,28 @@
 <?php
+
+use App\Http\Controllers\CatalogoController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EmpresaController;
+use App\Http\Controllers\HabilidadController;
+use App\Http\Controllers\PerfilController;
+use App\Http\Controllers\ReporteController;
+use App\Http\Controllers\SesionController;
+use App\Http\Controllers\UsuarioController;
+use App\Http\Controllers\VacanteController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () { return view('auth.WEB01_Login'); });
-Route::get('/recuperar', function () { return view('auth.WEB01B_Recuperar'); });
-Route::get('/dashboard', function () { return view('admin.WEB02_Dashboard'); });
-Route::get('/usuarios', function () { return view('admin.WEB03_Usuarios'); });
-Route::get('/empresas', function () { return view('admin.WEB04_Empresas'); });
-Route::get('/vacantes', function () { return view('admin.WEB05_Vacantes'); });
-Route::get('/habilidades', function () { return view('admin.WEB06_Habilidades'); });
-Route::get('/catalogos', function () { return view('admin.WEB07_Catalogos'); });
-Route::get('/reportes', function () { return view('admin.WEB08_Reportes'); });
-Route::get('/perfil', function () { return view('admin.WEB09_Perfil'); });
-Route::get('/configuracion', function () { return view('admin.WEB10_Configuracion'); });
+Route::get('/', [SesionController::class, 'inicio'])->name('inicio');
+Route::get('/login', [SesionController::class, 'formulario'])->name('login');
+Route::post('/login', [SesionController::class, 'entrar'])->name('login.entrar');
+Route::post('/logout', [SesionController::class, 'salir'])->name('logout');
+
+Route::middleware('admin')->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/usuarios', [UsuarioController::class, 'index'])->name('usuarios');
+    Route::get('/empresas', [EmpresaController::class, 'index'])->name('empresas');
+    Route::get('/vacantes', [VacanteController::class, 'index'])->name('vacantes');
+    Route::get('/habilidades', [HabilidadController::class, 'index'])->name('habilidades');
+    Route::get('/catalogos', [CatalogoController::class, 'index'])->name('catalogos');
+    Route::get('/reportes', [ReporteController::class, 'index'])->name('reportes');
+    Route::get('/perfil', [PerfilController::class, 'index'])->name('perfil');
+});
