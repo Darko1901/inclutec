@@ -54,6 +54,20 @@ export type Archivo = Esquemas['Archivo'];
 export type CambioContrasena = Esquemas['CambioContrasena'];
 export type PostulacionEntrada = Esquemas['PostulacionEntrada'];
 export type PostulacionDetalle = Esquemas['PostulacionDetalle'];
+export type PostulacionResumen = Esquemas['PostulacionResumen'];
+export type PaginaPostulaciones = Esquemas['PaginaPostulaciones'];
+export type EventoHistorial = Esquemas['EventoHistorial'];
+export type ConsultaPostulaciones = NonNullable<
+  operations['get_postulaciones_me']['parameters']['query']
+>;
+export type Entrevista = Esquemas['Entrevista'];
+export type Horario = Esquemas['Horario'];
+export type ReservaEntrevista = Esquemas['ReservaEntrevista'];
+export type CancelacionCandidato = Esquemas['CancelacionCandidato'];
+export type EmpresaResumen = Esquemas['EmpresaResumen'];
+export type PaginaEmpresas = Esquemas['PaginaEmpresas'];
+export type EmpresaPublica = Esquemas['EmpresaPublica'];
+export type ConsultaEmpresas = NonNullable<operations['get_empresas']['parameters']['query']>;
 export type ReporteEntrada = Esquemas['ReporteEntrada'];
 export type ReporteCreado = Esquemas['ReporteCreado'];
 

@@ -30,6 +30,11 @@ jest.mock(
   () => jest.requireActual('react-native-safe-area-context/jest/mock').default,
 );
 
+// El portapapeles es nativo: en las pruebas solo se comprueba qué se copia.
+jest.mock('expo-clipboard', () => ({
+  setStringAsync: jest.fn(async () => true),
+}));
+
 // Por omisión, sin permiso de notificaciones: así las pruebas no registran dispositivos ni
 // disparan las advertencias de expo-notifications.
 jest.mock('expo-notifications', () => ({

@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import CAN02DetalleVacante from '../pantallas/candidato/CAN02DetalleVacante';
 import CAN04MiCV from '../pantallas/candidato/CAN04MiCV';
 import CAN06DetallePostulacion from '../pantallas/candidato/CAN06DetallePostulacion';
+import CAN07FichaEmpresa from '../pantallas/candidato/CAN07FichaEmpresa';
 import MOV00Splash from '../pantallas/compartidas/MOV00Splash';
 import MOV01InicioSesion from '../pantallas/compartidas/MOV01InicioSesion';
 import MOV02Registro from '../pantallas/compartidas/MOV02Registro';
@@ -76,6 +77,11 @@ export function RaizNavegador() {
               name="DetallePostulacion"
               component={CAN06DetallePostulacion}
               options={{ ...opcionesEncabezado, title: 'Detalle de postulación' }}
+            />
+            <Pila.Screen
+              name="FichaEmpresa"
+              component={CAN07FichaEmpresa}
+              options={{ ...opcionesEncabezado, title: 'Empresa' }}
             />
             {/* CAN-03 enlaza al aviso desde «Necesidades de ajuste» y «Cuenta». */}
             <Pila.Screen

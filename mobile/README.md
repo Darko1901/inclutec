@@ -79,6 +79,23 @@ Los datos simulados de negocio son los de S002: 4 empresas (TecnoQro, LogiBajío
 | 6       | TecnoQro  | Remoto     | Con intérprete de LSM bajo solicitud                                      |
 | 7 y 8   | —         | —          | Borradores: nunca aparecen en la lista del candidato                      |
 
+### Datos de prueba de postulaciones, entrevistas y empresas
+
+Además de los de S002, el mock agrega (ids desde 100) lo necesario para probar CAN-05 a CAN-07. Todas las fechas son relativas a la hora en que abres la app.
+
+| Dato                                              | Cuenta  | Para probar                                                                                                                                                                                                                              |
+| ------------------------------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Postulación 1 (S002), vacante 1, «Entrevista»     | Mariana | Entrevista agendada dentro de 3 días (45 min, Google Meet): se puede cancelar. Al cancelarla, «Elige un horario» y volver a agendar.                                                                                                     |
+| Postulación 101, vacante 6, «Aceptada»            | Mariana | Historial con mensaje de felicitación y una entrevista ya «Realizada» (sin liga ni botones).                                                                                                                                             |
+| Postulación 102, vacante 3, «No seleccionada»     | Mariana | Historial con el mensaje «Por ahora avanzamos con otros perfiles…».                                                                                                                                                                      |
+| Postulación 103, vacante 4, «Retirada»            | Mariana | Estado «Retirada» y sin botón de retirar.                                                                                                                                                                                                |
+| Postulación 100, vacante 6, «Entrevista»          | Jorge   | Entrevista que empieza en 5 horas (Teams): **no se puede cancelar** y la pantalla explica por qué.                                                                                                                                       |
+| Horarios libres de la vacante 1 (ids 2 y 100–104) | Mariana | Dentro de 3, 27, 30, 73 (el horario 2 de S002), 120 y 121 horas, agrupados por día («Hoy» o «Mañana» según la hora a la que abras la app). El de 30 h y 60 min (id 102) **lo toma otro candidato** justo cuando intentas agendarlo: 409. |
+
+Las vacantes 2 y 5 se dejaron libres a propósito (Mariana puede postularse a ellas). Un retiro **sin** entrevista agendada no genera notificación porque el contrato no define ninguna; con entrevista, el reclutador recibe «Entrevista cancelada».
+
+El directorio de empresas solo muestra las validadas (ConCentro, LogiBajío y TecnoQro); **Estudio Trazo** (pendiente) no aparece ni tiene ficha. Cada empresa trae el sector, tamaño, descripción y prácticas de inclusión de S002; el sitio web de TecnoQro es el del ejemplo del contrato, el de LogiBajío se agregó solo en el mock y ConCentro no tiene (para ver la ficha sin enlace).
+
 Otras pruebas con el mock:
 
 - **429:** escribe una contraseña incorrecta 5 veces con el mismo correo; el siguiente intento, aunque sea correcto, responde «Demasiados intentos fallidos. Intenta de nuevo en 15 minutos.» (el bloqueo dura mientras la app esté abierta).
@@ -126,7 +143,7 @@ Otras pruebas con el mock:
 
 ## Capa de servicios
 
-Las pantallas y los componentes **nunca** importan datos de prueba; solo usan los servicios de `src/api` (`auth`, `catalogos`, `notificaciones`, `vacantes`, `postulaciones`, `reportes`, `candidatos`):
+Las pantallas y los componentes **nunca** importan datos de prueba; solo usan los servicios de `src/api` (`auth`, `catalogos`, `notificaciones`, `vacantes`, `postulaciones`, `horarios`, `entrevistas`, `empresas`, `reportes`, `candidatos`):
 
 ```ts
 import { auth, ApiError } from '../../api';
@@ -151,7 +168,7 @@ mobile/
     │   ├── tipos.ts        Nombres de los tipos del contrato
     │   ├── errores.ts      ApiError
     │   ├── cliente.ts      Cliente Axios
-    │   ├── auth.ts · catalogos.ts · notificaciones.ts · vacantes.ts · postulaciones.ts · reportes.ts · candidatos.ts   Interfaz + implementación HTTP
+    │   ├── auth.ts · catalogos.ts · notificaciones.ts · vacantes.ts · postulaciones.ts · horarios.ts · entrevistas.ts · empresas.ts · reportes.ts · candidatos.ts   Interfaz + implementación HTTP
     │   ├── servicios.ts    Elige HTTP o mock según EXPO_PUBLIC_USE_MOCK
     │   ├── index.ts        Lo único que importan las pantallas
     │   ├── useCatalogo.ts  Hook para cargar catálogos (con caché en memoria)
@@ -160,12 +177,12 @@ mobile/
     ├── contenido/          Textos largos, como el aviso de privacidad
     ├── pantallas/
     │   ├── compartidas/    MOV-00 a MOV-04
-    │   ├── candidato/      CAN-01 a CAN-07 (con subcarpetas vacantes/, detalle/, perfil/ y cv/)
+    │   ├── candidato/      CAN-01 a CAN-07 (con subcarpetas vacantes/, detalle/, perfil/, cv/, postulaciones/ y empresas/)
     │   └── reclutador/     REC-01 a REC-06
     ├── navegacion/         Navegador raíz y barras inferiores por rol
     ├── sesion/             Contexto de sesión y token en expo-secure-store
     ├── tema/               Colores, tipografía y espaciado
-    └── utilidades/         Formato de fechas y validaciones
+    └── utilidades/         Formato de fechas, validaciones y lista paginada (useListaPaginada)
 ```
 
 Las pruebas viven junto al código, en carpetas `__tests__/`.
@@ -184,7 +201,10 @@ Las pruebas viven junto al código, en carpetas `__tests__/`.
 | CAN-02 Detalle de vacante (desglose, postulación y reporte)                            | Lista                                                     |
 | CAN-03 Mi perfil (completitud, foto, datos, preferencias, necesidades y cuenta)        | Lista                                                     |
 | CAN-04 Mi CV (experiencia, formación, habilidades y vista previa)                      | Lista                                                     |
-| CAN-05 a CAN-07, REC-01 a REC-06                                                       | Marcador «Pendiente» (se llenan en las siguientes tareas) |
+| CAN-05 Mis postulaciones (Activas y Finalizadas, filtro por estado)                    | Lista                                                     |
+| CAN-06 Detalle de postulación (historial, agendar, cancelar entrevista y retirar)      | Lista                                                     |
+| CAN-07 Empresas (directorio y ficha con prácticas de inclusión y reporte)              | Lista                                                     |
+| REC-01 a REC-06                                                                        | Marcador «Pendiente» (se llenan en las siguientes tareas) |
 
 ### Cómo probar CAN-01 y CAN-02 en el teléfono
 
@@ -197,7 +217,7 @@ Las pruebas viven junto al código, en carpetas `__tests__/`.
 7. Menú **⋮ › Reportar vacante**: elige un motivo, envía y aparece «Gracias, revisaremos tu reporte».
 8. Para ver el bloqueo por perfil incompleto entra como **notificaciones@correo.mx** (perfil vacío): «Postularme» queda deshabilitado y dice qué falta.
 
-Al tocar una notificación se abre la pantalla de su referencia pasándole el id (CAN-06, REC-05, REC-06, REC-01 o REC-02); esas pantallas son marcadores que muestran el id recibido.
+Al tocar una notificación se abre la pantalla de su referencia pasándole el id (CAN-06, REC-05, REC-06, REC-01 o REC-02); CAN-06 ya es la pantalla real y las de reclutador siguen siendo marcadores que muestran el id recibido.
 
 ### Cómo probar CAN-03 y CAN-04 en el teléfono
 
@@ -216,6 +236,24 @@ Todo se guarda en memoria: al cerrar la app por completo vuelven los datos de S0
 11. En Perfil, **Cambiar contraseña** (error «La contraseña actual no es correcta…» con una incorrecta) y **Eliminar mi cuenta**: primero explica qué se borra y que las postulaciones activas se retiran; después pide la contraseña. Al terminar vuelves a MOV-01 con un aviso, y esa cuenta responde 423 al iniciar sesión.
 
 Con TalkBack o VoiceOver recorre el perfil de arriba abajo: cada sección es un botón «expandida/contraída», los campos tienen etiqueta y los errores se anuncian.
+
+### Cómo probar CAN-05, CAN-06 y CAN-07 en el teléfono
+
+Los cambios se guardan en memoria: al cerrar la app por completo vuelven los datos de S002 y del mock.
+
+1. Entra como **mariana.lopez@correo.mx** y abre **Postulaciones**. **Activas (1)** muestra «Técnico de soporte de TI» con su estado «Entrevista» (ícono y texto) y la fecha y hora de la entrevista. **Finalizadas (3)** muestra Retirada, Aceptada y No seleccionada. El filtro por estado cambia según la pestaña.
+2. Jala la lista hacia abajo para actualizarla. Entra con **notificaciones@correo.mx** para ver «Aún no te has postulado» con el botón «Ver vacantes».
+3. Abre la postulación de «Técnico de soporte de TI». El **Historial** es una lista: cada paso con fecha, hora y el mensaje del reclutador; el estado actual dice «Estado actual». «Ver vacante» abre CAN-02 y el nombre de la empresa abre su ficha.
+4. En **Tu entrevista**: **Abrir liga** abre Meet, **Copiar liga** copia la liga y avisa «Liga copiada.» (pégala en cualquier campo para comprobarlo).
+5. **Cancelar entrevista** (se puede: faltan 3 días) pide confirmar. Después aparece **Elige un horario** con los horarios libres agrupados («Hoy», «Mañana», «mié 21 oct»…, según el día).
+6. Toca **Agendar** en el único horario de **60 min**: confirma y aparece «Ese horario acaba de ser tomado, elige otro.»; la lista se recarga sin ese horario. Agenda cualquier otro y la tarjeta de la entrevista regresa con la liga nueva.
+7. **Retirar postulación** pide confirmar y, si hay entrevista, avisa que también se cancela. Al confirmar, el estado pasa a «Retirada» y la postulación aparece en Finalizadas de CAN-05. Las finalizadas no tienen el botón.
+8. Entra como **jorge.ramirez@correo.mx** y abre su postulación «Desarrollador web junior»: la entrevista empieza en 5 horas, no hay botón de cancelar y se explica por qué.
+9. Abre **Empresas**: aparecen ConCentro, LogiBajío y TecnoQro (no Estudio Trazo). Busca «logi» (desde 3 letras, 400 ms después de dejar de escribir) o filtra por sector «Manufactura».
+10. Abre **TecnoQro**: logo (o iniciales), sector, tamaño, municipio, descripción, **sitio web** (abre el navegador), **Prácticas de inclusión** y sus vacantes con la compatibilidad de Mariana (88 % y 15 %). Menú **⋮ › Reportar empresa**: elige un motivo, envía y aparece «Gracias, revisaremos tu reporte».
+11. En CAN-02, tocar el nombre de la empresa abre la misma ficha.
+
+Con TalkBack o VoiceOver cada tarjeta de postulación y de empresa se lee como un solo elemento con todo su resumen (por ejemplo, «Técnico de soporte de TI, TecnoQro. Te postulaste el miércoles 30 de septiembre de 2026. Estado: Entrevista. Entrevista agendada el …, a las 10:00 de la mañana»); las pestañas se anuncian como pestañas con su número y los botones «Agendar» dicen la fecha, la hora y la duración.
 
 ## Accesibilidad
 
