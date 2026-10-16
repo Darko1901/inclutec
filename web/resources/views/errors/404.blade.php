@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es-MX">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Página no encontrada - IncluTec</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    @vite(['resources/css/fuentes.css'])
     <style>
         :root {
             --primary: #1E40AF;
@@ -12,12 +12,12 @@
             --secondary: #0F766E;
             --bg-color: #F3F4F6;
             --text-main: #1F2937;
-            --text-muted: #6B7280;
+            --text-muted: #4B5563;
         }
         body {
             margin: 0;
             padding: 0;
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
             background-color: var(--bg-color);
             display: flex;
             align-items: center;
@@ -63,7 +63,7 @@
             transition: background 0.2s;
         }
         .btn-home:hover {
-            background: var(--primary-light);
+            background: #1E3A8A;
         }
         .logo {
             width: 80px;
@@ -74,10 +74,10 @@
 </head>
 <body>
 
-    <div class="error-container">
-        <img src="{{ asset('img/icon.png') }}" alt="IncluTec Logo" class="logo">
+    <main class="error-container">
+        <img src="{{ asset('img/icon.png') }}" alt="" class="logo">
         <div class="error-code">404</div>
-        <div class="error-title">Página no encontrada</div>
+        <h1 class="error-title">Página no encontrada</h1>
         <div class="error-msg">
             Lo sentimos, la ruta a la que intentas acceder no existe o fue movida. Verifica la URL o regresa al inicio.
         </div>
@@ -85,7 +85,7 @@
             <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
             Volver al Panel
         </a>
-    </div>
+    </main>
 
 </body>
 </html>
