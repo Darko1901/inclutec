@@ -99,6 +99,27 @@ Otras pruebas con el mock:
 | `npm run format`   | Da formato con Prettier.                                          |
 | `npm run tipos`    | Regenera `src/api/esquema.d.ts` desde `../docs/api/openapi.yaml`. |
 
+## Dependencias y auditoría
+
+`npm audit` en `mobile/` reporta **60 hallazgos (47 altos y 13 moderados, ninguno crítico)**. Ninguno es del código de la app: todos salen de cuatro paquetes que llegan de forma indirecta, y el resto del conteo son paquetes que solo los arrastran.
+
+| Paquete con el aviso | Aviso                                                        | Severidad | Instalado     | Versión corregida                                      | Quién lo trae                                                |
+| -------------------- | ------------------------------------------------------------ | --------- | ------------- | ------------------------------------------------------ | ------------------------------------------------------------ |
+| `braces`             | GHSA-vfj7-8cjw-p6xm (pila agotada con patrones muy anidados) | Alta      | 3.0.3         | ninguna publicada (3.0.3 es la última)                 | `micromatch` → Jest, Metro, `jest-haste-map`                 |
+| `node-forge`         | GHSA-86w9-cpqp-85rv (verificación de firmas RSA PKCS#1)      | Alta      | 1.4.0         | ninguna publicada (1.4.0 es la última)                 | `@expo/code-signing-certificates` → `@expo/cli`              |
+| `sprintf-js`         | GHSA-hp3w-g68c-fv3c (precisión sin límite)                   | Moderada  | 1.0.3         | ninguna publicada (1.1.3 es la última y también falla) | `argparse` → `js-yaml` 3 → `babel-plugin-istanbul` (Jest)    |
+| `uuid`               | GHSA-w5hq-g745-h8pq (límites del búfer en v3, v5 y v6)       | Moderada  | 3.4.0 y 7.0.3 | 11.1.1, 12.0.1 o 13.0.1 (otra versión mayor)           | `@expo/ngrok` (3.x) y `xcode` → `@expo/config-plugins` (7.x) |
+
+**Por qué no afectan la app instalada.** Son herramientas de desarrollo (servidor de Metro, CLI de Expo, Jest, plugins de configuración) que corren en la computadora de quien programa; no se empaquetan en la app. Se comprobó con el mapa de fuentes de `npx expo export --platform ios`: ninguno de estos paquetes está en el bundle (solo entra un `require.js` mínimo de `@expo/cli`, sin `node-forge`).
+
+**Overrides: no hay ninguno, a propósito.** Un `overrides` solo sirve si existe una versión corregida dentro de la misma versión mayor que pide el dependiente. Para `braces`, `node-forge` y `sprintf-js` no existe ninguna versión corregida; para `uuid` la corrección está en la mayor 11 o superior, y sus dependientes piden la 3 y la 7. Forzar otra mayor puede romper `@expo/ngrok` y `xcode` sin tener cómo probarlo.
+
+**`npm audit fix` (sin `--force`)** solo reordena el `package-lock.json` (sube `@expo/cli` al primer nivel) y no elimina ningún hallazgo, así que no se aplica. Los hallazgos se corregirán cuando los paquetes de arriba publiquen una versión corregida y Expo o Jest la adopten; con el SDK 58 siguen los mismos cuatro avisos (se comprobó en un proyecto de prueba aparte), así que subir de SDK no es la solución hoy. Conviene correr `npm audit` en cada subida de SDK.
+
+**`@expo/ngrok`** se conserva porque este README documenta `npx expo start --tunnel`; es lo que trae `uuid` 3.4.0. Si alguien deja de usar el túnel, se puede quitar de `devDependencies`.
+
+**Regla: nunca uses `npm audit fix --force`.** Propone bajar `expo` a 44 y `react-native` a 0.72 (o saltar de mayor en Jest) y destruye el proyecto. Si ya lo corriste, restaura con `git checkout package.json package-lock.json && npm ci`. Después de tocar dependencias, `npx expo install --check` debe decir «Dependencies are up to date».
+
 ## Tipos del API
 
 `src/api/esquema.d.ts` se **genera** con `openapi-typescript` a partir de `docs/api/openapi.yaml`; no se edita a mano. Cuando cambie el contrato, corre `npm run tipos` y revisa los errores de TypeScript que aparezcan. `src/api/tipos.ts` solo les pone nombre (`Usuario`, `Sesion`, …).
