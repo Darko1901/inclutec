@@ -58,8 +58,38 @@ describe('navegación por rol', () => {
   it('un candidato recién registrado aterriza en Perfil (CAN-03)', async () => {
     await abrir(<Entrar correo="jorge.ramirez@correo.mx" pantallaInicial="Perfil" />);
 
-    expect(await screen.findByText('CAN-03 · Mi perfil')).toBeOnTheScreen();
+    expect(await screen.findByRole('header', { name: 'Mi perfil' })).toBeOnTheScreen();
     expect(screen.queryByRole('header', { name: 'Vacantes' })).not.toBeOnTheScreen();
+  });
+
+  it('desde Perfil se abre Mi CV', async () => {
+    await abrir(<Entrar correo="mariana.lopez@correo.mx" pantallaInicial="Perfil" />);
+    await screen.findByRole('header', { name: 'Mi perfil' });
+
+    await fireEvent.press(screen.getByRole('button', { name: 'Mi CV' }));
+
+    expect(await screen.findByRole('tab', { name: 'Experiencia' })).toBeSelected();
+  });
+
+  it('desde Perfil se abre el aviso de privacidad y se regresa', async () => {
+    await abrir(<Entrar correo="mariana.lopez@correo.mx" pantallaInicial="Perfil" />);
+    await screen.findByRole('header', { name: 'Mi perfil' });
+
+    await fireEvent.press(screen.getByRole('button', { name: 'Aviso de privacidad' }));
+    expect(
+      await screen.findByRole('header', { name: 'Aviso de privacidad integral de IncluTec' }),
+    ).toBeOnTheScreen();
+
+    await fireEvent.press(screen.getByRole('button', { name: 'Volver' }));
+    expect(await screen.findByRole('header', { name: 'Mi perfil' })).toBeOnTheScreen();
+  });
+
+  it('Agregar experiencia en Perfil abre Mi CV en esa pestaña', async () => {
+    await abrir(<Entrar correo="jorge.ramirez@correo.mx" pantallaInicial="Perfil" />);
+    await screen.findByRole('header', { name: 'Mi perfil' });
+
+    await fireEvent.press(await screen.findByRole('button', { name: 'Agregar experiencia' }));
+    expect(await screen.findByRole('tab', { name: 'Experiencia' })).toBeSelected();
   });
 
   it('el reclutador entra a Mis vacantes', async () => {
@@ -97,9 +127,9 @@ describe('navegación por rol', () => {
 
   it('cerrar sesión desde Perfil regresa a MOV-01', async () => {
     await abrir(<Entrar correo="jorge.ramirez@correo.mx" pantallaInicial="Perfil" />);
-    await screen.findByText('CAN-03 · Mi perfil');
+    await screen.findByRole('header', { name: 'Mi perfil' });
 
-    await fireEvent.press(screen.getByRole('button', { name: 'Cerrar sesión' }));
+    await fireEvent.press(await screen.findByRole('button', { name: 'Cerrar sesión' }));
     // El modal de confirmación repite el texto del botón; el de confirmar es el último.
     const botones = await screen.findAllByRole('button', { name: 'Cerrar sesión' });
     await fireEvent.press(botones[botones.length - 1]);
