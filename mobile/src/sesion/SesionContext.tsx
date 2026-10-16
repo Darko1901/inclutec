@@ -38,7 +38,8 @@ interface ValorSesion {
   iniciarSesion: (sesion: Sesion, opciones?: OpcionesInicio) => Promise<boolean>;
   /** Pestaña inicial pedida al iniciar sesión; null si debe abrir la predeterminada del rol. */
   pantallaInicial: PantallaInicial | null;
-  cerrarSesion: () => Promise<void>;
+  /** Cierra la sesión; con `aviso`, MOV-01 lo muestra al volver (por ejemplo, tras eliminar la cuenta). */
+  cerrarSesion: (aviso?: string) => Promise<void>;
 }
 
 const SesionContext = createContext<ValorSesion | null>(null);
@@ -125,14 +126,17 @@ export function SesionProvider({ children }: { children: ReactNode }) {
     }
   }, [terminarSesionLocal]);
 
-  const cerrarSesion = useCallback(async () => {
-    try {
-      await auth.logout({ expo_push_token: obtenerTokenPush() ?? undefined });
-    } catch {
-      // El JWT no se revoca en el servidor; basta con borrarlo aquí.
-    }
-    await terminarSesionLocal(null);
-  }, [terminarSesionLocal]);
+  const cerrarSesion = useCallback(
+    async (mensaje?: string) => {
+      try {
+        await auth.logout({ expo_push_token: obtenerTokenPush() ?? undefined });
+      } catch {
+        // El JWT no se revoca en el servidor; basta con borrarlo aquí.
+      }
+      await terminarSesionLocal(mensaje ?? null);
+    },
+    [terminarSesionLocal],
+  );
 
   const idUsuario = usuario?.id;
   useEffect(() => {
