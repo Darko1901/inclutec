@@ -1,5 +1,6 @@
 import type { AuthServicio } from '../auth';
 import type {
+  CambioContrasena,
   Login,
   Logout,
   RegistroCandidato,
@@ -173,6 +174,24 @@ export class AuthMock implements AuthServicio {
       estado.codigos.delete(correo);
       estado.intentosLogin.delete(correo);
       return { detail: 'Tu contraseña se actualizó. Ya puedes iniciar sesión.' };
+    });
+  }
+
+  cambiarContrasena(datos: CambioContrasena) {
+    return simular(() => {
+      const cuenta = exigirSesion();
+      const campos: Record<string, string> = {};
+      if (typeof datos.contrasena_actual !== 'string' || datos.contrasena_actual.length === 0) {
+        campos.contrasena_actual = 'Escribe tu contraseña actual.';
+      }
+      if (!esContrasenaValida(datos.contrasena_nueva ?? '')) {
+        campos.contrasena_nueva = MENSAJE_CONTRASENA;
+      }
+      lanzarSiHayCampos(campos);
+      if (cuenta.contrasena !== datos.contrasena_actual) {
+        throw fallo(400, 'contrasena_incorrecta', 'La contraseña actual no coincide.');
+      }
+      cuenta.contrasena = datos.contrasena_nueva;
     });
   }
 

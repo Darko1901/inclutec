@@ -390,7 +390,7 @@ describe('CAN-02 · Detalle de vacante', () => {
     it('422 perfil_incompleto: muestra el mensaje y explica qué falta', async () => {
       obtenerEstado().candidatos.find((c) => c.usuario_id === 3)!.compartir_ajustes = 'siempre';
       await postularA(2);
-      obtenerEstado().candidatos.find((c) => c.usuario_id === 3)!.habilidad_ids = [];
+      obtenerEstado().candidatos.find((c) => c.usuario_id === 3)!.habilidades = [];
       await fireEvent.press(screen.getByRole('button', { name: 'Enviar postulación' }));
       await fireEvent.press(await screen.findByRole('button', { name: 'Sí, enviar' }));
 
