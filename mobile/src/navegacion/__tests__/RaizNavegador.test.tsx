@@ -121,8 +121,33 @@ describe('navegación por rol', () => {
     expect(
       await screen.findByRole('button', { name: 'Notificaciones', hidden: true }),
     ).toBeOnTheScreen();
-    // Y la pantalla relacionada recibe el id de la postulación.
-    expect(await screen.findByText('Postulación n.º 1')).toBeOnTheScreen();
+    // Y se abre CAN-06 con la postulación de la notificación.
+    expect(
+      await screen.findByRole('header', { name: 'Técnico de soporte de TI' }),
+    ).toBeOnTheScreen();
+    expect(await screen.findByText('Historial')).toBeOnTheScreen();
+  });
+
+  it('Postulaciones abre el detalle y desde ahí la ficha de la empresa (CAN-05 → CAN-06 → CAN-07)', async () => {
+    await abrir(<Entrar correo="mariana.lopez@correo.mx" />);
+    await fireEvent.press(await screen.findByRole('button', { name: /^Postulaciones/ }));
+
+    await fireEvent.press(await screen.findByTestId('postulacion-1'));
+    await screen.findByRole('header', { name: 'Técnico de soporte de TI' });
+    await fireEvent.press(await screen.findByTestId('abrir-empresa'));
+
+    expect(await screen.findByRole('header', { name: 'TecnoQro' })).toBeOnTheScreen();
+    expect(await screen.findByRole('header', { name: 'Prácticas de inclusión' })).toBeOnTheScreen();
+  });
+
+  it('Empresas muestra el directorio sin Estudio Trazo y abre la ficha', async () => {
+    await abrir(<Entrar correo="mariana.lopez@correo.mx" />);
+    await fireEvent.press(await screen.findByRole('button', { name: /^Empresas/ }));
+
+    await fireEvent.press(await screen.findByTestId('empresa-2'));
+
+    expect(await screen.findByRole('header', { name: 'LogiBajío' })).toBeOnTheScreen();
+    expect(screen.queryByText('Estudio Trazo', { hidden: true })).toBeNull();
   });
 
   it('cerrar sesión desde Perfil regresa a MOV-01', async () => {
