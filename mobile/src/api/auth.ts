@@ -1,5 +1,6 @@
 import { cliente } from './cliente';
 import type {
+  CambioContrasena,
   Login,
   Logout,
   Mensaje,
@@ -26,6 +27,8 @@ export interface AuthServicio {
   verificarCodigo(datos: VerificacionCodigo): Promise<Mensaje>;
   /** POST /auth/password/restablecer */
   restablecerContrasena(datos: Restablecimiento): Promise<Mensaje>;
+  /** PUT /auth/password */
+  cambiarContrasena(datos: CambioContrasena): Promise<void>;
   /** POST /auth/registro/candidato */
   registrarCandidato(datos: RegistroCandidato): Promise<Sesion>;
   /** POST /auth/registro/reclutador */
@@ -55,6 +58,10 @@ export class AuthHttp implements AuthServicio {
 
   async restablecerContrasena(datos: Restablecimiento) {
     return (await cliente.post<Mensaje>('/auth/password/restablecer', datos)).data;
+  }
+
+  async cambiarContrasena(datos: CambioContrasena) {
+    await cliente.put('/auth/password', datos);
   }
 
   async registrarCandidato(datos: RegistroCandidato) {

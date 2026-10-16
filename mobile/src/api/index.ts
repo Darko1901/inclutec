@@ -16,7 +16,7 @@ export { TIPOS_CATALOGO } from './catalogos';
 export type { TipoCatalogo, CatalogosServicio } from './catalogos';
 export type { AuthServicio } from './auth';
 export type { NotificacionesServicio } from './notificaciones';
-export type { CandidatosServicio } from './candidatos';
+export type { ArchivoLocal, CandidatosServicio } from './candidatos';
 export type { PostulacionesServicio } from './postulaciones';
 export type { ReportesServicio } from './reportes';
 export type { VacantesServicio } from './vacantes';
