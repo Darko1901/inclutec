@@ -1,4 +1,5 @@
 @extends('layouts.admin_layout')
+@section('titulo', 'Reportes')
 @section('content')
 <div x-data="{ 
     reports: [

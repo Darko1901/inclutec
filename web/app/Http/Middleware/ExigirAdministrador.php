@@ -32,6 +32,9 @@ class ExigirAdministrador
             return redirect()->route('login')->with('error', 'Esta cuenta no tiene acceso al panel. Usa la aplicación móvil.');
         }
 
+        // Las vistas (menú de usuario) leen el nombre del administrador de aquí.
+        view()->share('administrador', $usuario);
+
         return $next($request);
     }
 }

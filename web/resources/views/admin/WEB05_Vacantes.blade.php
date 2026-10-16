@@ -1,4 +1,5 @@
 @extends('layouts.admin_layout')
+@section('titulo', 'Vacantes')
 @section('content')
 <div x-data="{ 
     showReviewModal: false,
