@@ -1,7 +1,9 @@
 import type {
   CompartirAjustes,
   EstadoEmpresa,
+  EstadoEntrevista,
   EstadoFormacion,
+  EstadoHorario,
   EstadoPostulacion,
   EstadoReporte,
   EstadoVacante,
@@ -44,6 +46,11 @@ export interface EmpresaMock {
   nombre_comercial: string;
   logo_url: string | null;
   municipio_id: number;
+  sector_id: number;
+  tamano_empresa_id: number;
+  descripcion: string | null;
+  sitio_web: string | null;
+  practicas_inclusion: string | null;
   estado: EstadoEmpresa;
 }
 
@@ -112,6 +119,27 @@ export interface PostulacionMock {
   historial: EventoHistorialMock[];
 }
 
+export interface HorarioMock {
+  id: number;
+  vacante_id: number;
+  reclutador_id: number;
+  inicio: string;
+  duracion_min: 30 | 45 | 60;
+  liga: string;
+  estado: EstadoHorario;
+  /** Solo del mock: otro candidato lo toma justo cuando se intenta reservar (prueba el 409). */
+  lo_toma_otro?: boolean;
+}
+
+export interface EntrevistaMock {
+  id: number;
+  horario_id: number;
+  postulacion_id: number;
+  estado: EstadoEntrevista;
+  motivo_cancelacion: string | null;
+  creado_en: string;
+}
+
 export interface ReporteMock {
   id: number;
   reportante_id: number;
@@ -162,7 +190,8 @@ export const COMPATIBILIDAD_GUARDADA: CompatibilidadGuardada[] = (
   f,
 }));
 
-const DIA_MS = 24 * 3600 * 1000;
+const HORA_MS = 3600 * 1000;
+const DIA_MS = 24 * HORA_MS;
 
 /** ISO 8601 sin milisegundos, como responde el API. */
 export function aIso(fecha: Date): string {
@@ -174,6 +203,8 @@ export interface NegocioMock {
   vacantes: VacanteMock[];
   candidatos: CandidatoMock[];
   postulaciones: PostulacionMock[];
+  horarios: HorarioMock[];
+  entrevistas: EntrevistaMock[];
   reportes: ReporteMock[];
 }
 
@@ -181,21 +212,57 @@ export function crearNegocioInicial(ahora = Date.now()): NegocioMock {
   const hace = (dias: number) => aIso(new Date(ahora - dias * DIA_MS));
   const ahoraIso = aIso(new Date(ahora));
 
+  // Datos de S002 (sector, tamaño, descripción y prácticas de inclusión). S002 no guarda el sitio
+  // web: el de TecnoQro es el del ejemplo del contrato; el de LogiBajío es solo del mock.
   const empresas: EmpresaMock[] = [
     {
       id: 1,
       nombre_comercial: 'TecnoQro',
       logo_url: '/archivos/logos/empresa-1.png',
       municipio_id: 3,
+      sector_id: 4,
+      tamano_empresa_id: 3,
+      descripcion: 'Empresa de desarrollo de software y soporte técnico.',
+      sitio_web: 'https://tecnoqro.mx',
+      practicas_inclusion:
+        'Programa de inclusión laboral desde 2022; personal capacitado en LSM básica.',
       estado: 'validada',
     },
-    { id: 2, nombre_comercial: 'LogiBajío', logo_url: null, municipio_id: 2, estado: 'validada' },
-    { id: 3, nombre_comercial: 'ConCentro', logo_url: null, municipio_id: 1, estado: 'validada' },
+    {
+      id: 2,
+      nombre_comercial: 'LogiBajío',
+      logo_url: null,
+      municipio_id: 2,
+      sector_id: 1,
+      tamano_empresa_id: 4,
+      descripcion: 'Centro de distribución y logística para la industria automotriz.',
+      sitio_web: 'https://logibajio.mx',
+      practicas_inclusion:
+        'Almacén con rampas y alertas visuales; convenio con una asociación de personas sordas.',
+      estado: 'validada',
+    },
+    {
+      id: 3,
+      nombre_comercial: 'ConCentro',
+      logo_url: null,
+      municipio_id: 1,
+      sector_id: 3,
+      tamano_empresa_id: 2,
+      descripcion: 'Despacho contable con clientes pymes de la región.',
+      sitio_web: null,
+      practicas_inclusion: 'Trabajo remoto y comunicación por escrito para todo el equipo.',
+      estado: 'validada',
+    },
     {
       id: 4,
       nombre_comercial: 'Estudio Trazo',
       logo_url: null,
       municipio_id: 3,
+      sector_id: 3,
+      tamano_empresa_id: 1,
+      descripcion: 'Estudio de diseño gráfico e ilustración.',
+      sitio_web: null,
+      practicas_inclusion: null,
       estado: 'pendiente',
     },
   ];
@@ -570,6 +637,166 @@ export function crearNegocioInicial(ahora = Date.now()): NegocioMock {
     },
   ];
 
+  // Solo del mock (ids desde 100), para probar CAN-05 y CAN-06. Se evita la vacante 2 (la usan las
+  // pruebas para postularse) y la 5; Mariana tiene las tres postulaciones finalizadas y Jorge, la
+  // entrevista que empieza en menos de 24 h.
+  const despues = (horas: number) => aIso(new Date(ahora + horas * HORA_MS));
+  const antes = (horas: number) => despues(-horas);
+  const evento = (
+    anterior: PostulacionMock['estado'] | null,
+    nuevo: PostulacionMock['estado'],
+    horas: number,
+    mensaje: string | null = null,
+  ): EventoHistorialMock => ({
+    estado_anterior: anterior,
+    estado_nuevo: nuevo,
+    mensaje,
+    creado_en: antes(horas),
+  });
+  const postulacionExtra = (
+    id: number,
+    candidatoId: number,
+    vacanteId: number,
+    historial: EventoHistorialMock[],
+    mensaje: string | null,
+  ): PostulacionMock => ({
+    id,
+    candidato_id: candidatoId,
+    vacante_id: vacanteId,
+    estado: historial[historial.length - 1].estado_nuevo,
+    mensaje,
+    comparte_ajustes: false,
+    creado_en: historial[0].creado_en,
+    actualizado_en: historial[historial.length - 1].creado_en,
+    historial,
+  });
+
+  postulaciones.push(
+    // Jorge · vacante 6 · entrevista dentro de 5 horas: no se puede cancelar.
+    postulacionExtra(
+      100,
+      4,
+      6,
+      [
+        evento(null, 'postulada', 60),
+        evento('postulada', 'en_revision', 48),
+        evento('en_revision', 'entrevista', 30, 'Nos gustaría conocerte; la entrevista es hoy.'),
+      ],
+      'Me interesa crecer en desarrollo web.',
+    ),
+    // Mariana · vacante 6 · aceptada, con su entrevista ya realizada.
+    postulacionExtra(
+      101,
+      3,
+      6,
+      [
+        evento(null, 'postulada', 70),
+        evento('postulada', 'en_revision', 60),
+        evento('en_revision', 'entrevista', 50, 'Agenda un horario para conocernos.'),
+        evento(
+          'entrevista',
+          'aceptada',
+          20,
+          '¡Felicidades! Nos dará gusto tenerte en el equipo; te escribiremos con los siguientes pasos.',
+        ),
+      ],
+      null,
+    ),
+    // Mariana · vacante 3 · no seleccionada, con el mensaje del reclutador.
+    postulacionExtra(
+      102,
+      3,
+      3,
+      [
+        evento(null, 'postulada', 110),
+        evento('postulada', 'en_revision', 100),
+        evento(
+          'en_revision',
+          'no_seleccionada',
+          40,
+          'Por ahora avanzamos con otros perfiles. Gracias por tu interés.',
+        ),
+      ],
+      'Tengo experiencia en reportes.',
+    ),
+    // Mariana · vacante 4 · retirada por ella.
+    postulacionExtra(
+      103,
+      3,
+      4,
+      [evento(null, 'postulada', 20), evento('postulada', 'retirada', 7)],
+      null,
+    ),
+  );
+
+  const horarios: HorarioMock[] = [
+    // S002: el 1 está agendado con la entrevista 1 y el 2 sigue libre.
+    {
+      id: 1,
+      vacante_id: 1,
+      reclutador_id: 2,
+      inicio: despues(72),
+      duracion_min: 45,
+      liga: 'https://meet.google.com/abc-defg-hij',
+      estado: 'agendado',
+    },
+    {
+      id: 2,
+      vacante_id: 1,
+      reclutador_id: 2,
+      inicio: despues(73),
+      duracion_min: 45,
+      liga: 'https://meet.google.com/abc-defg-hij',
+      estado: 'libre',
+    },
+    // Más horarios libres de la vacante 1 para elegir (el 102 lo toma otro candidato: 409).
+    horarioLibre(100, despues(3), 30),
+    horarioLibre(101, despues(27), 45),
+    { ...horarioLibre(102, despues(30), 60), lo_toma_otro: true },
+    horarioLibre(103, despues(120), 30),
+    horarioLibre(104, despues(121), 45),
+    // De las postulaciones 100 (en 5 horas) y 101 (ya realizada), ambas de la vacante 6.
+    {
+      ...horarioLibre(105, despues(5), 45),
+      vacante_id: 6,
+      liga: 'https://teams.microsoft.com/l/meetup-join/prueba-tecnoqro',
+      estado: 'agendado',
+    },
+    {
+      ...horarioLibre(106, antes(30), 60),
+      vacante_id: 6,
+      liga: 'https://meet.google.com/pru-ebac-onc',
+      estado: 'agendado',
+    },
+  ];
+
+  const entrevistas: EntrevistaMock[] = [
+    {
+      id: 1,
+      horario_id: 1,
+      postulacion_id: 1,
+      estado: 'agendada',
+      motivo_cancelacion: null,
+      creado_en: '2026-10-02T19:05:00Z',
+    },
+    {
+      id: 100,
+      horario_id: 105,
+      postulacion_id: 100,
+      estado: 'agendada',
+      motivo_cancelacion: null,
+      creado_en: antes(26),
+    },
+    {
+      id: 101,
+      horario_id: 106,
+      postulacion_id: 101,
+      estado: 'realizada',
+      motivo_cancelacion: null,
+      creado_en: antes(45),
+    },
+  ];
+
   const reportes: ReporteMock[] = [
     {
       id: 1,
@@ -584,7 +811,24 @@ export function crearNegocioInicial(ahora = Date.now()): NegocioMock {
     },
   ];
 
-  return { empresas, vacantes, candidatos, postulaciones, reportes };
+  return { empresas, vacantes, candidatos, postulaciones, horarios, entrevistas, reportes };
+}
+
+/** Horario libre de la vacante 1 publicado por Laura (TecnoQro). */
+function horarioLibre(
+  id: number,
+  inicio: string,
+  duracion: HorarioMock['duracion_min'],
+): HorarioMock {
+  return {
+    id,
+    vacante_id: 1,
+    reclutador_id: 2,
+    inicio,
+    duracion_min: duracion,
+    liga: 'https://meet.google.com/abc-defg-hij',
+    estado: 'libre',
+  };
 }
 
 /** Perfil de un candidato recién creado: solo lo que pidió el registro. */

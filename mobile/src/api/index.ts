@@ -4,6 +4,9 @@ export {
   auth,
   candidatos,
   catalogos,
+  empresas,
+  entrevistas,
+  horarios,
   notificaciones,
   postulaciones,
   reportes,
@@ -18,6 +21,9 @@ export type { TipoCatalogo, CatalogosServicio } from './catalogos';
 export type { AuthServicio } from './auth';
 export type { NotificacionesServicio } from './notificaciones';
 export type { ArchivoLocal, CandidatosServicio } from './candidatos';
+export type { EmpresasServicio } from './empresas';
+export type { EntrevistasServicio } from './entrevistas';
+export type { HorariosServicio } from './horarios';
 export type { PostulacionesServicio } from './postulaciones';
 export type { ReportesServicio } from './reportes';
 export type { VacantesServicio } from './vacantes';

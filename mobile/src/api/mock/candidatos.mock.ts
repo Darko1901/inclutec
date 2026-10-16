@@ -27,6 +27,7 @@ import {
   type ExperienciaMock,
   type FormacionMock,
 } from './negocio.datos';
+import { retirarPostulacion } from './entrevistas.logica';
 import { fallo, simular } from './simulador';
 import {
   ajusteRefDe,
@@ -218,24 +219,11 @@ export class CandidatosMock implements CandidatosServicio {
         throw fallo(400, 'contrasena_incorrecta', 'La contraseña no coincide.');
       }
       const estado = obtenerEstado();
-      const ahora = aIso(new Date());
-      // Las postulaciones activas pasan a «retirada» y queda el rastro en su historial.
+      // Las postulaciones activas pasan a «retirada» (queda el rastro en su historial y, si tenían
+      // una entrevista agendada, se cancela y el horario vuelve a quedar libre).
       estado.postulaciones
-        .filter(
-          (p) =>
-            p.candidato_id === candidato.usuario_id &&
-            ['postulada', 'en_revision', 'entrevista'].includes(p.estado),
-        )
-        .forEach((p) => {
-          p.historial.push({
-            estado_anterior: p.estado,
-            estado_nuevo: 'retirada',
-            mensaje: null,
-            creado_en: ahora,
-          });
-          p.estado = 'retirada';
-          p.actualizado_en = ahora;
-        });
+        .filter((p) => p.candidato_id === candidato.usuario_id)
+        .forEach(retirarPostulacion);
       // Baja lógica: se borran necesidades, foto, CV y dispositivos.
       candidato.consentimiento_sensibles_en = null;
       candidato.necesidad_ids = [];

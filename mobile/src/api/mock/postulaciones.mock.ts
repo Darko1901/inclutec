@@ -1,11 +1,43 @@
 import type { PostulacionesServicio } from '../postulaciones';
-import type { PostulacionDetalle, PostulacionEntrada } from '../tipos';
+import type {
+  ConsultaPostulaciones,
+  Entrevista,
+  PaginaPostulaciones,
+  PostulacionDetalle,
+  PostulacionEntrada,
+} from '../tipos';
 import { exigirSesion, obtenerEstado } from './datos';
+import { retirarPostulacion } from './entrevistas.logica';
 import { aIso } from './negocio.datos';
+import { lanzarSiHayCampos, leerPagina, paginar } from './paginacion';
 import { fallo, simular } from './simulador';
-import { analizarPerfil, candidatoDe, empresaDe, esVisibleParaCandidato } from './vistas';
+import {
+  analizarPerfil,
+  candidatoDe,
+  detalleDePostulacion,
+  ESTADOS_ACTIVOS,
+  empresaDe,
+  entrevistaVigenteDe,
+  esVisibleParaCandidato,
+  horarioDe,
+  resumenDePostulacion,
+  vistaDeEntrevista,
+} from './vistas';
 
 const LONGITUD_MAX_MENSAJE = 500;
+const ESTADOS = [...ESTADOS_ACTIVOS, 'aceptada', 'no_seleccionada', 'retirada'];
+
+/** La postulación debe ser del candidato de la sesión; si no, responde 404 como el API. */
+function postulacionPropia(id: number) {
+  const usuario = exigirSesion(['candidato']);
+  const postulacion = obtenerEstado().postulaciones.find(
+    (p) => p.id === id && p.candidato_id === usuario.usuario.id,
+  );
+  if (!postulacion) {
+    throw fallo(404, 'no_encontrado', 'No encontramos esa postulación.');
+  }
+  return postulacion;
+}
 
 export class PostulacionesMock implements PostulacionesServicio {
   crear(datos: PostulacionEntrada) {
@@ -113,6 +145,107 @@ export class PostulacionesMock implements PostulacionesServicio {
         entrevista: null,
         puede_retirar: true,
       };
+    });
+  }
+
+  mias(consulta: ConsultaPostulaciones = {}) {
+    return simular((): PaginaPostulaciones => {
+      const usuario = exigirSesion(['candidato']);
+      const { page, size } = leerPagina(consulta);
+      const campos: Record<string, string> = {};
+      if (consulta.estado !== undefined && !ESTADOS.includes(consulta.estado)) {
+        campos.estado = 'Elige un estado de la lista.';
+      }
+      if (consulta.activas !== undefined && typeof consulta.activas !== 'boolean') {
+        campos.activas = 'Debe ser verdadero o falso.';
+      }
+      lanzarSiHayCampos(campos);
+
+      const propias = obtenerEstado()
+        .postulaciones.filter((p) => p.candidato_id === usuario.usuario.id)
+        .filter((p) => consulta.estado === undefined || p.estado === consulta.estado)
+        .filter(
+          (p) =>
+            consulta.activas === undefined ||
+            ESTADOS_ACTIVOS.includes(p.estado) === consulta.activas,
+        )
+        // Más recientes primero.
+        .sort((a, b) => b.creado_en.localeCompare(a.creado_en) || b.id - a.id);
+      return paginar(propias.map(resumenDePostulacion), page, size);
+    });
+  }
+
+  detalle(id: number) {
+    return simular(() => detalleDePostulacion(postulacionPropia(id)));
+  }
+
+  retirar(id: number) {
+    return simular(() => {
+      const postulacion = postulacionPropia(id);
+      if (!ESTADOS_ACTIVOS.includes(postulacion.estado)) {
+        throw fallo(409, 'transicion_invalida', 'Esta postulación ya está finalizada.');
+      }
+      retirarPostulacion(postulacion);
+      return detalleDePostulacion(postulacion);
+    });
+  }
+
+  agendarEntrevista(id: number, horarioId: number) {
+    return simular((): Entrevista => {
+      const postulacion = postulacionPropia(id);
+      if (!Number.isInteger(horarioId)) {
+        throw fallo(422, 'validacion', 'Revisa los datos marcados.', {
+          campos: { horario_id: 'Elige un horario.' },
+        });
+      }
+      const estado = obtenerEstado();
+      if (postulacion.estado !== 'entrevista' || entrevistaVigenteDe(postulacion.id)) {
+        throw fallo(
+          409,
+          'estado_invalido',
+          'Solo puedes agendar una entrevista cuando la empresa te la pide y aún no tienes una.',
+        );
+      }
+      const horario = estado.horarios.find(
+        (h) => h.id === horarioId && h.vacante_id === postulacion.vacante_id,
+      );
+      if (!horario) throw fallo(404, 'no_encontrado', 'Ese horario ya no existe.');
+
+      const tomado = fallo(409, 'horario_ocupado', 'Ese horario acaba de ser tomado, elige otro.');
+      if (horario.lo_toma_otro) {
+        horario.lo_toma_otro = false;
+        horario.estado = 'agendado';
+      }
+      if (horario.estado !== 'libre' || new Date(horario.inicio).getTime() <= Date.now()) {
+        throw tomado;
+      }
+
+      const ahora = aIso(new Date());
+      horario.estado = 'agendado';
+      const entrevista = {
+        id: estado.siguienteIdEntrevista++,
+        horario_id: horario.id,
+        postulacion_id: postulacion.id,
+        estado: 'agendada' as const,
+        motivo_cancelacion: null,
+        creado_en: ahora,
+      };
+      estado.entrevistas.push(entrevista);
+
+      // Avisa al reclutador que publicó el horario (entrevista_agendada → REC-06).
+      const { nombre, apellidos } = exigirSesion(['candidato']).usuario;
+      const vacante = estado.vacantes.find((v) => v.id === postulacion.vacante_id)!;
+      estado.notificaciones.push({
+        usuario_id: horarioDe(horario.id).reclutador_id,
+        id: estado.siguienteIdNotificacion++,
+        tipo: 'entrevista_agendada',
+        titulo: 'Nueva entrevista',
+        mensaje: `${nombre} ${apellidos} agendó una entrevista para ${vacante.titulo}.`,
+        referencia: { tipo: 'entrevista', id: entrevista.id },
+        leida: false,
+        creado_en: ahora,
+      });
+      return vistaDeEntrevista(entrevista);
     });
   }
 }
