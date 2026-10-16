@@ -106,7 +106,7 @@ export function calcularCompatibilidad(
 /** Sin consentimiento no hay necesidades que contar (al revocarlo se borran). */
 export function entradaDeCandidato(candidato: CandidatoMock): EntradaCandidato {
   return {
-    habilidad_ids: candidato.habilidad_ids,
+    habilidad_ids: candidato.habilidades.map((habilidad) => habilidad.habilidad_id),
     necesidad_ids: candidato.consentimiento_sensibles_en ? candidato.necesidad_ids : [],
     modalidad_ids: candidato.modalidad_ids,
     formaciones: candidato.formaciones,

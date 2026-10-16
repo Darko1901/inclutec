@@ -17,7 +17,7 @@ import { fallo } from './simulador';
 type Catalogo = 'categorias' | 'modalidades' | 'jornadas' | 'tipos-contrato';
 type CategoriaAjuste = AjusteRef['categoria'];
 
-function itemDe(tipo: string, id: number) {
+export function itemDe(tipo: string, id: number) {
   const item = CATALOGOS[tipo]?.find((registro) => registro.id === id);
   if (!item) throw new Error(`El mock no tiene ${tipo} con id ${id}.`);
   return item;
@@ -212,14 +212,14 @@ export function analizarPerfil(usuario: UsuarioMock, candidato: CandidatoMock): 
     foto: Boolean(candidato.foto_url),
     preferencias: candidato.modalidad_ids.length > 0 && candidato.jornada_id !== null,
     formacion: candidato.formaciones.length > 0,
-    experiencia: candidato.experiencias > 0,
-    habilidades: candidato.habilidad_ids.length > 0,
+    experiencia: candidato.experiencias.length > 0,
+    habilidades: candidato.habilidades.length > 0,
   };
   const pendientes = (Object.keys(PUNTOS) as SeccionPendiente[]).filter((s) => !cumple[s]);
   const faltantes: Record<string, string> = {};
   if (!nombre) faltantes.nombre = 'Escribe tu nombre.';
   if (!candidato.municipio_id) faltantes.municipio_id = 'Elige tu municipio.';
-  if (candidato.habilidad_ids.length === 0) {
+  if (candidato.habilidades.length === 0) {
     faltantes.habilidades = 'Agrega al menos una habilidad.';
   }
   if (candidato.formaciones.length === 0) {

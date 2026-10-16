@@ -1,16 +1,43 @@
 import type {
   CompartirAjustes,
   EstadoEmpresa,
+  EstadoFormacion,
   EstadoPostulacion,
   EstadoReporte,
   EstadoVacante,
+  NivelHabilidad,
   TipoAjusteVacante,
 } from '../tipos';
 
 // Datos de negocio del mock: los mismos registros e ids que db/semillas/S002__datos_prueba.sql.
 // Las fechas relativas ("now() - interval ...") se calculan al arrancar la app.
 
-export type EstadoFormacion = 'concluida' | 'en_curso' | 'trunca';
+export type { EstadoFormacion };
+
+export interface ExperienciaMock {
+  id: number;
+  puesto: string;
+  empresa: string;
+  fecha_inicio: string;
+  fecha_fin: string | null;
+  actual: boolean;
+  descripcion: string | null;
+}
+
+export interface FormacionMock {
+  id: number;
+  nivel_educativo_id: number;
+  institucion: string;
+  carrera: string | null;
+  estado: EstadoFormacion;
+  fecha_inicio: string | null;
+  fecha_fin: string | null;
+}
+
+export interface HabilidadMock {
+  habilidad_id: number;
+  nivel: NivelHabilidad;
+}
 
 export interface EmpresaMock {
   id: number;
@@ -59,10 +86,10 @@ export interface CandidatoMock {
   nota_ajustes: string | null;
   modalidad_ids: number[];
   categoria_ids: number[];
-  habilidad_ids: number[];
+  habilidades: HabilidadMock[];
   necesidad_ids: number[];
-  formaciones: { nivel_educativo_id: number; estado: EstadoFormacion }[];
-  experiencias: number;
+  formaciones: FormacionMock[];
+  experiencias: ExperienciaMock[];
   actualizado_en: string;
 }
 
@@ -423,10 +450,35 @@ export function crearNegocioInicial(ahora = Date.now()): NegocioMock {
       nota_ajustes: null,
       modalidad_ids: [2, 3],
       categoria_ids: [1],
-      habilidad_ids: [4, 5, 6, 11],
+      habilidades: [
+        { habilidad_id: 4, nivel: 'avanzado' },
+        { habilidad_id: 5, nivel: 'intermedio' },
+        { habilidad_id: 6, nivel: 'basico' },
+        { habilidad_id: 11, nivel: 'avanzado' },
+      ],
       necesidad_ids: [1, 3],
-      formaciones: [{ nivel_educativo_id: 4, estado: 'concluida' }],
-      experiencias: 1,
+      formaciones: [
+        {
+          id: 1,
+          nivel_educativo_id: 4,
+          institucion: 'Universidad Tecnológica de Querétaro',
+          carrera: 'TSU en Tecnologías de la Información',
+          estado: 'concluida',
+          fecha_inicio: '2020-09-01',
+          fecha_fin: '2022-08-31',
+        },
+      ],
+      experiencias: [
+        {
+          id: 1,
+          puesto: 'Auxiliar de soporte técnico',
+          empresa: 'Servicios Integrales del Bajío',
+          fecha_inicio: '2023-02-01',
+          fecha_fin: '2025-06-30',
+          actual: false,
+          descripcion: 'Atención de tickets y mantenimiento de equipos.',
+        },
+      ],
       actualizado_en: '2026-09-30T17:00:00Z',
     },
     {
@@ -441,10 +493,24 @@ export function crearNegocioInicial(ahora = Date.now()): NegocioMock {
       nota_ajustes: null,
       modalidad_ids: [1],
       categoria_ids: [1, 2],
-      habilidad_ids: [1, 3, 6],
+      habilidades: [
+        { habilidad_id: 1, nivel: 'intermedio' },
+        { habilidad_id: 3, nivel: 'intermedio' },
+        { habilidad_id: 6, nivel: 'avanzado' },
+      ],
       necesidad_ids: [],
-      formaciones: [{ nivel_educativo_id: 5, estado: 'en_curso' }],
-      experiencias: 0,
+      formaciones: [
+        {
+          id: 2,
+          nivel_educativo_id: 5,
+          institucion: 'Universidad Politécnica de Querétaro',
+          carrera: 'Ingeniería en Sistemas Computacionales',
+          estado: 'en_curso',
+          fecha_inicio: '2023-09-01',
+          fecha_fin: null,
+        },
+      ],
+      experiencias: [],
       actualizado_en: '2026-09-30T17:00:00Z',
     },
     // Solo en el mock: la candidata suspendida y la de las 45 notificaciones tienen el perfil
@@ -539,10 +605,10 @@ export function perfilVacio(
     nota_ajustes: null,
     modalidad_ids: [],
     categoria_ids: [],
-    habilidad_ids: [],
+    habilidades: [],
     necesidad_ids: [],
     formaciones: [],
-    experiencias: 0,
+    experiencias: [],
     actualizado_en: aIso(new Date()),
   };
 }

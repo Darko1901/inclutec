@@ -39,6 +39,8 @@ export interface EstadoMock extends NegocioMock {
   usuarios: UsuarioMock[];
   siguienteIdPostulacion: number;
   siguienteIdReporte: number;
+  siguienteIdExperiencia: number;
+  siguienteIdFormacion: number;
   siguienteIdNotificacion: number;
   rfcRegistrados: string[];
   siguienteIdUsuario: number;
@@ -302,6 +304,9 @@ function crearEstadoInicial(): EstadoMock {
     siguienteIdEmpresa: 5,
     siguienteIdPostulacion: 3,
     siguienteIdReporte: 2,
+    // Después de la experiencia 1 y las formaciones 1 y 2 de S002.
+    siguienteIdExperiencia: 2,
+    siguienteIdFormacion: 3,
     siguienteIdNotificacion: 200,
     ...crearNegocioInicial(),
     notificaciones,
