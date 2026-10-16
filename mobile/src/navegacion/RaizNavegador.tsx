@@ -77,6 +77,12 @@ export function RaizNavegador() {
               component={CAN06DetallePostulacion}
               options={{ ...opcionesEncabezado, title: 'Detalle de postulación' }}
             />
+            {/* CAN-03 enlaza al aviso desde «Necesidades de ajuste» y «Cuenta». */}
+            <Pila.Screen
+              name="AvisoPrivacidad"
+              component={AvisoPrivacidad}
+              options={{ ...opcionesEncabezado, title: 'Aviso de privacidad' }}
+            />
           </>
         ) : (
           <>
