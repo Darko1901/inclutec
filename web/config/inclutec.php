@@ -14,4 +14,11 @@ return [
 
     'mock' => filter_var(env('INCLUTEC_API_MOCK', true), FILTER_VALIDATE_BOOLEAN),
 
+    /*
+    | Archivo donde ApiMock guarda su estado para que los cambios sobrevivan entre peticiones.
+    | Está fuera de git (storage/app). `php artisan inclutec:mock-reiniciar` lo borra.
+    */
+
+    'mock_archivo' => storage_path('app/mock-api.json'),
+
 ];

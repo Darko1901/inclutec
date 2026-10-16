@@ -29,4 +29,10 @@ interface ApiAdmin
 
     /** POST /auth/logout con el token de la sesión del servidor (204 sin cuerpo). */
     public function logout(): void;
+
+    /**
+     * PUT /auth/password (204 sin cuerpo). Lanza 400 `contrasena_incorrecta` si la actual no coincide
+     * y 422 `validacion` (con `campos`) si la nueva no cumple la política.
+     */
+    public function cambiarContrasena(string $contrasenaActual, string $contrasenaNueva): void;
 }

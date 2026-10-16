@@ -30,6 +30,14 @@ class ApiHttp implements ApiAdmin
         $this->enviar('post', '/auth/logout');
     }
 
+    public function cambiarContrasena(string $contrasenaActual, string $contrasenaNueva): void
+    {
+        $this->enviar('put', '/auth/password', [
+            'contrasena_actual' => $contrasenaActual,
+            'contrasena_nueva' => $contrasenaNueva,
+        ]);
+    }
+
     private function peticion(): PendingRequest
     {
         $peticion = Http::baseUrl(rtrim((string) config('inclutec.api_url'), '/'))
