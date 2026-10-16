@@ -13,12 +13,6 @@ class InicioSesionTest extends TestCase
 
     private const RUTAS_DEL_PANEL = ['/dashboard', '/usuarios', '/empresas', '/vacantes', '/habilidades', '/catalogos', '/reportes', '/perfil'];
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->withoutVite();
-    }
-
     private function entrar(string $correo, string $contrasena = self::CONTRASENA)
     {
         return $this->from('/login')->post('/login', ['correo' => $correo, 'contrasena' => $contrasena]);

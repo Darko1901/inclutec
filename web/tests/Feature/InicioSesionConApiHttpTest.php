@@ -17,7 +17,6 @@ class InicioSesionConApiHttpTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->withoutVite();
         config(['inclutec.mock' => false, 'inclutec.api_url' => 'http://localhost:8000/api/v1']);
     }
 

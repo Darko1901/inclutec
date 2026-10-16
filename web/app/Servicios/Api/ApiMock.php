@@ -2,12 +2,12 @@
 
 namespace App\Servicios\Api;
 
-use Illuminate\Support\Facades\Cache;
+use App\Servicios\Api\Mock\Almacen;
 
 /**
- * Implementación con datos simulados (Mock/datos.php). Responde con la forma del contrato y con
- * los mismos códigos de error que dará el API. Su estado (intentos fallidos de inicio de sesión)
- * vive en la caché de archivo, así sobrevive entre peticiones.
+ * Implementación con datos simulados. Responde con la forma del contrato y con los mismos códigos
+ * de error que dará el API. Parte de los datos de Mock/datos.php y guarda sus cambios en el archivo
+ * que administra Mock\Almacen, así sobreviven entre peticiones.
  */
 class ApiMock implements ApiAdmin
 {
@@ -36,54 +36,96 @@ class ApiMock implements ApiAdmin
             throw new ApiError(422, 'validacion', self::MENSAJE_VALIDACION, $campos);
         }
 
-        $llave = 'mock.login.'.sha1(mb_strtolower(trim($correo)));
-        $intentos = Cache::get($llave, ['fallidos' => 0, 'bloqueado_hasta' => null]);
+        $llave = sha1(mb_strtolower(trim($correo)));
 
-        // Tras 5 intentos fallidos con el mismo correo, el acceso se bloquea 15 minutos,
-        // aunque la contraseña sea correcta.
-        if ($intentos['bloqueado_hasta'] !== null && $intentos['bloqueado_hasta'] > time()) {
-            throw new ApiError(
-                429,
-                'demasiados_intentos',
-                'Demasiados intentos fallidos. Intenta de nuevo en 15 minutos.',
-                [],
-                $intentos['bloqueado_hasta'] - time(),
-            );
-        }
-        if ($intentos['bloqueado_hasta'] !== null) {
-            $intentos = ['fallidos' => 0, 'bloqueado_hasta' => null];
-        }
+        // Los intentos fallidos se guardan aunque la respuesta sea un error; por eso el resultado
+        // (sesión o error) se devuelve y se lanza después de soltar el archivo.
+        $resultado = Almacen::modificar(function (array &$estado) use ($llave, $correo, $contrasena) {
+            $intentos = $estado['intentos_login'][$llave] ?? ['fallidos' => 0, 'bloqueado_hasta' => null];
 
-        $cuenta = $this->buscarPorCorreo($correo);
-        if ($cuenta === null || $cuenta['contrasena'] !== $contrasena) {
-            $intentos['fallidos']++;
-            if ($intentos['fallidos'] >= self::MAX_INTENTOS_FALLIDOS) {
-                $intentos['bloqueado_hasta'] = time() + self::BLOQUEO_SEGUNDOS;
+            // Tras 5 intentos fallidos con el mismo correo, el acceso se bloquea 15 minutos,
+            // aunque la contraseña sea correcta.
+            if ($intentos['bloqueado_hasta'] !== null && $intentos['bloqueado_hasta'] > time()) {
+                return new ApiError(
+                    429,
+                    'demasiados_intentos',
+                    'Demasiados intentos fallidos. Intenta de nuevo en 15 minutos.',
+                    [],
+                    $intentos['bloqueado_hasta'] - time(),
+                );
             }
-            Cache::put($llave, $intentos, self::BLOQUEO_SEGUNDOS);
+            if ($intentos['bloqueado_hasta'] !== null) {
+                $intentos = ['fallidos' => 0, 'bloqueado_hasta' => null];
+            }
 
-            throw new ApiError(401, 'credenciales_invalidas', 'Correo o contraseña incorrectos.');
+            $cuenta = $this->buscarPorCorreo($estado, $correo);
+            if ($cuenta === null || $cuenta['contrasena'] !== $contrasena) {
+                $intentos['fallidos']++;
+                if ($intentos['fallidos'] >= self::MAX_INTENTOS_FALLIDOS) {
+                    $intentos['bloqueado_hasta'] = time() + self::BLOQUEO_SEGUNDOS;
+                }
+                $estado['intentos_login'][$llave] = $intentos;
+
+                return new ApiError(401, 'credenciales_invalidas', 'Correo o contraseña incorrectos.');
+            }
+
+            unset($estado['intentos_login'][$llave]);
+            if ($cuenta['usuario']['estado'] !== 'activo') {
+                return new ApiError(423, 'cuenta_suspendida', 'Tu cuenta está suspendida.');
+            }
+
+            return $this->sesionPara($cuenta['usuario']);
+        });
+
+        if ($resultado instanceof ApiError) {
+            throw $resultado;
         }
 
-        Cache::forget($llave);
-        if ($cuenta['usuario']['estado'] !== 'activo') {
-            throw new ApiError(423, 'cuenta_suspendida', 'Tu cuenta está suspendida.');
-        }
-
-        return $this->sesionPara($cuenta['usuario']);
+        return $resultado;
     }
 
     public function me(): array
     {
         $this->simularLatencia();
 
-        return $this->exigirSesion();
+        return $this->exigirSesion(Almacen::leer());
     }
 
     public function logout(): void
     {
         $this->simularLatencia();
-        $this->exigirSesion();
+        $this->exigirSesion(Almacen::leer());
+    }
+
+    public function cambiarContrasena(string $contrasenaActual, string $contrasenaNueva): void
+    {
+        $this->simularLatencia();
+
+        $resultado = Almacen::modificar(function (array &$estado) use ($contrasenaActual, $contrasenaNueva) {
+            $usuario = $this->exigirSesion($estado);
+
+            if (mb_strlen($contrasenaNueva) < 8 || mb_strlen($contrasenaNueva) > 64
+                || ! preg_match('/\pL/u', $contrasenaNueva) || ! preg_match('/\pN/u', $contrasenaNueva)) {
+                return new ApiError(422, 'validacion', self::MENSAJE_VALIDACION, [
+                    'contrasena_nueva' => 'Debe tener de 8 a 64 caracteres, con al menos una letra y un número.',
+                ]);
+            }
+
+            foreach ($estado['usuarios'] as &$cuenta) {
+                if ($cuenta['usuario']['id'] === $usuario['id']) {
+                    if ($cuenta['contrasena'] !== $contrasenaActual) {
+                        return new ApiError(400, 'contrasena_incorrecta', 'La contraseña actual no es correcta.');
+                    }
+                    $cuenta['contrasena'] = $contrasenaNueva;
+                }
+            }
+
+            return null;
+        });
+
+        if ($resultado instanceof ApiError) {
+            throw $resultado;
+        }
     }
 
     /** Crea un token con la misma carga que el JWT del contrato: sub, rol y exp (no se firma). */
@@ -101,14 +143,15 @@ class ApiMock implements ApiAdmin
     /**
      * Devuelve el usuario del token de la sesión del servidor.
      *
+     * @param  array<string, mixed>  $estado
      * @return array<string, mixed>
      *
      * @throws ApiError 401 si falta el token, no es del mock o venció; 423 si la cuenta se suspendió.
      */
-    private function exigirSesion(): array
+    private function exigirSesion(array $estado): array
     {
         $carga = $this->leerToken(session(ApiHttp::SESION_TOKEN));
-        $cuenta = $carga === null ? null : $this->buscarPorId((int) $carga['sub']);
+        $cuenta = $carga === null ? null : $this->buscarPorId($estado, (int) $carga['sub']);
         if ($cuenta === null) {
             throw new ApiError(401, 'no_autenticado', 'Tu sesión expiró. Inicia sesión de nuevo.');
         }
@@ -152,11 +195,14 @@ class ApiMock implements ApiAdmin
         ];
     }
 
-    /** @return array{contrasena: string, usuario: array<string, mixed>}|null */
-    private function buscarPorCorreo(string $correo): ?array
+    /**
+     * @param  array<string, mixed>  $estado
+     * @return array{contrasena: string, usuario: array<string, mixed>}|null
+     */
+    private function buscarPorCorreo(array $estado, string $correo): ?array
     {
         $correo = mb_strtolower(trim($correo));
-        foreach ($this->usuarios() as $cuenta) {
+        foreach ($estado['usuarios'] as $cuenta) {
             if ($cuenta['usuario']['correo'] === $correo) {
                 return $cuenta;
             }
@@ -165,22 +211,19 @@ class ApiMock implements ApiAdmin
         return null;
     }
 
-    /** @return array{contrasena: string, usuario: array<string, mixed>}|null */
-    private function buscarPorId(int $id): ?array
+    /**
+     * @param  array<string, mixed>  $estado
+     * @return array{contrasena: string, usuario: array<string, mixed>}|null
+     */
+    private function buscarPorId(array $estado, int $id): ?array
     {
-        foreach ($this->usuarios() as $cuenta) {
+        foreach ($estado['usuarios'] as $cuenta) {
             if ($cuenta['usuario']['id'] === $id) {
                 return $cuenta;
             }
         }
 
         return null;
-    }
-
-    /** @return list<array{contrasena: string, usuario: array<string, mixed>}> */
-    private function usuarios(): array
-    {
-        return (require __DIR__.'/Mock/datos.php')['usuarios'];
     }
 
     /** Latencia corta para que el panel se sienta como con un API real (no se aplica en pruebas). */
