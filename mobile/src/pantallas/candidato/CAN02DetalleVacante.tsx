@@ -169,12 +169,7 @@ export default function CAN02DetalleVacante({ route, navigation }: Props) {
             {vacante.titulo}
           </Texto>
           <Pressable
-            onPress={() =>
-              navigation.navigate('CandidatoTabs', {
-                screen: 'Empresas',
-                params: { empresa_id: vacante.empresa.id },
-              })
-            }
+            onPress={() => navigation.navigate('FichaEmpresa', { id: vacante.empresa.id })}
             accessibilityRole="button"
             accessibilityLabel={`${vacante.empresa.nombre_comercial}${
               vacante.empresa.validada ? ', empresa validada' : ''
@@ -259,7 +254,7 @@ export default function CAN02DetalleVacante({ route, navigation }: Props) {
       />
       <ModalReporte
         visible={ventana === 'reporte'}
-        vacante={{ id: vacante.id, titulo: vacante.titulo }}
+        objeto={{ tipo: 'vacante', id: vacante.id, nombre: vacante.titulo }}
         onCerrar={() => setVentana(null)}
         onEnviado={() => {
           setVentana(null);

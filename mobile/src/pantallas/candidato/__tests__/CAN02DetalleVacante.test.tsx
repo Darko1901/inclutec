@@ -115,16 +115,13 @@ describe('CAN-02 · Detalle de vacante', () => {
       expect(screen.getByText('Publicada hace 3 días')).toBeOnTheScreen();
     });
 
-    it('tocar la empresa abre CAN-07 con su id', async () => {
+    it('tocar la empresa abre su ficha (CAN-07) con su id', async () => {
       await abrir(1);
       await esperar();
 
       await fireEvent.press(screen.getByRole('button', { name: 'TecnoQro, empresa validada' }));
 
-      expect(navegacion.navigate).toHaveBeenCalledWith('CandidatoTabs', {
-        screen: 'Empresas',
-        params: { empresa_id: 1 },
-      });
+      expect(navegacion.navigate).toHaveBeenCalledWith('FichaEmpresa', { id: 1 });
     });
 
     it('la tarjeta de compatibilidad desglosa en texto, con 88 por ciento para el lector', async () => {

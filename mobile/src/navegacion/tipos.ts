@@ -1,10 +1,9 @@
 import type { NavigatorScreenParams } from '@react-navigation/native';
 
-// El parámetro opcional de Empresas llega desde CAN-02 al tocar el nombre de la empresa.
 export type CandidatoTabsParamList = {
   Vacantes: undefined;
   Postulaciones: undefined;
-  Empresas: { empresa_id?: number } | undefined;
+  Empresas: undefined;
   Notificaciones: undefined;
   Perfil: undefined;
 };
@@ -25,12 +24,14 @@ export type RootStackParamList = {
   Registro: undefined;
   RecuperarContrasena: undefined;
   AvisoPrivacidad: undefined;
-  // Candidato: barra inferior y pantallas de detalle (CAN-02, CAN-04, CAN-06)
+  // Candidato: barra inferior y pantallas de detalle (CAN-02, CAN-04, CAN-06, CAN-07b)
   CandidatoTabs: NavigatorScreenParams<CandidatoTabsParamList> | undefined;
   DetalleVacante: { id: number };
   // `pestana` llega desde CAN-03 al tocar una sección pendiente del perfil.
   MiCV: { pestana?: 'experiencia' | 'formacion' | 'habilidades' } | undefined;
   DetallePostulacion: { id: number };
+  // Ficha de una empresa (CAN-07b): se abre desde el directorio, CAN-02 y CAN-06.
+  FichaEmpresa: { id: number };
   // Reclutador: barra inferior y pantallas de detalle (REC-03, REC-04, REC-05)
   ReclutadorTabs: NavigatorScreenParams<ReclutadorTabsParamList> | undefined;
   EditarVacante: undefined;

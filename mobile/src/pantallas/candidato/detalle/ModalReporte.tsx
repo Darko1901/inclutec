@@ -15,16 +15,24 @@ import { colores, espaciado } from '../../../tema';
 
 const MAX_DESCRIPCION = 500;
 
+/** Lo que se reporta: una vacante o una empresa (CAN-02 y CAN-07). */
+export interface ObjetoReporte {
+  tipo: 'vacante' | 'empresa';
+  id: number;
+  /** Título de la vacante o nombre comercial de la empresa. */
+  nombre: string;
+}
+
 interface Props {
   visible: boolean;
-  vacante: { id: number; titulo: string };
+  objeto: ObjetoReporte;
   onCerrar: () => void;
   /** El reporte se envió. */
   onEnviado: () => void;
 }
 
-function Contenido({ vacante, onCerrar, onEnviado }: Omit<Props, 'visible'>) {
-  const motivos = useCatalogo('motivos-reporte', { aplica_a: 'vacante' });
+function Contenido({ objeto, onCerrar, onEnviado }: Omit<Props, 'visible'>) {
+  const motivos = useCatalogo('motivos-reporte', { aplica_a: objeto.tipo });
   const [motivo, setMotivo] = useState<number | null>(null);
   const [descripcion, setDescripcion] = useState('');
   const [errorMotivo, setErrorMotivo] = useState<string | null>(null);
@@ -42,7 +50,7 @@ function Contenido({ vacante, onCerrar, onEnviado }: Omit<Props, 'visible'>) {
     try {
       await reportes.crear({
         motivo_reporte_id: motivo,
-        vacante_id: vacante.id,
+        [`${objeto.tipo}_id`]: objeto.id,
         descripcion: descripcion.trim() === '' ? null : descripcion.trim(),
       });
       onEnviado();
@@ -50,7 +58,9 @@ function Contenido({ vacante, onCerrar, onEnviado }: Omit<Props, 'visible'>) {
       const error = ApiError.desde(fallo);
       setEnviando(false);
       if (error.status === 404) {
-        setErrorGeneral('Esta vacante ya no está disponible, así que no se puede reportar.');
+        setErrorGeneral(
+          `${objeto.tipo === 'vacante' ? 'Esta vacante' : 'Esta empresa'} ya no está disponible, así que no se puede reportar.`,
+        );
       } else if (error.codigo === 'validacion' && error.campos) {
         setErrorMotivo(error.campos.motivo_reporte_id ?? null);
         setErrorDescripcion(error.campos.descripcion ?? null);
@@ -66,14 +76,14 @@ function Contenido({ vacante, onCerrar, onEnviado }: Omit<Props, 'visible'>) {
   return (
     <VentanaModal visible onCerrar={enviando ? () => undefined : onCerrar} testID="modal-reporte">
       <EncabezadoModal
-        titulo="Reportar vacante"
+        titulo={`Reportar ${objeto.tipo}`}
         onVolver={onCerrar}
         pistaVolver="Cierra sin enviar el reporte"
         volverDeshabilitado={enviando}
       />
       <ScrollView contentContainerStyle={estilos.contenido} keyboardShouldPersistTaps="handled">
         <Texto color="textoSecundarioSobreGris">
-          {`Cuéntanos qué pasa con «${vacante.titulo}». Nuestro equipo revisará tu reporte.`}
+          {`Cuéntanos qué pasa con «${objeto.nombre}». Nuestro equipo revisará tu reporte.`}
         </Texto>
         {errorGeneral ? <Aviso variante="error" mensaje={errorGeneral} /> : null}
         <Selector
@@ -110,7 +120,7 @@ function Contenido({ vacante, onCerrar, onEnviado }: Omit<Props, 'visible'>) {
   );
 }
 
-/** Modal para reportar una vacante: motivo del catálogo y descripción opcional. */
+/** Modal para reportar una vacante o una empresa: motivo del catálogo y descripción opcional. */
 export function ModalReporte({ visible, ...resto }: Props) {
   return visible ? <Contenido {...resto} /> : null;
 }
