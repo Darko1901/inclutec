@@ -1,4 +1,15 @@
-import { formatearFecha, formatearFechaHora, formatearHora, formatearRelativo } from '../fechas';
+import {
+  claveDia,
+  etiquetaDia,
+  formatearFecha,
+  formatearFechaCorta,
+  formatearFechaHora,
+  formatearFechaHoraHablada,
+  formatearFechaLarga,
+  formatearHora,
+  formatearHoraHablada,
+  formatearRelativo,
+} from '../fechas';
 import {
   esContrasenaValida,
   esCorreoValido,
@@ -72,5 +83,41 @@ describe('fechas', () => {
     expect(formatearRelativo('2026-10-01T12:00:00Z', ahora)).toBe('ayer');
     expect(formatearRelativo('2026-09-29T12:00:00Z', ahora)).toBe('hace 3 días');
     expect(formatearRelativo('2026-09-20T12:00:00Z', ahora)).toBe('20 sep 2026');
+  });
+});
+
+describe('fechas para postulaciones y entrevistas', () => {
+  // 15:00 UTC = 9:00 a.m. en la Ciudad de México (UTC-6).
+  const ahora = new Date('2026-10-15T15:00:00Z');
+
+  it('«Te postulaste el 12 oct»: sin año si es el actual y con año si no', () => {
+    expect(formatearFechaCorta('2026-10-12T17:20:00Z', ahora)).toBe('12 oct');
+    expect(formatearFechaCorta('2025-10-12T17:20:00Z', ahora)).toBe('12 oct 2025');
+  });
+
+  it('agrupa por Hoy, Mañana y «jue 22 oct» según el día de la Ciudad de México', () => {
+    expect(etiquetaDia('2026-10-15T22:00:00Z', ahora)).toBe('Hoy');
+    expect(etiquetaDia('2026-10-16T17:00:00Z', ahora)).toBe('Mañana');
+    expect(etiquetaDia('2026-10-22T17:00:00Z', ahora)).toBe('jue 22 oct');
+    // 03:00 UTC del 16 todavía es la noche del 15 en la Ciudad de México.
+    expect(etiquetaDia('2026-10-16T03:00:00Z', ahora)).toBe('Hoy');
+    expect(claveDia('2026-10-16T03:00:00Z')).toBe('2026-10-15');
+  });
+
+  it('lee la fecha y la hora completas', () => {
+    expect(formatearFechaLarga('2026-10-22T16:30:00Z')).toBe('jueves 22 de octubre de 2026');
+    expect(formatearHoraHablada('2026-10-22T16:30:00Z')).toBe('10:30 de la mañana');
+    expect(formatearHoraHablada('2026-10-22T20:05:00Z')).toBe('2:05 de la tarde');
+    expect(formatearHoraHablada('2026-10-23T03:00:00Z')).toBe('9:00 de la noche');
+    expect(formatearHoraHablada('2026-10-22T18:00:00Z')).toBe('12:00 de la tarde');
+    expect(formatearFechaHoraHablada('2026-10-22T16:30:00Z')).toBe(
+      'jueves 22 de octubre de 2026, a las 10:30 de la mañana',
+    );
+  });
+
+  it('devuelve cadena vacía con una fecha inválida', () => {
+    expect(formatearFechaCorta('no es fecha')).toBe('');
+    expect(etiquetaDia('no es fecha')).toBe('');
+    expect(formatearFechaHoraHablada('no es fecha')).toBe('');
   });
 });
