@@ -14,6 +14,7 @@ export { GrupoRadio } from './GrupoRadio';
 export type { OpcionRadio } from './GrupoRadio';
 export { Interruptor } from './Interruptor';
 export { Logotipo } from './Logotipo';
+export { LogoEmpresa } from './LogoEmpresa';
 export { ModalConfirmacion } from './ModalConfirmacion';
 export { ModalFormulario } from './ModalFormulario';
 export { Pantalla } from './Pantalla';
