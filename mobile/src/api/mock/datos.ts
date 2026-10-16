@@ -38,6 +38,7 @@ interface CodigoRecuperacion {
 export interface EstadoMock extends NegocioMock {
   usuarios: UsuarioMock[];
   siguienteIdPostulacion: number;
+  siguienteIdEntrevista: number;
   siguienteIdReporte: number;
   siguienteIdExperiencia: number;
   siguienteIdFormacion: number;
@@ -303,6 +304,8 @@ function crearEstadoInicial(): EstadoMock {
     siguienteIdUsuario: 102,
     siguienteIdEmpresa: 5,
     siguienteIdPostulacion: 3,
+    // Después de la entrevista 1 de S002 y las 100 y 101 solo del mock.
+    siguienteIdEntrevista: 102,
     siguienteIdReporte: 2,
     // Después de la experiencia 1 y las formaciones 1 y 2 de S002.
     siguienteIdExperiencia: 2,

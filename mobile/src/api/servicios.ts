@@ -4,9 +4,15 @@ import { AuthHttp, type AuthServicio } from './auth';
 import { CandidatosHttp, type CandidatosServicio } from './candidatos';
 import { CatalogosHttp, type CatalogosServicio } from './catalogos';
 import { USAR_MOCK } from './config';
+import { EmpresasHttp, type EmpresasServicio } from './empresas';
+import { EntrevistasHttp, type EntrevistasServicio } from './entrevistas';
+import { HorariosHttp, type HorariosServicio } from './horarios';
 import { AuthMock } from './mock/auth.mock';
 import { CandidatosMock } from './mock/candidatos.mock';
 import { CatalogosMock } from './mock/catalogos.mock';
+import { EmpresasMock } from './mock/empresas.mock';
+import { EntrevistasMock } from './mock/entrevistas.mock';
+import { HorariosMock } from './mock/horarios.mock';
 import { NotificacionesMock } from './mock/notificaciones.mock';
 import { PostulacionesMock } from './mock/postulaciones.mock';
 import { ReportesMock } from './mock/reportes.mock';
@@ -29,3 +35,8 @@ export const reportes: ReportesServicio = USAR_MOCK ? new ReportesMock() : new R
 export const candidatos: CandidatosServicio = USAR_MOCK
   ? new CandidatosMock()
   : new CandidatosHttp();
+export const horarios: HorariosServicio = USAR_MOCK ? new HorariosMock() : new HorariosHttp();
+export const entrevistas: EntrevistasServicio = USAR_MOCK
+  ? new EntrevistasMock()
+  : new EntrevistasHttp();
+export const empresas: EmpresasServicio = USAR_MOCK ? new EmpresasMock() : new EmpresasHttp();

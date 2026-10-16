@@ -1,7 +1,8 @@
 import type { VacantesServicio } from '../vacantes';
-import type { ConsultaRecomendadas, ConsultaVacantes, PaginaVacantes } from '../tipos';
+import type { ConsultaRecomendadas, ConsultaVacantes } from '../tipos';
 import { CATALOGOS } from './catalogos.datos';
 import { exigirSesion, obtenerEstado } from './datos';
+import { lanzarSiHayCampos, leerPagina, paginar } from './paginacion';
 import { fallo, simular } from './simulador';
 import {
   candidatoDe,
@@ -13,29 +14,10 @@ import {
   resumenDeVacante,
 } from './vistas';
 
-const TAMANO_MAXIMO = 100;
 const MINIMO_BUSQUEDA = 3;
 const ORDENES = ['compatibilidad', 'recientes'];
 
 const sinAcentos = (texto: string) => texto.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
-
-function lanzarSiHayCampos(campos: Record<string, string>): void {
-  if (Object.keys(campos).length > 0) {
-    throw fallo(422, 'validacion', 'Revisa los datos marcados.', { campos });
-  }
-}
-
-function leerPagina(consulta: { page?: number; size?: number }) {
-  const page = consulta.page ?? 1;
-  const size = consulta.size ?? 20;
-  const campos: Record<string, string> = {};
-  if (!Number.isInteger(page) || page < 1) campos.page = 'La página empieza en 1.';
-  if (!Number.isInteger(size) || size < 1 || size > TAMANO_MAXIMO) {
-    campos.size = `El tamaño de página va de 1 a ${TAMANO_MAXIMO}.`;
-  }
-  lanzarSiHayCampos(campos);
-  return { page, size };
-}
 
 /** Los filtros numéricos llegan como enteros; cualquier otra cosa es un 422. */
 function validarFiltros(consulta: ConsultaVacantes) {
@@ -169,8 +151,4 @@ function listar(consulta: ConsultaVacantes = {}) {
     consulta.orden === 'recientes' ? reciente : (a, b) => b.puntaje - a.puntaje || reciente(a, b),
   );
   return filas.map(({ resumen }) => resumen);
-}
-
-function paginar(items: PaginaVacantes['items'], page: number, size: number): PaginaVacantes {
-  return { items: items.slice((page - 1) * size, page * size), total: items.length, page, size };
 }

@@ -1,14 +1,26 @@
 import type {
   AjusteRef,
   Compatibilidad,
+  EmpresaPublica,
+  EmpresaResumen,
+  Entrevista,
   PerfilCandidato,
+  PostulacionDetalle,
+  PostulacionResumen,
   VacanteDetalle,
   VacanteResumen,
 } from '../tipos';
 import { calcularCompatibilidad, entradaDeCandidato, entradaDeVacante } from './compatibilidad';
 import { CATALOGOS } from './catalogos.datos';
 import { obtenerEstado, type UsuarioMock } from './datos';
-import { aIso, type CandidatoMock, type EmpresaMock, type VacanteMock } from './negocio.datos';
+import {
+  aIso,
+  type CandidatoMock,
+  type EmpresaMock,
+  type EntrevistaMock,
+  type PostulacionMock,
+  type VacanteMock,
+} from './negocio.datos';
 import { fallo } from './simulador';
 
 // Arman los objetos del contrato (VacanteResumen, VacanteDetalle, Compatibilidad, PerfilCandidato)
@@ -75,9 +87,13 @@ export function compatibilidadDe(candidato: CandidatoMock, vacante: VacanteMock)
   return calcularCompatibilidad(entradaDeCandidato(candidato), entradaDeVacante(vacante));
 }
 
-export function resumenDeVacante(vacante: VacanteMock, candidato: CandidatoMock): VacanteResumen {
+/** Sin candidato (reclutador o administrador) no hay compatibilidad ni postulación. */
+export function resumenDeVacante(
+  vacante: VacanteMock,
+  candidato: CandidatoMock | null,
+): VacanteResumen {
   const empresa = empresaDe(vacante.empresa_id);
-  const compat = compatibilidadDe(candidato, vacante);
+  const compat = candidato ? compatibilidadDe(candidato, vacante) : null;
   return {
     id: vacante.id,
     titulo: vacante.titulo,
@@ -94,11 +110,13 @@ export function resumenDeVacante(vacante: VacanteMock, candidato: CandidatoMock)
     salario: vacante.mostrar_salario
       ? { min: vacante.salario_min, max: vacante.salario_max }
       : null,
-    compatibilidad: compat.puntaje_candidato,
+    compatibilidad: compat?.puntaje_candidato ?? null,
     ajustes: vacante.ajustes.map(({ ajuste_id, tipo }) => ({ ...ajusteRefDe(ajuste_id), tipo })),
-    cubre_mis_necesidades: compat.necesidades_no_cubiertas.length === 0,
+    cubre_mis_necesidades: compat ? compat.necesidades_no_cubiertas.length === 0 : false,
     publicada_en: vacante.publicada_en ?? vacante.actualizado_en,
-    postulacion_id: postulacionDe(candidato.usuario_id, vacante.id)?.id ?? null,
+    postulacion_id: candidato
+      ? (postulacionDe(candidato.usuario_id, vacante.id)?.id ?? null)
+      : null,
   };
 }
 
@@ -256,4 +274,135 @@ export function perfilDeCandidato(usuario: UsuarioMock, candidato: CandidatoMock
     perfil_minimo: analisis.perfil_minimo,
     actualizado_en: candidato.actualizado_en,
   };
+}
+
+export const ESTADOS_ACTIVOS: PostulacionMock['estado'][] = [
+  'postulada',
+  'en_revision',
+  'entrevista',
+];
+const HORAS_CANCELACION = 24;
+const HORA_MS = 3600 * 1000;
+
+export function horarioDe(id: number) {
+  const horario = obtenerEstado().horarios.find((h) => h.id === id);
+  if (!horario) throw new Error(`El mock no tiene el horario ${id}.`);
+  return horario;
+}
+
+/** Entrevista vigente de la postulación (agendada o realizada), si existe. */
+export function entrevistaVigenteDe(postulacionId: number): EntrevistaMock | undefined {
+  return obtenerEstado().entrevistas.find(
+    (e) => e.postulacion_id === postulacionId && ['agendada', 'realizada'].includes(e.estado),
+  );
+}
+
+export function vistaDeEntrevista(entrevista: EntrevistaMock): Entrevista {
+  const horario = horarioDe(entrevista.horario_id);
+  const vacante = obtenerEstado().vacantes.find((v) => v.id === horario.vacante_id)!;
+  const empresa = empresaDe(vacante.empresa_id);
+  const inicio = new Date(horario.inicio).getTime();
+  return {
+    id: entrevista.id,
+    estado: entrevista.estado,
+    inicio: horario.inicio,
+    fin: aIso(new Date(inicio + horario.duracion_min * 60000)),
+    duracion_min: horario.duracion_min,
+    liga: horario.liga,
+    // Solo se puede cancelar una entrevista agendada y con al menos 24 h de anticipación.
+    puede_cancelar:
+      entrevista.estado === 'agendada' && inicio - Date.now() >= HORAS_CANCELACION * HORA_MS,
+    vacante: { id: vacante.id, titulo: vacante.titulo },
+    empresa: { id: empresa.id, nombre_comercial: empresa.nombre_comercial },
+    creado_en: entrevista.creado_en,
+  };
+}
+
+function vacanteDePostulacion(postulacion: PostulacionMock) {
+  const vacante = obtenerEstado().vacantes.find((v) => v.id === postulacion.vacante_id)!;
+  const empresa = empresaDe(vacante.empresa_id);
+  return {
+    id: vacante.id,
+    titulo: vacante.titulo,
+    empresa: {
+      id: empresa.id,
+      nombre_comercial: empresa.nombre_comercial,
+      logo_url: empresa.logo_url,
+    },
+  };
+}
+
+export function detalleDePostulacion(postulacion: PostulacionMock): PostulacionDetalle {
+  const entrevista = entrevistaVigenteDe(postulacion.id);
+  return {
+    id: postulacion.id,
+    vacante: vacanteDePostulacion(postulacion),
+    estado: postulacion.estado,
+    mensaje: postulacion.mensaje,
+    comparte_ajustes: postulacion.comparte_ajustes,
+    creado_en: postulacion.creado_en,
+    actualizado_en: postulacion.actualizado_en,
+    historial: postulacion.historial.map((evento) => ({ ...evento })),
+    entrevista: entrevista ? vistaDeEntrevista(entrevista) : null,
+    puede_retirar: ESTADOS_ACTIVOS.includes(postulacion.estado),
+  };
+}
+
+export function resumenDePostulacion(postulacion: PostulacionMock): PostulacionResumen {
+  const entrevista = entrevistaVigenteDe(postulacion.id);
+  return {
+    id: postulacion.id,
+    vacante: vacanteDePostulacion(postulacion),
+    estado: postulacion.estado,
+    creado_en: postulacion.creado_en,
+    actualizado_en: postulacion.actualizado_en,
+    // Solo cuenta la entrevista que sigue agendada.
+    entrevista_inicio:
+      entrevista?.estado === 'agendada' ? horarioDe(entrevista.horario_id).inicio : null,
+  };
+}
+
+export function publicadasDeEmpresa(empresaId: number): VacanteMock[] {
+  return obtenerEstado().vacantes.filter(
+    (v) => v.empresa_id === empresaId && v.estado === 'publicada',
+  );
+}
+
+export function resumenDeEmpresa(empresa: EmpresaMock): EmpresaResumen {
+  return {
+    id: empresa.id,
+    nombre_comercial: empresa.nombre_comercial,
+    logo_url: empresa.logo_url,
+    sector: refDeSector(empresa.sector_id),
+    tamano_empresa: tamanoDe(empresa.tamano_empresa_id),
+    municipio: municipioDe(empresa.municipio_id),
+    vacantes_publicadas: publicadasDeEmpresa(empresa.id).length,
+  };
+}
+
+export function fichaDeEmpresa(
+  empresa: EmpresaMock,
+  candidato: CandidatoMock | null,
+): EmpresaPublica {
+  return {
+    id: empresa.id,
+    nombre_comercial: empresa.nombre_comercial,
+    logo_url: empresa.logo_url,
+    sector: refDeSector(empresa.sector_id),
+    tamano_empresa: tamanoDe(empresa.tamano_empresa_id),
+    municipio: municipioDe(empresa.municipio_id),
+    descripcion: empresa.descripcion,
+    sitio_web: empresa.sitio_web,
+    practicas_inclusion: empresa.practicas_inclusion,
+    vacantes: publicadasDeEmpresa(empresa.id).map((v) => resumenDeVacante(v, candidato)),
+  };
+}
+
+function refDeSector(id: number) {
+  return { id, nombre: itemDe('sectores', id).nombre };
+}
+
+function tamanoDe(id: number) {
+  const { nombre, rango } = itemDe('tamanos-empresa', id);
+  return { id, nombre, rango: rango ?? '' };
 }
