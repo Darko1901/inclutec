@@ -11,6 +11,7 @@ export {
 } from './servicios';
 export { ApiError, MENSAJE_SERVICIO_NO_DISPONIBLE } from './errores';
 export { configurarSesionApi } from './sesionApi';
+export { urlArchivo } from './config';
 export { useCatalogo } from './useCatalogo';
 export { TIPOS_CATALOGO } from './catalogos';
 export type { TipoCatalogo, CatalogosServicio } from './catalogos';

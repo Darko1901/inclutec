@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import type { Ref } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -14,6 +15,8 @@ import { Texto } from './Texto';
 export type VarianteBoton = 'primario' | 'secundario' | 'texto' | 'peligro';
 
 interface BotonProps {
+  /** Para devolver el foco del lector de pantalla al botón (ver useRetornoFoco). */
+  ref?: Ref<View>;
   titulo: string;
   onPress: () => void;
   variante?: VarianteBoton;
@@ -34,6 +37,7 @@ const estilos_variante = {
 } as const;
 
 export function Boton({
+  ref,
   titulo,
   onPress,
   variante = 'primario',
@@ -51,6 +55,7 @@ export function Boton({
 
   return (
     <Pressable
+      ref={ref}
       testID={testID}
       onPress={inactivo ? undefined : onPress}
       accessibilityRole="button"
