@@ -1,4 +1,5 @@
 @extends('layouts.admin_layout')
+@section('titulo', 'Categorías y habilidades')
 @section('content')
 <div x-data="{ 
     showModal: false, editMode: false, currentId: null,

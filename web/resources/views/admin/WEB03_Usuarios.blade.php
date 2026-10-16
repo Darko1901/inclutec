@@ -1,4 +1,5 @@
 @extends('layouts.admin_layout')
+@section('titulo', 'Usuarios')
 @section('content')
 <div x-data="{ motivoBloqueo: '', 
     showBlockModal: false, 

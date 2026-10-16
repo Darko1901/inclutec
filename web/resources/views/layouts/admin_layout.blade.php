@@ -1,109 +1,127 @@
+@php
+    use App\Support\Iconos;
+
+    // Menú principal: nombre de la ruta, texto del diseño (docs/diseno/pantallas.md) e ícono.
+    $menu = [
+        ['ruta' => 'dashboard', 'texto' => 'Dashboard', 'icono' => 'panel'],
+        ['ruta' => 'usuarios', 'texto' => 'Usuarios', 'icono' => 'usuarios'],
+        ['ruta' => 'empresas', 'texto' => 'Empresas', 'icono' => 'empresa'],
+        ['ruta' => 'vacantes', 'texto' => 'Vacantes', 'icono' => 'maletin'],
+        ['ruta' => 'habilidades', 'texto' => 'Categorías y habilidades', 'icono' => 'sello'],
+        ['ruta' => 'catalogos', 'texto' => 'Catálogos', 'icono' => 'lista'],
+        ['ruta' => 'reportes', 'texto' => 'Reportes', 'icono' => 'alerta'],
+    ];
+
+    // Datos del administrador (los comparte el middleware `admin` tras validar el token).
+    $nombreAdmin = $administrador['nombre'] ?? 'Administrador';
+    $iniciales = mb_strtoupper(mb_substr($administrador['nombre'] ?? 'A', 0, 1).mb_substr($administrador['apellidos'] ?? '', 0, 1));
+
+    // Mensajes flash de sesión: `exito` va a la región de estado y `error` a la de alerta.
+    $avisosIniciales = array_values(array_filter([
+        session('exito') ? ['mensaje' => session('exito'), 'tipo' => 'exito'] : null,
+        session('error') ? ['mensaje' => session('error'), 'tipo' => 'error'] : null,
+    ]));
+@endphp
 <!DOCTYPE html>
 <html lang="es-MX">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IncluTec Admin</title>
+    <title>@yield('titulo', 'Panel') · IncluTec</title>
     <link rel="icon" href="/img/icon.png">
-    <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
-    @vite(['resources/js/app.js'])
+    @vite(['resources/css/admin.css', 'resources/js/app.js'])
 </head>
-<body x-data="{ toasts: [], sidebarOpen: false, darkMode: false, profileOpen: false }" x-init="darkMode = JSON.parse(localStorage.getItem('darkMode') || 'false'); $watch('darkMode', val => localStorage.setItem('darkMode', val))" :class="{'dark': darkMode}" @notify.window="toasts.push({ id: Date.now(), msg: $event.detail.msg, type: $event.detail.type || 'success' }); setTimeout(() => { toasts.shift() }, 3000)">
+<body x-data="{ darkMode: false, sidebarOpen: false }"
+      x-init="darkMode = JSON.parse(localStorage.getItem('darkMode') || 'false'); $watch('darkMode', val => localStorage.setItem('darkMode', val))"
+      :class="{'dark': darkMode}"
+      @keydown.escape.window="if (sidebarOpen) { sidebarOpen = false; $refs.botonMenu.focus() }">
 
-    <div class="toast-container">
-        <template x-for="toast in toasts" :key="toast.id">
-            <div class="toast" :class="toast.type === 'error' ? 'toast-error' : 'toast-success'" x-transition>
-                <span x-text="toast.msg"></span>
-            </div>
-        </template>
-    </div>
+    <a href="#contenido" class="saltar-contenido">Saltar al contenido</a>
 
     <div class="admin-layout">
         <div class="sidebar-overlay" :class="{'open': sidebarOpen}" @click="sidebarOpen = false"></div>
-        <aside class="sidebar" :class="{'open': sidebarOpen}">
+        <aside class="sidebar" id="menu-lateral" aria-label="Barra lateral" :class="{'open': sidebarOpen}"
+               x-trap.noscroll="sidebarOpen && window.matchMedia('(max-width: 768px)').matches">
             <div class="sidebar-header">
-                <button class="close-sidebar-btn" @click="sidebarOpen = false" aria-label="Cerrar menú principal">&times;</button>
-                <img src="/img/icon.png" alt="IncluTec Logo">
+                <button type="button" class="close-sidebar-btn" @click="sidebarOpen = false; $nextTick(() => $refs.botonMenu.focus())" aria-label="Cerrar menú principal">&times;</button>
+                <img src="/img/icon.png" alt="" width="40" height="40">
                 <span>IncluTec Admin</span>
             </div>
-            <nav class="sidebar-nav">
-                <a href="{{ route('dashboard') }}" class="sidebar-link {{ request()->is('dashboard') ? 'active' : '' }}">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
-                    Resumen
-                </a>
-                <a href="{{ route('usuarios') }}" class="sidebar-link {{ request()->is('usuarios') ? 'active' : '' }}">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                    Usuarios
-                </a>
-                <a href="{{ route('empresas') }}" class="sidebar-link {{ request()->is('empresas') ? 'active' : '' }}">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m3-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
-                    Empresas
-                </a>
-                <a href="{{ route('vacantes') }}" class="sidebar-link {{ request()->is('vacantes') ? 'active' : '' }}">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-                    Vacantes
-                </a>
-                <a href="{{ route('habilidades') }}" class="sidebar-link {{ request()->is('habilidades') ? 'active' : '' }}">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path></svg>
-                    Habilidades
-                </a>
-                <a href="{{ route('catalogos') }}" class="sidebar-link {{ request()->is('catalogos') ? 'active' : '' }}">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
-                    Catálogos
-                </a>
-                <a href="{{ route('reportes') }}" class="sidebar-link {{ request()->is('reportes') ? 'active' : '' }}">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                    Reportes
-                </a>
-                
-                <div style="margin-top:auto; margin-bottom:1rem; padding-top:1rem; border-top:1px solid var(--border-color);">
-                    <a href="{{ route('perfil') }}" class="sidebar-link {{ request()->is('perfil') ? 'active' : '' }}">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                        Mi Perfil
-                    </a>
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" class="sidebar-link sidebar-link-boton">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                            Cerrar Sesión
-                        </button>
-                    </form>
-                </div>
+            <nav class="sidebar-nav" aria-label="Menú principal">
+                <ul class="sidebar-lista">
+                    @foreach ($menu as $elemento)
+                        <li>
+                            <a href="{{ route($elemento['ruta']) }}" class="sidebar-link"
+                               @if (request()->routeIs($elemento['ruta'])) aria-current="page" @endif>
+                                {!! Iconos::svg($elemento['icono'], 22) !!}
+                                {{ $elemento['texto'] }}
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
             </nav>
         </aside>
 
-        <main class="main-content" role="main">
+        <div class="main-content">
             <header class="topbar">
-                <button class="mobile-menu-btn" @click="sidebarOpen = true" aria-expanded="false" :aria-expanded="sidebarOpen.toString()" aria-controls="menu-lateral" aria-label="Abrir menú principal">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                <button type="button" class="mobile-menu-btn" x-ref="botonMenu" @click="sidebarOpen = true"
+                        aria-expanded="false" :aria-expanded="sidebarOpen.toString()" aria-controls="menu-lateral" aria-label="Abrir menú principal">
+                    {!! Iconos::svg('menu', 28) !!}
                 </button>
-                <div style="font-weight: 500; font-family:'Google Sans', sans-serif; color: #5F6368;">Administración Central</div>
-                <div class="topbar-right" style="display:flex; align-items:center; gap:1.5rem; position: relative;">
-                    <button @click="darkMode = !darkMode" aria-label="Alternar modo oscuro" :aria-pressed="darkMode.toString()" style="background:transparent; border:none; cursor:pointer; color:var(--text-main); min-width:44px; min-height:44px; display:flex; align-items:center; justify-content:center;">
-                        <svg x-show="!darkMode" width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-                        <svg x-show="darkMode" width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display:none;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                <div class="topbar-titulo"><span class="visually-hidden">IncluTec: </span>Administración Central</div>
+                <div class="topbar-derecha topbar-right">
+                    <button type="button" class="boton-icono" @click="darkMode = !darkMode" aria-label="Alternar modo oscuro" aria-pressed="false" :aria-pressed="darkMode.toString()">
+                        <span x-show="!darkMode">{!! Iconos::svg('luna', 24) !!}</span>
+                        <span x-show="darkMode" x-cloak>{!! Iconos::svg('sol', 24) !!}</span>
                     </button>
-                    <div @click.outside="profileOpen = false" style="position: relative;">
-                        <div @click="profileOpen = !profileOpen" style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
-                            <img src="https://ui-avatars.com/api/?name=Admin&background=1E40AF&color=fff" alt="Avatar" style="width:36px; height:36px; border-radius:50%;">
-                            <span style="font-weight:600;">Admin</span>
-                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                        </div>
-                        <div x-show="profileOpen" style="display:none;" x-transition class="profile-dropdown-menu">
-                            <a href="{{ route('perfil') }}"><svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg> Mi Perfil</a>
+                    <div class="menu-usuario" x-data="{ abierto: false }"
+                         @keydown.escape="if (abierto) { abierto = false; $refs.boton.focus() }"
+                         @click.outside="abierto = false"
+                         @focusout="if (abierto && !$el.contains($event.relatedTarget)) abierto = false">
+                        <button type="button" class="menu-usuario-boton" x-ref="boton" @click="abierto = !abierto"
+                                aria-expanded="false" :aria-expanded="abierto.toString()" aria-controls="menu-usuario">
+                            <span class="avatar-iniciales" aria-hidden="true">{{ $iniciales }}</span>
+                            <span>{{ $nombreAdmin }}</span>
+                            <span class="visually-hidden">Menú de usuario</span>
+                            {!! Iconos::svg('chevron-abajo', 16) !!}
+                        </button>
+                        <div id="menu-usuario" class="profile-dropdown-menu" x-show="abierto" x-cloak>
+                            <a href="{{ route('perfil') }}">{!! Iconos::svg('llave', 18) !!} Cambiar contraseña</a>
                             <hr>
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
-                                <button type="submit" style="color: #EF4444;"><svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg> Cerrar Sesión</button>
+                                <button type="submit" class="menu-salir">{!! Iconos::svg('salir', 18) !!} Cerrar sesión</button>
                             </form>
                         </div>
                     </div>
                 </div>
             </header>
+
             <main id="contenido" class="content-body" tabindex="-1">
+                {{-- Avisos: las regiones existen desde que carga la página para que el lector de pantalla anuncie lo que se agrega. --}}
+                <div class="toast-container" x-data="avisos(@js($avisosIniciales))"
+                     @notify.window="agregar($event.detail.msg, $event.detail.type === 'error' ? 'error' : 'exito')">
+                    <div class="avisos-zona" role="status" aria-live="polite">
+                        <template x-for="aviso in de('exito')" :key="aviso.id">
+                            <div class="toast toast-success">
+                                <span class="toast-cuerpo">{!! Iconos::svg('check-circulo', 20) !!}<span><span class="visually-hidden">Éxito: </span><span x-text="aviso.mensaje"></span></span></span>
+                                <button type="button" class="toast-cerrar" @click="quitar(aviso.id)" aria-label="Cerrar aviso">{!! Iconos::svg('x', 18) !!}</button>
+                            </div>
+                        </template>
+                    </div>
+                    <div class="avisos-zona" role="alert">
+                        <template x-for="aviso in de('error')" :key="aviso.id">
+                            <div class="toast toast-error">
+                                <span class="toast-cuerpo">{!! Iconos::svg('alerta', 20) !!}<span><span class="visually-hidden">Error: </span><span x-text="aviso.mensaje"></span></span></span>
+                                <button type="button" class="toast-cerrar" @click="quitar(aviso.id)" aria-label="Cerrar aviso">{!! Iconos::svg('x', 18) !!}</button>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
                 @yield('content')
-            </div>
-        </main>
+            </main>
+        </div>
     </div>
 </body>
 </html>

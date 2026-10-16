@@ -1,4 +1,5 @@
 @extends('layouts.admin_layout')
+@section('titulo', 'Catálogos')
 @section('content')
 <div x-data="{ 
     tab: 'discapacidad', showModal: false, modalMode: 'add', currentId: null,
