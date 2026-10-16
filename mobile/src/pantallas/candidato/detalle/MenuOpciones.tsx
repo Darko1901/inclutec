@@ -7,9 +7,15 @@ interface Props {
   visible: boolean;
   onCerrar: () => void;
   onReportar: () => void;
+  /** «Reportar vacante» (CAN-02) o «Reportar empresa» (CAN-07). */
+  textoReportar?: string;
 }
 
-function Contenido({ onCerrar, onReportar }: Omit<Props, 'visible'>) {
+function Contenido({
+  onCerrar,
+  onReportar,
+  textoReportar = 'Reportar vacante',
+}: Omit<Props, 'visible'>) {
   const referenciaTitulo = useFocoEnTitulo();
   return (
     <VentanaModal visible onCerrar={onCerrar} tipo="dialogo" testID="menu-opciones">
@@ -19,7 +25,7 @@ function Contenido({ onCerrar, onReportar }: Omit<Props, 'visible'>) {
             Más opciones
           </Texto>
           <Boton
-            titulo="Reportar vacante"
+            titulo={textoReportar}
             icono="flag-outline"
             variante="secundario"
             onPress={onReportar}
@@ -31,7 +37,7 @@ function Contenido({ onCerrar, onReportar }: Omit<Props, 'visible'>) {
   );
 }
 
-/** Menú ⋮ de CAN-02: por ahora solo ofrece «Reportar vacante». */
+/** Menú ⋮ de CAN-02 y CAN-07: ofrece reportar lo que se está viendo. */
 export function MenuOpciones({ visible, ...resto }: Props) {
   return visible ? <Contenido {...resto} /> : null;
 }
