@@ -1,17 +1,21 @@
 @extends('layouts.admin_layout')
+@section('titulo', 'Cambiar contraseña')
 @section('content')
-<div style="margin-bottom:2rem;"><h1>Mi Perfil</h1><p style="color: #6B7280;">Administra tus datos personales.</p></div>
-<div class="dashboard-grid">
-    <div class="card" style="border-top: 4px solid var(--primary);">
-        <h2 style="font-size:1.2rem; margin-bottom: 1.5rem;">Información Básica</h2>
-        <div class="form-group"><label class="form-label">Nombre</label><input type="text" class="form-control" value="Admin General" readonly></div>
-        <div class="form-group"><label class="form-label">Correo</label><input type="email" class="form-control" value="admin@inclutec.com" readonly></div>
-        <button class="btn btn-outline" @click="$dispatch('notify', {msg: 'Solicitud enviada a Sistemas', type: 'success'})">Solicitar Cambio de Datos</button>
-    </div>
-    <div class="card" style="border-top: 4px solid var(--danger);">
-        <h2 style="font-size:1.2rem; margin-bottom: 1.5rem;">Seguridad</h2>
-        <div class="form-group"><label class="form-label">Nueva Contraseña</label><input type="password" class="form-control" placeholder="Mínimo 8 caracteres"></div>
-        <button class="btn btn-primary" @click="$dispatch('notify', {msg: 'Contraseña actualizada correctamente', type: 'success'})">Actualizar Contraseña</button>
-    </div>
+<x-encabezado-pagina titulo="Cambiar contraseña" descripcion="Elige una contraseña nueva para tu cuenta de administrador." />
+
+<div class="card" style="max-width: 560px;">
+    <x-resumen-errores />
+
+    <form method="POST" action="{{ route('perfil.actualizar') }}" novalidate>
+        @csrf
+        @method('PUT')
+
+        <x-campo nombre="contrasena_actual" etiqueta="Contraseña actual" tipo="password" autocomplete="current-password" obligatorio />
+        <x-campo nombre="contrasena_nueva" etiqueta="Contraseña nueva" tipo="password" autocomplete="new-password" obligatorio
+                 ayuda="De 8 a 64 caracteres, con al menos una letra y un número." />
+        <x-campo nombre="contrasena_nueva_confirmation" etiqueta="Confirma la contraseña nueva" tipo="password" autocomplete="new-password" obligatorio />
+
+        <x-boton tipo="submit">Cambiar contraseña</x-boton>
+    </form>
 </div>
 @endsection

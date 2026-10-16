@@ -17,7 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias(['admin' => ExigirAdministrador::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        $exceptions->dontFlash(['contrasena']);
+        $exceptions->dontFlash(['contrasena', 'contrasena_actual', 'contrasena_nueva', 'contrasena_nueva_confirmation']);
 
         // Errores del API fuera del inicio de sesión: token vencido y cuenta suspendida cierran la
         // sesión y regresan al inicio de sesión; cualquier otro se muestra en una pantalla de error.

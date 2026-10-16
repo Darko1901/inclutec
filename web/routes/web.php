@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CatalogoController;
+use App\Http\Controllers\ComponentesController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmpresaController;
 use App\Http\Controllers\HabilidadController;
@@ -25,4 +26,8 @@ Route::middleware('admin')->group(function () {
     Route::get('/catalogos', [CatalogoController::class, 'index'])->name('catalogos');
     Route::get('/reportes', [ReporteController::class, 'index'])->name('reportes');
     Route::get('/perfil', [PerfilController::class, 'index'])->name('perfil');
+    Route::put('/perfil', [PerfilController::class, 'actualizar'])->name('perfil.actualizar');
+
+    // Guía de componentes: solo existe con APP_ENV=local (el controlador responde 404 en otro entorno).
+    Route::get('/componentes', [ComponentesController::class, 'index'])->name('componentes');
 });
