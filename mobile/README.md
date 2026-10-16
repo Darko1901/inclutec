@@ -85,7 +85,8 @@ Otras pruebas con el mock:
 - **Código de recuperación de contraseña:** en el mock el código válido es siempre **`123456`** (vence a los 15 minutos; después de 5 intentos incorrectos responde 410; el reenvío solo se permite 60 s después del envío anterior). No llega ningún correo.
 - **Registro:** en el mock, `mariana.lopez@correo.mx` (o cualquier correo de la tabla de arriba) responde «correo ya registrado» y el RFC `TQU150312AB1` responde «RFC ya registrado». Cualquier otro dato válido crea la cuenta (el candidato llega a Perfil y el reclutador a Organización; su empresa queda «pendiente»).
 - **Notificaciones push:** el registro del dispositivo (`POST /dispositivos`) se omite en Expo Go, porque ahí las push remotas ya no existen (Android desde el SDK 53). Funciona en una _development build_.
-- Los cambios (registros, notificaciones leídas, contraseñas nuevas) se guardan **en memoria**: al cerrar la app por completo vuelven los datos originales. La sesión sí se conserva (el token está en `expo-secure-store`).
+- **Habilidades solo del mock:** el catálogo de S001 tiene 15; el mock agrega las de id 16 a 33 (Nómina, Ventas, Almacenamiento…) para poder llegar al límite de 30 de CAN-04.
+- Los cambios (registros, notificaciones leídas, contraseñas nuevas, perfil y CV) se guardan **en memoria**: al cerrar la app por completo vuelven los datos originales. La sesión sí se conserva (el token está en `expo-secure-store`).
 
 ## Comandos
 
@@ -138,7 +139,7 @@ mobile/
     ├── contenido/          Textos largos, como el aviso de privacidad
     ├── pantallas/
     │   ├── compartidas/    MOV-00 a MOV-04
-    │   ├── candidato/      CAN-01 a CAN-07
+    │   ├── candidato/      CAN-01 a CAN-07 (con subcarpetas vacantes/, detalle/, perfil/ y cv/)
     │   └── reclutador/     REC-01 a REC-06
     ├── navegacion/         Navegador raíz y barras inferiores por rol
     ├── sesion/             Contexto de sesión y token en expo-secure-store
@@ -157,10 +158,12 @@ Las pruebas viven junto al código, en carpetas `__tests__/`.
 | MOV-03 Recuperar contraseña (correo, código de 6 dígitos y nueva contraseña)           | Lista                                                     |
 | MOV-04 Notificaciones (lista paginada, marcar leídas y preferencias)                   | Lista                                                     |
 | Barras inferiores de candidato y reclutador (con contador de notificaciones no leídas) | Listas                                                    |
-| «Cerrar sesión» en CAN-03 Perfil y REC-01 Organización                                 | Funcional                                                 |
+| «Cerrar sesión» en REC-01 Organización                                                 | Funcional                                                 |
 | CAN-01 Vacantes (recomendadas, búsqueda, filtros y «cubre mis necesidades»)            | Lista                                                     |
 | CAN-02 Detalle de vacante (desglose, postulación y reporte)                            | Lista                                                     |
-| CAN-03 a CAN-07, REC-01 a REC-06                                                       | Marcador «Pendiente» (se llenan en las siguientes tareas) |
+| CAN-03 Mi perfil (completitud, foto, datos, preferencias, necesidades y cuenta)        | Lista                                                     |
+| CAN-04 Mi CV (experiencia, formación, habilidades y vista previa)                      | Lista                                                     |
+| CAN-05 a CAN-07, REC-01 a REC-06                                                       | Marcador «Pendiente» (se llenan en las siguientes tareas) |
 
 ### Cómo probar CAN-01 y CAN-02 en el teléfono
 
@@ -175,6 +178,26 @@ Las pruebas viven junto al código, en carpetas `__tests__/`.
 
 Al tocar una notificación se abre la pantalla de su referencia pasándole el id (CAN-06, REC-05, REC-06, REC-01 o REC-02); esas pantallas son marcadores que muestran el id recibido.
 
+### Cómo probar CAN-03 y CAN-04 en el teléfono
+
+Todo se guarda en memoria: al cerrar la app por completo vuelven los datos de S002.
+
+1. Entra como **mariana.lopez@correo.mx** y abre **Perfil**. Arriba dice «Tu perfil está al 90 % · Falta: foto» y la barra se anuncia como «Completitud del perfil, 90 por ciento».
+2. Toca **Cambiar foto › Elegir de la galería** (o **Tomar una foto**, que pide permiso de cámara con una explicación). Con la foto llega a **100 %**; **Quitar foto** (con confirmación) regresa a 90 %.
+3. Expande **Datos personales**, cambia el teléfono a 3 dígitos y toca **Guardar**: el error aparece bajo el campo. Corrígelo, guarda y se anuncia «Datos personales guardados. Tu perfil está al … por ciento.».
+4. Expande **Necesidades de ajuste**: arriba dice «No te pedimos diagnóstico…», las casillas van agrupadas por categoría y hay tres opciones para compartir. **Retirar mi consentimiento** pide confirmar y borra las necesidades y la nota.
+5. Cierra sesión y entra como **jorge.ramirez@correo.mx** (80 %, sin consentimiento): en **Necesidades de ajuste** ve la explicación y el enlace al aviso de privacidad. **Dar mi consentimiento** confirma antes de enviar; después marca «Intérprete de Lengua de Señas Mexicana» y guarda. En **Vacantes** el chip «Solo las que cubren mis necesidades» ya se puede usar.
+6. En Perfil, los botones de pendientes llevan a su lugar: «Agregar experiencia» abre **Mi CV** en esa pestaña.
+7. **Mi CV › Experiencia**: **+ Agregar**, elige mes y año de inicio (guarda el día 1) y marca «Trabajo aquí actualmente» (la fecha de fin se oculta). Una fecha de fin anterior al inicio se marca en su campo. Edita y elimina (con confirmación).
+8. **Formación**: igual; si el estado es «En curso», la fecha de fin es opcional.
+9. **Habilidades**: escribe «pyth» (sugerencias desde 2 letras), toca «Agregar Python», cambia su nivel y toca **Guardar habilidades**. El contador dice «5 de 30»; para llegar a 30 agrega más (el mock tiene 33 habilidades) y el buscador se deshabilita con su explicación.
+10. **Vista previa de mi CV**: modal de solo lectura, sin correo ni teléfono y con la aclaración del contacto.
+11. En Perfil, **Cambiar contraseña** (error «La contraseña actual no es correcta…» con una incorrecta) y **Eliminar mi cuenta**: primero explica qué se borra y que las postulaciones activas se retiran; después pide la contraseña. Al terminar vuelves a MOV-01 con un aviso, y esa cuenta responde 423 al iniciar sesión.
+
+Con TalkBack o VoiceOver recorre el perfil de arriba abajo: cada sección es un botón «expandida/contraída», los campos tienen etiqueta y los errores se anuncian.
+
 ## Accesibilidad
 
 WCAG 2.1 AA: contraste de 4.5:1 (hay una prueba que lo comprueba con la paleta), áreas táctiles de 48 × 48 dp, texto que respeta el tamaño de fuente del sistema (hasta 200 %), `accessibilityLabel`, `accessibilityRole` y `accessibilityState` en todo lo interactivo, estados con texto e ícono y errores anunciados con `AccessibilityInfo.announceForAccessibility`.
+
+Patrones de CAN-03 y CAN-04 que conviene reutilizar: `SeccionDesplegable` (botón con estado expandido o contraído; el contenido sigue montado para no perder lo escrito), `ModalFormulario` (título al que va el foco, contenido con scroll y botón fijo dentro del área segura), `useRetornoFoco` (devuelve el foco al botón que abrió un modal), `BarraProgreso` (barra con valor dicho en voz alta, por ejemplo «90 por ciento») y `SelectorMesAnio` (fecha de mes y año con listas accesibles, sin el selector nativo).
