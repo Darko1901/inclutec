@@ -2,7 +2,7 @@
 
 Panel web en Laravel (Blade) para el administrador de IncluTec. **No tiene base de datos:** todo pasa por el API REST (`api/`), con JSON y un token JWT. El panel guarda ese token en la **sesión del servidor** y nunca lo manda al navegador.
 
-Pantallas: WEB-01 inicio de sesión (listo) y WEB-02 a WEB-08 (maquetadas con datos fijos; se conectan al API en las siguientes tareas). Qué hace cada una: `docs/diseno/pantallas.md` y `docs/diseno/requerimientos.md`.
+Pantallas: WEB-01 inicio de sesión y «Cambiar contraseña» (listas, con la base de componentes) y WEB-02 a WEB-08 (maquetadas con datos fijos dentro del layout nuevo; se conectan al API en las siguientes tareas). Qué hace cada una: `docs/diseno/pantallas.md` y `docs/diseno/requerimientos.md`.
 
 ## Requisitos
 
@@ -28,7 +28,7 @@ composer install
 cp .env.example .env
 php artisan key:generate
 npm ci
-npm run build          # compila Alpine.js; sin este paso el panel no carga su JavaScript
+npm run build          # compila estilos, la fuente Inter y Alpine.js; sin este paso el panel no carga
 ```
 
 ## Variables de entorno (`.env`)
@@ -64,28 +64,50 @@ Contraseña de todas: `Inclutec2026`. Son las de `db/semillas/S002__datos_prueba
 | `mariana.lopez@correo.mx`, `jorge.ramirez@correo.mx` (candidatos) y las cuentas de reclutador (`rh@tecnoqro.mx`, `rh@logibajio.mx`, `talento@concentro.mx`, `contacto@estudiotrazo.mx`) | «Esta cuenta no tiene acceso al panel. Usa la aplicación móvil.» y no se guarda la sesión. |
 | `suspendida@correo.mx` | Existe solo en el mock (id 100): responde 423, «Tu cuenta está suspendida.». |
 
-Con el mock, cinco intentos fallidos con el mismo correo bloquean el acceso 15 minutos: el sexto responde 429 con `Retry-After`, aunque la contraseña sea correcta. El estado se guarda en la caché de archivo; para reiniciarlo, `php artisan cache:clear`.
+Con el mock, cinco intentos fallidos con el mismo correo bloquean el acceso 15 minutos: el sexto responde 429 con `Retry-After`, aunque la contraseña sea correcta.
+
+### El mock tiene memoria
+
+`ApiMock` guarda su estado (contraseñas cambiadas, intentos fallidos y, en las siguientes tareas, lo que el administrador cree o edite) en `storage/app/mock-api.json`. El archivo está fuera de git, se crea a partir de `app/Servicios/Api/Mock/datos.php` (los datos de S002) la primera vez que se usa y se actualiza con bloqueo de archivo. Así un cambio hecho en el panel se conserva al recargar.
+
+```bash
+php artisan inclutec:mock-reiniciar   # borra el archivo y vuelve a los datos iniciales de la semilla
+```
+
+- Si cambias `Mock/datos.php` (por ejemplo, agregas un grupo nuevo), las llaves que falten se completan solas, pero los registros ya guardados no cambian: corre `inclutec:mock-reiniciar` para verlos.
+- En las pruebas cada caso usa un archivo temporal propio (lo configura `tests/TestCase.php`), así que todos parten de los datos iniciales y nunca tocan el archivo de desarrollo.
+- Para depurar, el archivo se puede abrir y editar a mano (es JSON).
 
 ## Estructura
 
 ```
 app/
+  Console/Commands/     inclutec:mock-reiniciar
   Http/
     Controllers/        un controlador por pantalla; SesionController maneja login y logout
-    Middleware/         ExigirAdministrador (alias `admin`): exige sesión y valida el token con GET /auth/me
+    Middleware/         ExigirAdministrador (alias `admin`): exige sesión, valida el token con GET /auth/me y comparte `$administrador`
   Providers/            ApiServiceProvider elige ApiMock o ApiHttp según INCLUTEC_API_MOCK
   Servicios/Api/
     ApiAdmin.php        interfaz: lo único de lo que dependen los controladores
     ApiHttp.php         llama al API real (Bearer con el token de la sesión, 15 s de tiempo máximo)
     ApiMock.php         responde como el contrato con datos de prueba
-    Mock/datos.php      datos del mock (los de S002); único lugar donde viven
     ApiError.php        excepción con status, codigo, detail y campos (forma del contrato)
+    Mock/datos.php      datos iniciales del mock (los de S002); único lugar donde viven
+    Mock/Almacen.php    estado persistente del mock (storage/app/mock-api.json)
+  Support/
+    Estados.php         mapa único de estados: valor de BD → texto, ícono y variante (tabla 3.4)
+    Iconos.php          íconos SVG de contorno
 bootstrap/app.php       alias del middleware y manejo de ApiError (401 y 423 cierran sesión)
-config/inclutec.php     api_url y mock
-resources/views/        layouts, auth/ (WEB-01) y admin/ (WEB-02 a WEB-09)
-resources/js/app.js     Alpine.js (se empaqueta con Vite; no se carga desde ningún CDN)
-public/css/admin.css    estilos del panel
-tests/                  pruebas de Feature (login, rutas, sesión) y Unit (ApiMock y ApiHttp)
+config/inclutec.php     api_url, mock y mock_archivo
+resources/
+  css/admin.css         estilos del panel (con Vite); fuentes.css carga Inter desde @fontsource, sin internet
+  js/                   app.js (Alpine + plugin focus) y componentes.js (avisos, modal, confirmación…)
+  views/layouts/        admin_layout: layout de todas las pantallas del panel
+  views/components/     componentes Blade (ver abajo)
+  views/auth/           WEB-01 inicio de sesión
+  views/admin/          pantallas del panel
+  views/desarrollo/     guía de componentes (solo APP_ENV=local)
+tests/                  Feature (login, layout, componentes, contraseña, mock) y Unit (ApiMock, ApiHttp, Estados)
 ```
 
 Reglas del panel: las vistas nunca importan datos de prueba; siempre pasan por `ApiAdmin`. Rutas, campos, estados y errores siguen `docs/api/contrato.md`. Para agregar un grupo del contrato (estadísticas, usuarios, empresas…), se agregan los métodos a `ApiAdmin`, a `ApiHttp` y a `ApiMock` (con sus datos en `Mock/datos.php`).
@@ -97,3 +119,59 @@ php artisan test           # pruebas
 ./vendor/bin/pint --test   # estilo (Laravel Pint); sin --test corrige los archivos
 npm run build              # compila el JavaScript
 ```
+
+## Layout y componentes
+
+Todas las pantallas del panel extienden `layouts.admin_layout`:
+
+```blade
+@extends('layouts.admin_layout')
+@section('titulo', 'Usuarios')      {{-- título de la pestaña: «Usuarios · IncluTec» --}}
+@section('content')
+    <x-encabezado-pagina titulo="Usuarios" descripcion="…">…</x-encabezado-pagina>   {{-- el único <h1> --}}
+    …
+@endsection
+```
+
+El layout ya trae «Saltar al contenido», `<header>` con el menú de usuario (Cambiar contraseña, Cerrar sesión), `<nav aria-label="Menú principal">` con `aria-current="page"`, un solo `<main id="contenido" tabindex="-1">`, el menú plegable en pantallas angostas y las regiones de avisos. **No agregues otro `<main>` ni otro `<h1>`.**
+
+Con `APP_ENV=local`, **http://localhost:8001/componentes** muestra todos los componentes con ejemplos (fuente: `resources/views/desarrollo/componentes.blade.php`).
+
+| Componente | Para qué |
+|---|---|
+| `<x-encabezado-pagina titulo descripcion>` | `<h1>`, descripción y, en el slot, los botones de acción |
+| `<x-boton variante="primario\|secundario\|peligro\|texto" tipo href :deshabilitado>` | Botones de al menos 44 × 44 px |
+| `<x-insignia-estado entidad valor>` | Estado con texto e ícono, desde el mapa de `App\Support\Estados` |
+| `<x-tabla caption :columnas mensajeVacio>` | `<table>` con `<caption>`, `<th scope="col">` y fila de estado vacío cuando el slot no trae filas |
+| `<x-paginacion :total :page :size>` | Recibe lo que devuelve el API; conserva los filtros de la URL |
+| `<x-filtros buscar :selects :total>` | Formulario GET con «Aplicar» y «Limpiar»; anuncia el número de resultados |
+| `<x-campo nombre etiqueta tipo valor ayuda obligatorio maximo :opciones>` | Etiqueta, control, ayuda, contador y error con `aria-invalid`/`aria-describedby`; toma el error de `$errors` |
+| `<x-resumen-errores>` | Lista de errores con `role="alert"` que recibe el foco; cada error enlaza a su campo |
+| `<x-modal id titulo>` | Diálogo accesible: foco atrapado, Escape y «Cerrar», devuelve el foco. Se abre con `$dispatch('abrir-modal', 'id')` |
+| `<x-confirmacion id titulo pedirMotivo accion metodo>` | «¿Seguro que…?»; con `pedirMotivo` no deja confirmar sin motivo. Con `accion` envía un formulario; sin ella emite el evento `confirmado` |
+
+### Avisos
+
+Un controlador que termina bien redirige con `->with('exito', 'Tu contraseña se actualizó.')`; si algo falla sin ser un error de campo, con `->with('error', '…')`. El layout muestra `exito` en una región `role="status"` y `error` en una `role="alert"`. Los errores de validación de formularios no van por aquí: usan `->withErrors()` y `<x-resumen-errores>`.
+
+### Estados
+
+Los estados se guardan y llegan del API con su valor de BD (`en_revision`). El texto, el ícono y el color salen **solo** de `App\Support\Estados` (tabla 3.4 de `docs/diseno/pantallas.md`): `<x-insignia-estado entidad="empresa" valor="pendiente" />`. Nunca escribas «Revisión», «Bloqueado» u otros textos a mano. Si el contrato agrega un valor, `tests/Unit/EstadosTest.php` falla hasta que se agregue al mapa.
+
+## Cómo construir una pantalla
+
+Cada pantalla de W03 a W08 sigue estos pasos. **La vista nunca tiene datos escritos a mano ni llama al API: solo junta componentes con lo que le da el controlador.**
+
+1. **Lee el diseño** (en este orden): la sección de la pantalla en `docs/api/contrato.md` (rutas, cuerpos, errores), sus RF en `docs/diseno/requerimientos.md`, su caso de uso en `docs/diseno/casos_de_uso.md` y su sección en `docs/diseno/pantallas.md`. Usa los campos de `db/modelo/diccionario.md`; no inventes ninguno.
+2. **Agrega los métodos a `ApiAdmin`** (uno por endpoint, con el nombre en español y el endpoint en el comentario) y devuélvelos como arreglo con la forma del contrato. Impleméntalos en:
+   - `ApiHttp`: una línea con `$this->enviar('get', '/admin/usuarios', $consulta)->json()` (o `put`, `post`, `patch`, `delete`). Los errores ya llegan como `ApiError`.
+   - `ApiMock`: lee y escribe con `Almacen::leer()` / `Almacen::modificar(function (array &$estado) { … })`, valida y responde con **los mismos códigos de error del contrato** (`404 no_encontrado`, `409 …`, `422 validacion` con `campos`). Lanza el error después de guardar, no dentro de la función que modifica el estado (mira `login()`).
+3. **Agrega los datos al mock** en `app/Servicios/Api/Mock/datos.php` bajo una llave nueva (`'empresas' => [...]`), con los de `db/semillas/S002__datos_prueba.sql` y los nombres de campo del contrato (snake_case, catálogos como objetos `{id, nombre}`, fechas en UTC). Si necesita más volumen para probar la paginación de 25, agrégalo ahí, con ids de 100 en adelante para lo que no esté en S002. Corre `php artisan inclutec:mock-reiniciar`.
+4. **Crea o completa el controlador** (`app/Http/Controllers/…`): recibe `ApiAdmin` en el constructor, valida con `$request->validate()` (mensajes en español de México), llama al servicio y pasa el resultado a la vista. Captura `ApiError` solo para los errores que la pantalla maneja (409, 422…): `withErrors($error->campos)` para campos y `->with('error', …)` para el resto; el 401 y el 423 ya los maneja `bootstrap/app.php`.
+5. **Registra la ruta** dentro del grupo `Route::middleware('admin')` de `routes/web.php`, con nombre.
+6. **Arma la vista** con el layout y los componentes de arriba. Un `<h1>` (con `<x-encabezado-pagina>`), filtros con `<x-filtros>`, tabla con `<x-tabla>`, estados con `<x-insignia-estado>`, paginación con `<x-paginacion :total="$pagina['total']" :page="$pagina['page']" :size="$pagina['size']" />`, acciones críticas con `<x-confirmacion pedirMotivo …>`. Textos en español de México; fechas en hora de la Ciudad de México.
+7. **Prueba**:
+   - **Pruebas de Laravel** (`tests/Feature`): la ruta sin sesión lleva a `/login`; el caso feliz con el mock; cada error del contrato que la pantalla maneja; un `Http::fake` con la respuesta del contrato para `ApiHttp`; el `<h1>` único y los textos de estado. Usa `tests/Feature/CambiarContrasena*Test.php` como ejemplo.
+   - **axe** (claro y oscuro) sobre la pantalla nueva, incluidos los estados con errores y con modales abiertos: sin hallazgos. Se puede correr con la extensión de navegador de axe DevTools, o con `axe-core` y Puppeteer/Playwright.
+   - **Teclado**: recorre la pantalla solo con Tab, Shift+Tab, Enter, Espacio y Escape. El orden es lógico, el foco siempre se ve, los modales atrapan y devuelven el foco, y todo se puede hacer sin ratón.
+   - `php artisan test`, `./vendor/bin/pint --test` y `npm run build` sin errores.
