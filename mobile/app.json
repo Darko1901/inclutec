@@ -21,6 +21,17 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": ["expo-secure-store", "expo-asset", "expo-font"]
+    "plugins": [
+      "expo-secure-store",
+      "expo-asset",
+      "expo-font",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "IncluTec usa tus fotos solo para que elijas la foto de tu perfil.",
+          "cameraPermission": "IncluTec usa la cámara solo para que tomes la foto de tu perfil."
+        }
+      ]
+    ]
   }
 }
