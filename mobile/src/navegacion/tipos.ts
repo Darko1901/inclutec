@@ -28,7 +28,8 @@ export type RootStackParamList = {
   // Candidato: barra inferior y pantallas de detalle (CAN-02, CAN-04, CAN-06)
   CandidatoTabs: NavigatorScreenParams<CandidatoTabsParamList> | undefined;
   DetalleVacante: { id: number };
-  MiCV: undefined;
+  // `pestana` llega desde CAN-03 al tocar una sección pendiente del perfil.
+  MiCV: { pestana?: 'experiencia' | 'formacion' | 'habilidades' } | undefined;
   DetallePostulacion: { id: number };
   // Reclutador: barra inferior y pantallas de detalle (REC-03, REC-04, REC-05)
   ReclutadorTabs: NavigatorScreenParams<ReclutadorTabsParamList> | undefined;
