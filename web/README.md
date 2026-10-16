@@ -120,6 +120,10 @@ php artisan test           # pruebas
 npm run build              # compila el JavaScript
 ```
 
+## Dependencias y auditoría
+
+`npm audit` en `web/` reporta **0 vulnerabilidades** (el JavaScript del panel solo usa Vite, `laravel-vite-plugin`, Alpine.js y la fuente Inter), así que no hay `overrides` ni excepciones. Corre `npm audit` cuando cambies dependencias. Si aparece algo, corrígelo con `npm audit fix` y nunca con `npm audit fix --force`: puede saltar de versión mayor (por ejemplo, de Vite) y romper el build. Después de tocar dependencias, `npm run build` y `php artisan test` deben seguir en verde.
+
 ## Layout y componentes
 
 Todas las pantallas del panel extienden `layouts.admin_layout`:
