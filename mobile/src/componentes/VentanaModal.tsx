@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react';
-import { Modal, StyleSheet } from 'react-native';
+import { useEffect, useRef, type ReactNode } from 'react';
+import { Modal, Platform, StyleSheet } from 'react-native';
 import {
   initialWindowMetrics,
   SafeAreaProvider,
@@ -14,6 +14,11 @@ interface VentanaModalProps {
   onCerrar: () => void;
   /** `pantalla` ocupa toda la pantalla; `dialogo` deja ver lo de atrás (confirmaciones). */
   tipo?: 'pantalla' | 'dialogo';
+  /**
+   * Se llama cuando el modal ya terminó de cerrarse. Sirve para abrir algo del sistema (selector
+   * de fotos, cámara) que iOS no puede presentar mientras el modal sigue cerrándose.
+   */
+  onCerrado?: () => void;
   children: ReactNode;
   testID?: string;
 }
@@ -27,10 +32,28 @@ export function VentanaModal({
   visible,
   onCerrar,
   tipo = 'pantalla',
+  onCerrado,
   children,
   testID,
 }: VentanaModalProps) {
   const esPantalla = tipo === 'pantalla';
+
+  // En iOS lo avisa el propio Modal (onDismiss). En Android ese evento no existe: se llama
+  // cuando el cierre ya se aplicó y la interfaz quedó libre.
+  const estabaVisible = useRef(visible);
+  const alCerrar = useRef(onCerrado);
+  useEffect(() => {
+    alCerrar.current = onCerrado;
+  });
+  useEffect(() => {
+    const secerro = estabaVisible.current && !visible;
+    estabaVisible.current = visible;
+    if (Platform.OS === 'ios' || !secerro) return undefined;
+    // requestIdleCallback espera a que el cierre se haya aplicado y la interfaz esté libre.
+    const tarea = requestIdleCallback(() => alCerrar.current?.());
+    return () => cancelIdleCallback(tarea);
+  }, [visible]);
+
   return (
     <Modal
       testID={testID}
@@ -38,6 +61,7 @@ export function VentanaModal({
       transparent={!esPantalla}
       animationType={esPantalla ? 'slide' : 'fade'}
       onRequestClose={onCerrar}
+      onDismiss={onCerrado}
       supportedOrientations={['portrait', 'landscape']}
     >
       <SafeAreaProvider initialMetrics={initialWindowMetrics}>
