@@ -56,6 +56,7 @@ export default function CAN03Perfil() {
   const [avisoContrasena, setAvisoContrasena] = useState(0);
   const [avisoFoto, setAvisoFoto] = useState<AvisoFoto>();
   const [elegirOrigen, setElegirOrigen] = useState(false);
+  const origenPendiente = useRef<OrigenFoto | null>(null);
   const [quitando, setQuitando] = useState(false);
   const [ocupado, setOcupado] = useState(false);
 
@@ -119,11 +120,25 @@ export default function CAN03Perfil() {
     setElegirOrigen(true);
   }
 
-  async function cambiarFoto(origen: OrigenFoto) {
+  // iOS no puede presentar el selector de fotos mientras el diálogo sigue cerrándose: se anota
+  // qué se eligió y el selector se abre cuando ModalFoto avisa que ya terminó de cerrarse.
+  function elegirOrigenFoto(origen: OrigenFoto) {
+    origenPendiente.current = origen;
     setElegirOrigen(false);
+  }
+
+  function alCerrarseModalFoto() {
+    const origen = origenPendiente.current;
+    origenPendiente.current = null;
+    if (origen) void cambiarFoto(origen);
+  }
+
+  async function cambiarFoto(origen: OrigenFoto) {
     try {
       const resultado = await elegirFoto(origen);
-      if (resultado.tipo === 'sin_permiso') {
+      if (resultado.tipo === 'error') {
+        avisarFoto('error', 'No pudimos abrir tus fotos. Intenta de nuevo.');
+      } else if (resultado.tipo === 'sin_permiso') {
         avisarFoto(
           'advertencia',
           'Sin permiso para usar la cámara no podemos tomar la foto. Puedes activarlo en los ajustes del teléfono o elegir una foto de la galería.',
@@ -240,8 +255,10 @@ export default function CAN03Perfil() {
 
       <ModalFoto
         visible={elegirOrigen}
-        onElegir={(origen) => void cambiarFoto(origen)}
+        onElegir={elegirOrigenFoto}
+        onCerrado={alCerrarseModalFoto}
         onCancelar={() => {
+          origenPendiente.current = null;
           setElegirOrigen(false);
           devolver();
         }}

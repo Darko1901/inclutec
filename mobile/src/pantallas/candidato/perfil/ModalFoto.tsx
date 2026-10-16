@@ -8,9 +8,11 @@ interface Props {
   visible: boolean;
   onElegir: (origen: OrigenFoto) => void;
   onCancelar: () => void;
+  /** El diálogo ya terminó de cerrarse: ahora sí se puede abrir el selector del sistema. */
+  onCerrado: () => void;
 }
 
-function Contenido({ onElegir, onCancelar }: Omit<Props, 'visible'>) {
+function Contenido({ onElegir, onCancelar }: Omit<Props, 'visible' | 'onCerrado'>) {
   const referenciaTitulo = useFocoEnTitulo();
   return (
     <View style={estilos.fondo}>
@@ -49,9 +51,15 @@ function Contenido({ onElegir, onCancelar }: Omit<Props, 'visible'>) {
 }
 
 /** Diálogo para elegir de dónde sale la foto, con la explicación del permiso de la cámara. */
-export function ModalFoto({ visible, ...resto }: Props) {
+export function ModalFoto({ visible, onCerrado, ...resto }: Props) {
   return (
-    <VentanaModal visible={visible} tipo="dialogo" onCerrar={resto.onCancelar} testID="modal-foto">
+    <VentanaModal
+      visible={visible}
+      tipo="dialogo"
+      onCerrar={resto.onCancelar}
+      onCerrado={onCerrado}
+      testID="modal-foto"
+    >
       <Contenido {...resto} />
     </VentanaModal>
   );

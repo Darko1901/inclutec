@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react-native';
 import { useEffect, type ReactNode } from 'react';
 import { Text } from 'react-native';
 
@@ -17,10 +17,33 @@ jest.mock('@react-navigation/native', () => ({
     jest.requireActual('react').useEffect(efecto, [efecto]),
 }));
 
+// El Modal de pruebas no avisa cuándo termina de cerrarse; este deja alcanzar su onDismiss, que en
+// iOS llama el sistema al terminar la animación de cierre.
+const mockModales: Record<string, { onDismiss?: () => void }> = {};
+function mockGuardarModal(id: string, propiedades: { onDismiss?: () => void }) {
+  mockModales[id] = propiedades;
+}
+jest.mock('react-native/Libraries/Modal/Modal', () => {
+  const { View } = jest.requireActual('react-native');
+  const Modal = (propiedades: {
+    testID?: string;
+    visible?: boolean;
+    children?: unknown;
+    onDismiss?: () => void;
+  }) => {
+    mockGuardarModal(propiedades.testID ?? 'sin-id', propiedades);
+    return propiedades.visible === false ? null : (
+      <View testID={propiedades.testID}>{propiedades.children as never}</View>
+    );
+  };
+  return { __esModule: true, default: Modal };
+});
+
 const mockGaleria = jest.fn();
 const mockCamara = jest.fn();
 const mockPermisoCamara = jest.fn();
 jest.mock('expo-image-picker', () => ({
+  UIImagePickerPreferredAssetRepresentationMode: { Compatible: 'compatible' },
   launchImageLibraryAsync: (...args: unknown[]) => mockGaleria(...args),
   launchCameraAsync: (...args: unknown[]) => mockCamara(...args),
   requestCameraPermissionsAsync: () => mockPermisoCamara(),
@@ -57,6 +80,15 @@ async function abrir(correo = 'mariana.lopez@correo.mx') {
     </SesionProvider>,
   );
   await screen.findByRole('header', { name: 'Mi perfil' });
+}
+
+/** Elige una opción del diálogo de la foto y simula que el modal ya terminó de cerrarse. */
+async function soltarModalFoto(opcion: string) {
+  await fireEvent.press(screen.getByRole('button', { name: 'Cambiar foto' }));
+  await fireEvent.press(await screen.findByRole('button', { name: opcion }));
+  await act(async () => {
+    mockModales['modal-foto'].onDismiss?.();
+  });
 }
 
 const textoCompletitud = () => screen.getByTestId('texto-completitud').props.children as string;
@@ -112,6 +144,9 @@ describe('CAN-03 · Mi perfil', () => {
       await fireEvent.press(screen.getByRole('button', { name: 'Cambiar foto' }));
       expect(await screen.findByText(/necesita usar la cámara/)).toBeOnTheScreen();
       await fireEvent.press(screen.getByRole('button', { name: 'Elegir de la galería' }));
+      await act(async () => {
+        mockModales['modal-foto'].onDismiss?.();
+      });
 
       await waitFor(() => expect(textoCompletitud()).toBe('Tu perfil está al 100 %'));
       expect(screen.getByRole('progressbar')).toHaveAccessibilityValue({ now: 100 });
@@ -132,12 +167,121 @@ describe('CAN-03 · Mi perfil', () => {
       expect((await candidatos.obtenerPerfil()).foto_url).toBeNull();
     });
 
-    it('cancelar el selector no cambia nada', async () => {
-      mockGaleria.mockResolvedValue({ canceled: true, assets: null });
+    it('la galería se abre solo después de que el modal de la foto terminó de cerrarse', async () => {
+      mockGaleria.mockResolvedValue({ canceled: false, assets: [FOTO] });
       await abrir();
 
       await fireEvent.press(screen.getByRole('button', { name: 'Cambiar foto' }));
       await fireEvent.press(await screen.findByRole('button', { name: 'Elegir de la galería' }));
+
+      // El modal ya se está cerrando, pero iOS todavía no puede presentar el selector.
+      await act(async () => {});
+      expect(mockGaleria).not.toHaveBeenCalled();
+
+      // Al terminar de cerrarse, el Modal avisa (onDismiss en iOS) y recién entonces se abre.
+      await act(async () => {
+        mockModales['modal-foto'].onDismiss?.();
+      });
+      await waitFor(() => expect(mockGaleria).toHaveBeenCalledTimes(1));
+      await waitFor(() => expect(textoCompletitud()).toBe('Tu perfil está al 100 %'));
+    });
+
+    it('cerrar el diálogo sin elegir no abre ningún selector', async () => {
+      await abrir();
+
+      await fireEvent.press(screen.getByRole('button', { name: 'Cambiar foto' }));
+      await fireEvent.press(await screen.findByRole('button', { name: 'Cancelar' }));
+      await act(async () => {
+        mockModales['modal-foto'].onDismiss?.();
+      });
+
+      expect(mockGaleria).not.toHaveBeenCalled();
+      expect(mockCamara).not.toHaveBeenCalled();
+    });
+
+    it('una foto HEIC se rechaza con un mensaje claro', async () => {
+      mockGaleria.mockResolvedValue({
+        canceled: false,
+        assets: [
+          {
+            ...FOTO,
+            uri: 'file:///fotos/IMG_1.HEIC',
+            fileName: 'IMG_1.HEIC',
+            mimeType: 'image/heic',
+          },
+        ],
+      });
+      await abrir();
+
+      await soltarModalFoto('Elegir de la galería');
+
+      expect(await screen.findByText('La foto debe ser JPG o PNG.')).toBeOnTheScreen();
+      expect(textoCompletitud()).toBe('Tu perfil está al 90 % · Falta: foto');
+    });
+
+    it('una foto HEIC sin tipo MIME también se rechaza', async () => {
+      mockGaleria.mockResolvedValue({
+        canceled: false,
+        assets: [{ uri: 'file:///fotos/IMG_2.heic', fileName: null, mimeType: undefined }],
+      });
+      await abrir();
+
+      await soltarModalFoto('Elegir de la galería');
+
+      expect(await screen.findByText('La foto debe ser JPG o PNG.')).toBeOnTheScreen();
+    });
+
+    it('pide a iOS la representación compatible para recibir JPEG', async () => {
+      mockGaleria.mockResolvedValue({ canceled: true, assets: null });
+      await abrir();
+
+      await soltarModalFoto('Elegir de la galería');
+
+      expect(mockGaleria).toHaveBeenCalledWith(
+        expect.objectContaining({ preferredAssetRepresentationMode: 'compatible' }),
+      );
+    });
+
+    it('un error del selector de la galería se muestra', async () => {
+      mockGaleria.mockRejectedValue(new Error('PHPicker no disponible'));
+      await abrir();
+
+      await soltarModalFoto('Elegir de la galería');
+
+      expect(
+        await screen.findByText('No pudimos abrir tus fotos. Intenta de nuevo.'),
+      ).toBeOnTheScreen();
+      expect(textoCompletitud()).toBe('Tu perfil está al 90 % · Falta: foto');
+    });
+
+    it('un error de la cámara también se muestra', async () => {
+      mockPermisoCamara.mockResolvedValue({ granted: true });
+      mockCamara.mockRejectedValue(new Error('Cámara no disponible'));
+      await abrir();
+
+      await soltarModalFoto('Tomar una foto');
+
+      expect(
+        await screen.findByText('No pudimos abrir tus fotos. Intenta de nuevo.'),
+      ).toBeOnTheScreen();
+    });
+
+    it('tomar una foto con la cámara sigue funcionando', async () => {
+      mockPermisoCamara.mockResolvedValue({ granted: true });
+      mockCamara.mockResolvedValue({ canceled: false, assets: [FOTO] });
+      await abrir();
+
+      await soltarModalFoto('Tomar una foto');
+
+      await waitFor(() => expect(textoCompletitud()).toBe('Tu perfil está al 100 %'));
+      expect(mockGaleria).not.toHaveBeenCalled();
+    });
+
+    it('cancelar el selector no cambia nada', async () => {
+      mockGaleria.mockResolvedValue({ canceled: true, assets: null });
+      await abrir();
+
+      await soltarModalFoto('Elegir de la galería');
 
       await waitFor(() => expect(mockGaleria).toHaveBeenCalled());
       expect(textoCompletitud()).toBe('Tu perfil está al 90 % · Falta: foto');
@@ -147,8 +291,7 @@ describe('CAN-03 · Mi perfil', () => {
       mockPermisoCamara.mockResolvedValue({ granted: false });
       await abrir();
 
-      await fireEvent.press(screen.getByRole('button', { name: 'Cambiar foto' }));
-      await fireEvent.press(await screen.findByRole('button', { name: 'Tomar una foto' }));
+      await soltarModalFoto('Tomar una foto');
 
       expect(await screen.findByText(/Sin permiso para usar la cámara/)).toBeOnTheScreen();
       expect(
@@ -164,8 +307,7 @@ describe('CAN-03 · Mi perfil', () => {
       });
       await abrir();
 
-      await fireEvent.press(screen.getByRole('button', { name: 'Cambiar foto' }));
-      await fireEvent.press(await screen.findByRole('button', { name: 'Elegir de la galería' }));
+      await soltarModalFoto('Elegir de la galería');
 
       expect(
         await screen.findByText('La foto pesa más de 2 MB. Elige una más ligera.'),
