@@ -1,6 +1,7 @@
 import type {
   AjusteRef,
   Compatibilidad,
+  EmpresaPropia,
   EmpresaPublica,
   EmpresaResumen,
   Entrevista,
@@ -8,6 +9,7 @@ import type {
   PostulacionDetalle,
   PostulacionResumen,
   VacanteDetalle,
+  VacanteReclutador,
   VacanteResumen,
 } from '../tipos';
 import { calcularCompatibilidad, entradaDeCandidato, entradaDeVacante } from './compatibilidad';
@@ -120,7 +122,11 @@ export function resumenDeVacante(
   };
 }
 
-export function detalleDeVacante(vacante: VacanteMock, candidato: CandidatoMock): VacanteDetalle {
+function armarDetalle(
+  vacante: VacanteMock,
+  extras: Pick<VacanteDetalle, 'postulacion_id' | 'postulados'>,
+  mostrarSalario: boolean,
+): VacanteDetalle {
   const empresa = empresaDe(vacante.empresa_id);
   return {
     id: vacante.id,
@@ -139,10 +145,10 @@ export function detalleDeVacante(vacante: VacanteMock, candidato: CandidatoMock)
     municipio: municipioDe(vacante.municipio_id),
     direccion: vacante.direccion,
     plazas: vacante.plazas,
-    // Para el candidato el salario es null si la empresa no lo muestra.
-    salario: vacante.mostrar_salario
-      ? { min: vacante.salario_min, max: vacante.salario_max }
-      : null,
+    salario:
+      mostrarSalario || vacante.mostrar_salario
+        ? { min: vacante.salario_min, max: vacante.salario_max }
+        : null,
     mostrar_salario: vacante.mostrar_salario,
     nivel_educativo: vacante.nivel_educativo_id ? nivelDe(vacante.nivel_educativo_id) : null,
     experiencia_anios: vacante.experiencia_anios,
@@ -162,8 +168,49 @@ export function detalleDeVacante(vacante: VacanteMock, candidato: CandidatoMock)
     motivo_estado: null,
     publicada_en: vacante.publicada_en,
     actualizado_en: vacante.actualizado_en,
-    postulacion_id: postulacionDe(candidato.usuario_id, vacante.id)?.id ?? null,
-    postulados: null,
+    ...extras,
+  };
+}
+
+export function detalleDeVacante(vacante: VacanteMock, candidato: CandidatoMock): VacanteDetalle {
+  // Para el candidato el salario es null si la empresa no lo muestra.
+  return armarDetalle(
+    vacante,
+    {
+      postulacion_id: postulacionDe(candidato.usuario_id, vacante.id)?.id ?? null,
+      postulados: null,
+    },
+    false,
+  );
+}
+
+/** Postulaciones de la vacante que cuentan como postulados (las retiradas ya no). */
+export function postuladosDe(vacanteId: number) {
+  return obtenerEstado().postulaciones.filter(
+    (p) => p.vacante_id === vacanteId && p.estado !== 'retirada',
+  );
+}
+
+/** El reclutador dueño ve el salario aunque no se muestre a los candidatos, y los postulados. */
+export function detalleParaReclutador(vacante: VacanteMock): VacanteDetalle {
+  return armarDetalle(
+    vacante,
+    { postulacion_id: null, postulados: postuladosDe(vacante.id).length },
+    true,
+  );
+}
+
+export function resumenParaReclutador(vacante: VacanteMock): VacanteReclutador {
+  const postulados = postuladosDe(vacante.id);
+  return {
+    id: vacante.id,
+    titulo: vacante.titulo,
+    estado: vacante.estado,
+    modalidad: refDe('modalidades', vacante.modalidad_id),
+    postulados: postulados.length,
+    nuevas: postulados.filter((p) => p.estado === 'postulada').length,
+    publicada_en: vacante.publicada_en,
+    actualizado_en: vacante.actualizado_en,
   };
 }
 
@@ -395,6 +442,28 @@ export function fichaDeEmpresa(
     sitio_web: empresa.sitio_web,
     practicas_inclusion: empresa.practicas_inclusion,
     vacantes: publicadasDeEmpresa(empresa.id).map((v) => resumenDeVacante(v, candidato)),
+  };
+}
+
+export function vistaDeEmpresaPropia(empresa: EmpresaMock): EmpresaPropia {
+  return {
+    id: empresa.id,
+    razon_social: empresa.razon_social,
+    nombre_comercial: empresa.nombre_comercial,
+    rfc: empresa.rfc,
+    sector: refDeSector(empresa.sector_id),
+    tamano_empresa: tamanoDe(empresa.tamano_empresa_id),
+    municipio: municipioDe(empresa.municipio_id),
+    direccion: empresa.direccion,
+    descripcion: empresa.descripcion,
+    sitio_web: empresa.sitio_web,
+    logo_url: empresa.logo_url,
+    practicas_inclusion: empresa.practicas_inclusion,
+    documento_url: empresa.documento_url,
+    estado: empresa.estado,
+    motivo_estado: empresa.motivo_estado,
+    validada_en: empresa.validada_en,
+    datos_fiscales_editables: empresa.estado !== 'validada',
   };
 }
 

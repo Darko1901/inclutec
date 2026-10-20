@@ -176,7 +176,7 @@ describe('auth mock · registro', () => {
   it('registra un candidato, inicia su sesión y permite volver a entrar', async () => {
     const sesion = await auth.registrarCandidato(candidato);
     expect(sesion.usuario).toMatchObject({
-      id: 102,
+      id: 104,
       rol: 'candidato',
       estado: 'activo',
       consentimiento_sensibles: false,
@@ -186,7 +186,7 @@ describe('auth mock · registro', () => {
       correo: candidato.correo,
       contrasena: candidato.contrasena,
     });
-    expect(otraVez.usuario.id).toBe(102);
+    expect(otraVez.usuario.id).toBe(104);
   });
 
   it('registra un candidato que no da el consentimiento para necesidades de ajuste', async () => {
