@@ -1,31 +1,34 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import type { EstadoPostulacion } from '../../../api';
-import { Texto } from '../../../componentes';
-import { AREA_TACTIL_MINIMA, colores, espaciado, radio } from '../../../tema';
-import { textoEstado } from './textosPostulacion';
+import { AREA_TACTIL_MINIMA, colores, espaciado, radio } from '../tema';
+import { Texto } from './Texto';
 
-interface Props {
-  estados: EstadoPostulacion[];
-  /** null = todos los estados de la pestaña. */
-  valor: EstadoPostulacion | null;
-  onChange: (estado: EstadoPostulacion | null) => void;
+interface Props<T extends string> {
+  estados: T[];
+  /** null = todos los estados. */
+  valor: T | null;
+  onChange: (estado: T | null) => void;
+  /** Texto en pantalla de cada estado. */
+  textoDe: (estado: T) => string;
+  etiqueta?: string;
 }
 
 /** Filtro por estado: opciones excluyentes (radio); la elegida lleva palomita y se marca en el lector. */
-export function FiltroEstado({ estados, valor, onChange }: Props) {
-  const opciones: { clave: string; estado: EstadoPostulacion | null; texto: string }[] = [
+export function FiltroEstado<T extends string>({
+  estados,
+  valor,
+  onChange,
+  textoDe,
+  etiqueta = 'Filtrar por estado',
+}: Props<T>) {
+  const opciones: { clave: string; estado: T | null; texto: string }[] = [
     { clave: 'todos', estado: null, texto: 'Todos' },
-    ...estados.map((estado) => ({ clave: estado, estado, texto: textoEstado(estado) })),
+    ...estados.map((estado) => ({ clave: estado, estado, texto: textoDe(estado) })),
   ];
 
   return (
-    <View
-      accessibilityRole="radiogroup"
-      accessibilityLabel="Filtrar por estado"
-      style={estilos.grupo}
-    >
+    <View accessibilityRole="radiogroup" accessibilityLabel={etiqueta} style={estilos.grupo}>
       {opciones.map(({ clave, estado, texto }) => {
         const elegida = estado === valor;
         return (

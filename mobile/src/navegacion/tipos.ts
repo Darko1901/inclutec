@@ -34,7 +34,9 @@ export type RootStackParamList = {
   FichaEmpresa: { id: number };
   // Reclutador: barra inferior y pantallas de detalle (REC-03, REC-04, REC-05)
   ReclutadorTabs: NavigatorScreenParams<ReclutadorTabsParamList> | undefined;
-  EditarVacante: undefined;
-  Postulados: undefined;
+  // Sin `vacante_id` se crea una vacante; con él se edita esa vacante (REC-02 → REC-03).
+  EditarVacante: { vacante_id?: number } | undefined;
+  // REC-04: postulados de una vacante.
+  Postulados: { vacante_id: number };
   DetallePostulado: { id: number };
 };

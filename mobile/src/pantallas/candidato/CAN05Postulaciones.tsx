@@ -14,10 +14,17 @@ import {
   type EstadoPostulacion,
   type PostulacionResumen,
 } from '../../api';
-import { Aviso, Boton, Cargando, EstadoError, EstadoVacio, Texto } from '../../componentes';
+import {
+  Aviso,
+  Boton,
+  Cargando,
+  EstadoError,
+  EstadoVacio,
+  FiltroEstado,
+  Texto,
+} from '../../componentes';
 import { colores, espaciado } from '../../tema';
 import { useListaPaginada } from '../../utilidades/useListaPaginada';
-import { FiltroEstado } from './postulaciones/FiltroEstado';
 import { PestanasPostulaciones } from './postulaciones/PestanasPostulaciones';
 import { TarjetaPostulacion } from './postulaciones/TarjetaPostulacion';
 import {
@@ -96,7 +103,12 @@ export default function CAN05Postulaciones() {
         Mis postulaciones
       </Texto>
       <PestanasPostulaciones pestana={pestana} conteos={conteos} onChange={cambiarPestana} />
-      <FiltroEstado estados={ESTADOS_POR_PESTANA[pestana]} valor={estado} onChange={setEstado} />
+      <FiltroEstado
+        estados={ESTADOS_POR_PESTANA[pestana]}
+        valor={estado}
+        onChange={setEstado}
+        textoDe={textoEstado}
+      />
     </View>
   );
 
