@@ -10,6 +10,7 @@ export { ChipEstado, ESTADOS } from './ChipEstado';
 export { EncabezadoModal } from './EncabezadoModal';
 export { EstadoError } from './EstadoError';
 export { EstadoVacio } from './EstadoVacio';
+export { FiltroEstado } from './FiltroEstado';
 export { GrupoRadio } from './GrupoRadio';
 export type { OpcionRadio } from './GrupoRadio';
 export { Interruptor } from './Interruptor';
