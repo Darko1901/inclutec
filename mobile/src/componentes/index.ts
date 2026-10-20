@@ -20,6 +20,7 @@ export { ModalFormulario } from './ModalFormulario';
 export { Pantalla } from './Pantalla';
 export { PantallaMarcador } from './PantallaMarcador';
 export { SeccionDesplegable } from './SeccionDesplegable';
+export { SelectorUbicacion } from './SelectorUbicacion';
 export { Selector } from './Selector';
 export type { OpcionSelector } from './Selector';
 export { SelectorMesAnio } from './SelectorMesAnio';
