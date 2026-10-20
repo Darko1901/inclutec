@@ -95,16 +95,34 @@ describe('navegación por rol', () => {
   it('el reclutador entra a Mis vacantes', async () => {
     await abrir(<Entrar correo="rh@tecnoqro.mx" />);
 
-    expect(await screen.findByText('REC-02 · Mis vacantes')).toBeOnTheScreen();
+    expect(await screen.findByRole('header', { name: 'Mis vacantes' })).toBeOnTheScreen();
+    expect(await screen.findByTestId('vacante-1')).toBeOnTheScreen();
     expect(
       await screen.findByRole('button', { name: 'Notificaciones, 1 sin leer' }),
     ).toBeOnTheScreen();
   });
 
+  it('«+ Nueva vacante» abre el formulario de REC-03 en el paso 1', async () => {
+    await abrir(<Entrar correo="rh@tecnoqro.mx" />);
+    await screen.findByTestId('vacante-1');
+
+    await fireEvent.press(screen.getByRole('button', { name: 'Nueva vacante' }));
+    expect(await screen.findByText('Paso 1 de 4')).toBeOnTheScreen();
+    expect(screen.getByRole('header', { name: 'Datos generales' })).toBeOnTheScreen();
+  });
+
+  it('tocar una vacante abre REC-04 con su id', async () => {
+    await abrir(<Entrar correo="rh@tecnoqro.mx" />);
+
+    await fireEvent.press(await screen.findByTestId('abrir-vacante-6'));
+    expect(await screen.findByText('Vacante n.º 6')).toBeOnTheScreen();
+  });
+
   it('un reclutador recién registrado aterriza en Organización (REC-01)', async () => {
     await abrir(<Entrar correo="rh@tecnoqro.mx" pantallaInicial="Organizacion" />);
 
-    expect(await screen.findByText('REC-01 · Organización')).toBeOnTheScreen();
+    expect(await screen.findByRole('header', { name: 'Organización' })).toBeOnTheScreen();
+    expect(await screen.findByTestId('banner-validacion')).toBeOnTheScreen();
   });
 
   it('el contador baja en la pestaña al marcar una notificación como leída', async () => {

@@ -49,19 +49,21 @@ Se leen del archivo `.env` (no se sube a git; la plantilla es `.env.example`). D
 
 Son las de `db/semillas/S002__datos_prueba.sql`. La contraseña de todas es **Inclutec2026**.
 
-| Correo                       | Rol                                | Qué ocurre al entrar                                                                                                        |
-| ---------------------------- | ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| mariana.lopez@correo.mx      | Candidata                          | Llega a Vacantes; la pestaña Notificaciones dice «1 sin leer».                                                              |
-| jorge.ramirez@correo.mx      | Candidato                          | Llega a Vacantes; sin notificaciones.                                                                                       |
-| rh@tecnoqro.mx               | Reclutadora (Laura, TecnoQro)      | Llega a Mis vacantes; Notificaciones dice «1 sin leer».                                                                     |
-| rh@logibajio.mx              | Reclutador (Roberto, LogiBajío)    | Llega a Mis vacantes; Notificaciones dice «1 sin leer» (la postulación de Jorge).                                           |
-| talento@concentro.mx         | Reclutadora (Patricia, ConCentro)  | Llega a Mis vacantes; sin notificaciones.                                                                                   |
-| contacto@estudiotrazo.mx     | Reclutador (Daniel, Estudio Trazo) | Llega a Organización; su empresa está **pendiente** de validar (solo puede crear borradores).                               |
-| admin@inclutec.mx            | Administrador                      | Muestra «El administrador usa el panel web» y no inicia sesión.                                                             |
-| **suspendida@correo.mx**     | Candidata suspendida               | Responde 423: «Tu cuenta está suspendida.»                                                                                  |
-| **notificaciones@correo.mx** | Candidata (Lucía)                  | Llega a Vacantes; tiene 45 notificaciones (5 sin leer) para probar el desplazamiento infinito y «Marcar todas como leídas». |
+| Correo                              | Rol                                       | Qué ocurre al entrar                                                                                                                        |
+| ----------------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| mariana.lopez@correo.mx             | Candidata                                 | Llega a Vacantes; la pestaña Notificaciones dice «1 sin leer».                                                                              |
+| jorge.ramirez@correo.mx             | Candidato                                 | Llega a Vacantes; sin notificaciones.                                                                                                       |
+| rh@tecnoqro.mx                      | Reclutadora (Laura, TecnoQro)             | Llega a Mis vacantes; Notificaciones dice «1 sin leer».                                                                                     |
+| rh@logibajio.mx                     | Reclutador (Roberto, LogiBajío)           | Llega a Mis vacantes; Notificaciones dice «1 sin leer» (la postulación de Jorge).                                                           |
+| talento@concentro.mx                | Reclutadora (Patricia, ConCentro)         | Llega a Mis vacantes; sin notificaciones.                                                                                                   |
+| contacto@estudiotrazo.mx            | Reclutador (Daniel, Estudio Trazo)        | Llega a Organización; su empresa está **pendiente** de validar (solo puede crear borradores).                                               |
+| admin@inclutec.mx                   | Administrador                             | Muestra «El administrador usa el panel web» y no inicia sesión.                                                                             |
+| **suspendida@correo.mx**            | Candidata suspendida                      | Responde 423: «Tu cuenta está suspendida.»                                                                                                  |
+| **notificaciones@correo.mx**        | Candidata (Lucía)                         | Llega a Vacantes; tiene 45 notificaciones (5 sin leer) para probar el desplazamiento infinito y «Marcar todas como leídas».                 |
+| **rechazada@constructorarivera.mx** | Reclutador (Ernesto, Constructora Rivera) | Llega a Mis vacantes; su empresa está **rechazada** (con motivo): sirve para ver el banner rojo y subir la constancia (pasa a «pendiente»). |
+| **suspendida@academiaalameda.mx**   | Reclutadora (Gabriela, Academia Alameda)  | Llega a Mis vacantes; su empresa está **suspendida** (con motivo) y no puede subir constancia (409).                                        |
 
-Las cuentas `suspendida@correo.mx` y `notificaciones@correo.mx` **existen solo en el mock** (no están en la base de datos de prueba). Sus ids son **100 y 101** (los de S002 van del 1 al 7) para que nunca choquen con la base de datos; las cuentas que se registren en la app reciben ids desde el 102. Jorge no tiene notificaciones: sirve para ver el estado vacío. Las notificaciones extra del mock tienen id 90 en adelante (la de Roberto, id 3, sí es de S002).
+Las cuentas `suspendida@correo.mx`, `notificaciones@correo.mx`, `rechazada@constructorarivera.mx` y `suspendida@academiaalameda.mx` **existen solo en el mock** (no están en la base de datos de prueba). Sus ids son **100 a 103** (los de S002 van del 1 al 7) para que nunca choquen con la base de datos; las dos de reclutador tienen además las empresas 100 (Constructora Rivera, rechazada) y 101 (Academia Alameda, suspendida). Las cuentas que se registren en la app reciben ids desde el 104. Jorge no tiene notificaciones: sirve para ver el estado vacío. Las notificaciones extra del mock tienen id 90 en adelante (la de Roberto, id 3, sí es de S002).
 
 Las dos cuentas solo del mock tienen el perfil vacío (sin habilidades ni formación), así que sirven para probar que «Postularme» se bloquea cuando el perfil está incompleto. Igual pasa con cualquier cuenta que se registre en la app.
 
@@ -178,7 +180,7 @@ mobile/
     ├── pantallas/
     │   ├── compartidas/    MOV-00 a MOV-04
     │   ├── candidato/      CAN-01 a CAN-07 (con subcarpetas vacantes/, detalle/, perfil/, cv/, postulaciones/ y empresas/)
-    │   └── reclutador/     REC-01 a REC-06
+    │   └── reclutador/     REC-01 a REC-06 (con subcarpetas organizacion/, vacantes/ y vacante/)
     ├── navegacion/         Navegador raíz y barras inferiores por rol
     ├── sesion/             Contexto de sesión y token en expo-secure-store
     ├── tema/               Colores, tipografía y espaciado
@@ -196,7 +198,6 @@ Las pruebas viven junto al código, en carpetas `__tests__/`.
 | MOV-03 Recuperar contraseña (correo, código de 6 dígitos y nueva contraseña)           | Lista                                                     |
 | MOV-04 Notificaciones (lista paginada, marcar leídas y preferencias)                   | Lista                                                     |
 | Barras inferiores de candidato y reclutador (con contador de notificaciones no leídas) | Listas                                                    |
-| «Cerrar sesión» en REC-01 Organización                                                 | Funcional                                                 |
 | CAN-01 Vacantes (recomendadas, búsqueda, filtros y «cubre mis necesidades»)            | Lista                                                     |
 | CAN-02 Detalle de vacante (desglose, postulación y reporte)                            | Lista                                                     |
 | CAN-03 Mi perfil (completitud, foto, datos, preferencias, necesidades y cuenta)        | Lista                                                     |
@@ -204,7 +205,10 @@ Las pruebas viven junto al código, en carpetas `__tests__/`.
 | CAN-05 Mis postulaciones (Activas y Finalizadas, filtro por estado)                    | Lista                                                     |
 | CAN-06 Detalle de postulación (historial, agendar, cancelar entrevista y retirar)      | Lista                                                     |
 | CAN-07 Empresas (directorio y ficha con prácticas de inclusión y reporte)              | Lista                                                     |
-| REC-01 a REC-06                                                                        | Marcador «Pendiente» (se llenan en las siguientes tareas) |
+| REC-01 Organización (banner de validación, logo, datos, constancia y cuenta)           | Lista                                                     |
+| REC-02 Mis vacantes (filtro por estado, menú de acciones, duplicar)                    | Lista                                                     |
+| REC-03 Crear o editar vacante (4 pasos, publicar y recálculo de compatibilidad)        | Lista                                                     |
+| REC-04 a REC-06                                                                        | Marcador «Pendiente» (se llenan en las siguientes tareas) |
 
 ### Cómo probar CAN-01 y CAN-02 en el teléfono
 
@@ -217,7 +221,7 @@ Las pruebas viven junto al código, en carpetas `__tests__/`.
 7. Menú **⋮ › Reportar vacante**: elige un motivo, envía y aparece «Gracias, revisaremos tu reporte».
 8. Para ver el bloqueo por perfil incompleto entra como **notificaciones@correo.mx** (perfil vacío): «Postularme» queda deshabilitado y dice qué falta.
 
-Al tocar una notificación se abre la pantalla de su referencia pasándole el id (CAN-06, REC-05, REC-06, REC-01 o REC-02); CAN-06 ya es la pantalla real y las de reclutador siguen siendo marcadores que muestran el id recibido.
+Al tocar una notificación se abre la pantalla de su referencia pasándole el id (CAN-06, REC-05, REC-06, REC-01 o REC-02); CAN-06, REC-01 y REC-02 ya son las pantallas reales y REC-05 y REC-06 siguen siendo marcadores que muestran el id recibido.
 
 ### Cómo probar CAN-03 y CAN-04 en el teléfono
 
@@ -255,8 +259,25 @@ Los cambios se guardan en memoria: al cerrar la app por completo vuelven los dat
 
 Con TalkBack o VoiceOver cada tarjeta de postulación y de empresa se lee como un solo elemento con todo su resumen (por ejemplo, «Técnico de soporte de TI, TecnoQro. Te postulaste el miércoles 30 de septiembre de 2026. Estado: Entrevista. Entrevista agendada el …, a las 10:00 de la mañana»); las pestañas se anuncian como pestañas con su número y los botones «Agendar» dicen la fecha, la hora y la duración.
 
+### Cómo probar REC-01, REC-02 y REC-03 en el teléfono
+
+Los cambios se guardan en memoria: al cerrar la app por completo vuelven los datos de S002 y del mock.
+
+1. Entra como **rh@tecnoqro.mx** (TecnoQro, validada) y abre **Organización**. El banner verde dice «Empresa validada»; se anuncia al abrir. **Razón social** y **RFC** aparecen con candado y «Para cambiarlos, escribe a soporte.». Cambia la descripción (contador «n / 1000») y toca **Guardar cambios**: aparece «Datos de la organización guardados.». **Cambiar logo** abre la galería cuando el diálogo ya se cerró. La sección «Documento de validación» no ofrece subir constancia (ya está validada).
+2. Cierra sesión y entra como **contacto@estudiotrazo.mx** (pendiente): el banner dice «Estamos revisando tu empresa. Puedes crear borradores, pero no publicar.»; ahora **Razón social** y **RFC** sí se editan (un RFC ya usado, como `TQU150312AB1`, se marca en su campo) y aparece **Subir constancia (PDF)**. Un archivo que no sea PDF o de más de 5 MB se rechaza con un mensaje.
+3. Entra como **rechazada@constructorarivera.mx**: banner rojo con el motivo y qué hacer. Toca **Subir constancia (PDF)**, elige un PDF y el banner pasa a «Pendiente de validación». Con **suspendida@academiaalameda.mx** el banner dice el motivo y no se puede subir constancia.
+4. En **Cuenta**: **Cambiar contraseña** (el mismo modal de CAN-03), **Aviso de privacidad** y **Cerrar sesión**.
+5. Entra otra vez como Laura y abre **Mis vacantes**: «Técnico de soporte de TI» y «Desarrollador web junior» (publicadas) y «Diseñador gráfico» (borrador). Cada tarjeta dice «n postulados · m nuevos» (con Roberto, «Analista de datos de operaciones» dice «2 postulados · 1 nuevo»). Filtra por estado con los chips y jala la lista para actualizarla.
+6. Toca **⋮** de una vacante: el menú solo ofrece lo que permite su estado (borrador: Editar, Publicar, Duplicar; publicada: Editar, Pausar, Cerrar, Duplicar; pausada: Editar, Reanudar, Cerrar, Duplicar; cerrada: Duplicar; suspendida: nada y la tarjeta dice «Suspendida por el administrador»). Pausar, Reanudar, Cerrar y Publicar piden confirmar. **Duplicar** crea un borrador « (copia)».
+7. **+ Nueva vacante** abre el formulario de 4 pasos («Paso 1 de 4», se anuncia al cambiar). «Siguiente» solo revisa el paso actual. Paso 2: busca una habilidad (como en Mi CV) y márcala **Obligatoria** o **Deseable**. Paso 3: tarjetas Presencial, Remoto e Híbrido. Paso 4: los dos bloques de ajustes; uno que marcas en un bloque se deshabilita en el otro, y «Por ahora no contamos con condiciones» limpia los dos.
+8. **Publicar** pide confirmar. Si falta algo (por ejemplo, ninguna habilidad obligatoria o la dirección de una vacante presencial) el formulario vuelve al primer paso con error y marca el campo. Con Estudio Trazo, **Publicar** está deshabilitado con su explicación, pero **Guardar borrador** funciona.
+9. Para ver el recálculo, entra primero como **mariana.lopez@correo.mx**: «Técnico de soporte de TI» tiene 88 %. Con Laura edita esa vacante y, en el paso 2, cambia **SQL** de Obligatoria a Deseable; al guardar dice «Avisamos a 1 postulado…». Mariana ve ahora **91 %** en Vacantes y en el detalle.
+10. Si sales del formulario con cambios sin guardar (botón atrás o gesto), pide confirmar antes de descartarlos. Una vacante cerrada o suspendida no se edita y lo explica.
+
+Con TalkBack o VoiceOver cada tarjeta de vacante se lee como un solo elemento con todo su resumen (por ejemplo, «Técnico de soporte de TI. Híbrido. Estado: Publicada. 1 postulado, 0 nuevos. Publicada el 20 oct») y el menú ⋮ es un botón aparte («Más opciones de Técnico de soporte de TI»).
+
 ## Accesibilidad
 
 WCAG 2.1 AA: contraste de 4.5:1 (hay una prueba que lo comprueba con la paleta), áreas táctiles de 48 × 48 dp, texto que respeta el tamaño de fuente del sistema (hasta 200 %), `accessibilityLabel`, `accessibilityRole` y `accessibilityState` en todo lo interactivo, estados con texto e ícono y errores anunciados con `AccessibilityInfo.announceForAccessibility`.
 
-Patrones de CAN-03 y CAN-04 que conviene reutilizar: `SeccionDesplegable` (botón con estado expandido o contraído; el contenido sigue montado para no perder lo escrito), `ModalFormulario` (título al que va el foco, contenido con scroll y botón fijo dentro del área segura), `useRetornoFoco` (devuelve el foco al botón que abrió un modal), `BarraProgreso` (barra con valor dicho en voz alta, por ejemplo «90 por ciento») y `SelectorMesAnio` (fecha de mes y año con listas accesibles, sin el selector nativo).
+Patrones de CAN-03 y CAN-04 que conviene reutilizar: `SeccionDesplegable` (botón con estado expandido o contraído; el contenido sigue montado para no perder lo escrito), `ModalFormulario` (título al que va el foco, contenido con scroll y botón fijo dentro del área segura), `useRetornoFoco` (devuelve el foco al botón que abrió un modal), `BarraProgreso` (barra con valor dicho en voz alta, por ejemplo «90 por ciento») `SelectorMesAnio` (fecha de mes y año con listas accesibles, sin el selector nativo), `BuscadorHabilidades` (sugerencias del catálogo; lo usan Mi CV y los requisitos de la vacante), `SelectorUbicacion` (entidad y municipio), `FiltroEstado` (opciones excluyentes con palomita) y `ModalContrasena` (en `pantallas/compartidas/`).
