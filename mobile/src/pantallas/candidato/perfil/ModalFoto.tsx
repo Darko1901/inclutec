@@ -10,20 +10,31 @@ interface Props {
   onCancelar: () => void;
   /** El diálogo ya terminó de cerrarse: ahora sí se puede abrir el selector del sistema. */
   onCerrado: () => void;
+  /** Por omisión es el diálogo de la foto de perfil; el logotipo de la empresa cambia los textos. */
+  titulo?: string;
+  descripcion?: string;
+  /** Sin cámara solo se ofrece la galería (el logotipo casi siempre ya es un archivo). */
+  conCamara?: boolean;
 }
 
-function Contenido({ onElegir, onCancelar }: Omit<Props, 'visible' | 'onCerrado'>) {
+const DESCRIPCION_FOTO =
+  'Tu foto es opcional y la verán las empresas a las que te postules. Debe ser JPG o PNG de hasta 2 MB.';
+
+function Contenido({
+  onElegir,
+  onCancelar,
+  titulo = 'Cambiar foto',
+  descripcion = DESCRIPCION_FOTO,
+  conCamara = true,
+}: Omit<Props, 'visible' | 'onCerrado'>) {
   const referenciaTitulo = useFocoEnTitulo();
   return (
     <View style={estilos.fondo}>
       <View accessibilityViewIsModal style={estilos.cuadro}>
         <Texto ref={referenciaTitulo} variante="subtitulo" accessibilityRole="header">
-          Cambiar foto
+          {titulo}
         </Texto>
-        <Texto color="textoSecundarioSobreGris">
-          Tu foto es opcional y la verán las empresas a las que te postules. Debe ser JPG o PNG de
-          hasta 2 MB.
-        </Texto>
+        <Texto color="textoSecundarioSobreGris">{descripcion}</Texto>
         <View style={estilos.acciones}>
           <Boton
             titulo="Elegir de la galería"
@@ -31,18 +42,22 @@ function Contenido({ onElegir, onCancelar }: Omit<Props, 'visible' | 'onCerrado'
             onPress={() => onElegir('galeria')}
             testID="foto-galeria"
           />
-          <Boton
-            titulo="Tomar una foto"
-            icono="camera-outline"
-            variante="secundario"
-            accessibilityHint="IncluTec te pedirá permiso para usar la cámara"
-            onPress={() => onElegir('camara')}
-            testID="foto-camara"
-          />
-          <Texto variante="pequeno" color="textoSecundarioSobreGris">
-            Para tomar la foto, IncluTec necesita usar la cámara de tu teléfono. Solo se usa para tu
-            foto de perfil.
-          </Texto>
+          {conCamara ? (
+            <>
+              <Boton
+                titulo="Tomar una foto"
+                icono="camera-outline"
+                variante="secundario"
+                accessibilityHint="IncluTec te pedirá permiso para usar la cámara"
+                onPress={() => onElegir('camara')}
+                testID="foto-camara"
+              />
+              <Texto variante="pequeno" color="textoSecundarioSobreGris">
+                Para tomar la foto, IncluTec necesita usar la cámara de tu teléfono. Solo se usa
+                para tu foto de perfil.
+              </Texto>
+            </>
+          ) : null}
           <Boton titulo="Cancelar" variante="texto" onPress={onCancelar} />
         </View>
       </View>

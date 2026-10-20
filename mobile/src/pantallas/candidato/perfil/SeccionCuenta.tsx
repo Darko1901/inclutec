@@ -6,7 +6,7 @@ import { Boton, Texto, useRetornoFoco } from '../../../componentes';
 import { espaciado } from '../../../tema';
 import { BotonCerrarSesion } from '../../compartidas/BotonCerrarSesion';
 import { FlujoEliminarCuenta } from './FlujoEliminarCuenta';
-import { ModalContrasena } from './ModalContrasena';
+import { ModalContrasena } from '../../compartidas/ModalContrasena';
 
 interface Props {
   /** Se cambió la contraseña: la pantalla anuncia el aviso. */

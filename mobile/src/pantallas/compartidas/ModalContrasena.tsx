@@ -1,12 +1,12 @@
 import { useState } from 'react';
 
-import { ApiError, auth } from '../../../api';
-import { Aviso, CampoTexto, ModalFormulario } from '../../../componentes';
+import { ApiError, auth } from '../../api';
+import { Aviso, CampoTexto, ModalFormulario } from '../../componentes';
 import {
   LONGITUD_MAX_CONTRASENA,
   mensajeConfirmacion,
   mensajeContrasenaRegistro,
-} from '../../../utilidades/validaciones';
+} from '../../utilidades/validaciones';
 
 interface Props {
   onCerrar: () => void;

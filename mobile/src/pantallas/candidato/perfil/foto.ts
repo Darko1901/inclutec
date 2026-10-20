@@ -33,12 +33,12 @@ function tipoDe(activo: ImagePicker.ImagePickerAsset): string {
   return 'image/jpeg';
 }
 
-function aArchivoLocal(activo: ImagePicker.ImagePickerAsset): ArchivoLocal {
+function aArchivoLocal(activo: ImagePicker.ImagePickerAsset, nombreBase: string): ArchivoLocal {
   const tipo = tipoDe(activo);
   const extension = tipo.split('/')[1] === 'jpeg' ? 'jpg' : tipo.split('/')[1];
   return {
     uri: activo.uri,
-    nombre: activo.fileName ?? `foto-perfil.${extension}`,
+    nombre: activo.fileName ?? `${nombreBase}.${extension}`,
     tipo,
     tamano: activo.fileSize,
   };
@@ -48,7 +48,10 @@ function aArchivoLocal(activo: ImagePicker.ImagePickerAsset): ArchivoLocal {
  * Abre la galería o la cámara. La galería no pide permiso (el sistema muestra su propio
  * selector); la cámara sí, y la explicación de para qué se usa va en el diálogo que la precede.
  */
-export async function elegirFoto(origen: OrigenFoto): Promise<ResultadoFoto> {
+export async function elegirFoto(
+  origen: OrigenFoto,
+  nombreBase = 'foto-perfil',
+): Promise<ResultadoFoto> {
   if (origen === 'camara') {
     const permiso = await ImagePicker.requestCameraPermissionsAsync();
     if (!permiso.granted) return { tipo: 'sin_permiso' };
@@ -63,5 +66,5 @@ export async function elegirFoto(origen: OrigenFoto): Promise<ResultadoFoto> {
     return { tipo: 'error' };
   }
   if (resultado.canceled || resultado.assets.length === 0) return { tipo: 'cancelado' };
-  return { tipo: 'archivo', archivo: aArchivoLocal(resultado.assets[0]) };
+  return { tipo: 'archivo', archivo: aArchivoLocal(resultado.assets[0], nombreBase) };
 }
