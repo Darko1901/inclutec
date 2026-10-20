@@ -133,7 +133,7 @@ describe('CAN-05 · Mis postulaciones', () => {
     expect(botones).toHaveLength(1);
     const etiqueta = botones[0].props.accessibilityLabel as string;
     expect(etiqueta).toMatch(
-      /^Técnico de soporte de TI, TecnoQro\. Te postulaste el miércoles 30 de septiembre de 2026\. Estado: Entrevista\. Entrevista agendada el \w+ \d+ de \w+ de \d{4}, a las \d+:\d{2} de la \w+$/,
+      /^Técnico de soporte de TI, TecnoQro\. Te postulaste el miércoles 30 de septiembre de 2026\. Estado: Entrevista\. Entrevista agendada el \p{L}+ \d+ de \p{L}+ de \d{4}, a las \d+:\d{2} de la \p{L}+$/u,
     );
     expect(botones[0].props.accessibilityHint).toBe('Abre el detalle de la postulación');
 

@@ -128,7 +128,7 @@ describe('CAN-06 · Detalle de postulación y entrevista', () => {
       const tarjeta = within(screen.getByTestId('tarjeta-entrevista'));
       expect(tarjeta.getByRole('header', { name: 'Tu entrevista' })).toBeOnTheScreen();
       expect(tarjeta.getByTestId('datos-entrevista').props.accessibilityLabel).toMatch(
-        /, a las \d+:\d{2} de la \w+, 45 minutos$/,
+        /, a las \d+:\d{2} de la \p{L}+, 45 minutos$/u,
       );
       expect(tarjeta.getByText(/· 45 min$/, { hidden: true })).toBeOnTheScreen();
       expect(tarjeta.getByText('https://meet.google.com/abc-defg-hij')).toBeOnTheScreen();
