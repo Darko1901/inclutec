@@ -2,6 +2,7 @@ export { Aviso } from './Aviso';
 export { Avatar } from './Avatar';
 export { BarraProgreso } from './BarraProgreso';
 export { Boton } from './Boton';
+export { BuscadorHabilidades } from './BuscadorHabilidades';
 export { CampoCodigo } from './CampoCodigo';
 export { CampoTexto } from './CampoTexto';
 export { Casilla } from './Casilla';

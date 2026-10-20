@@ -1,18 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { AccessibilityInfo, Pressable, StyleSheet, View } from 'react-native';
 
-import {
-  ApiError,
-  candidatos,
-  useCatalogo,
-  type HabilidadCandidato,
-  type NivelHabilidad,
-} from '../../../api';
+import { ApiError, candidatos, type HabilidadCandidato, type NivelHabilidad } from '../../../api';
 import {
   Aviso,
   Boton,
-  CampoTexto,
+  BuscadorHabilidades,
   Cargando,
   EstadoError,
   EstadoVacio,
@@ -28,44 +22,20 @@ import {
   OPCIONES_NIVEL,
 } from './textosCV';
 
-const MINIMO_BUSQUEDA = 2;
-const ESPERA_BUSQUEDA_MS = 300;
-
 const cargar = () => candidatos.listarHabilidades();
 
 const huella = (lista: HabilidadCandidato[]) =>
   JSON.stringify(lista.map(({ id, nivel }) => [id, nivel]));
 
-/** Texto del buscador y el término que se consulta 300 ms después de dejar de escribir. */
-function useTermino(texto: string) {
-  const [termino, setTermino] = useState('');
-  useEffect(() => {
-    const limpio = texto.trim();
-    const espera = setTimeout(
-      () => setTermino(limpio.length >= MINIMO_BUSQUEDA ? limpio : ''),
-      ESPERA_BUSQUEDA_MS,
-    );
-    return () => clearTimeout(espera);
-  }, [texto]);
-  return termino;
-}
-
 function Contenido({ iniciales }: { iniciales: HabilidadCandidato[] }) {
   const [guardadas, setGuardadas] = useState(iniciales);
   const [elegidas, setElegidas] = useState(iniciales);
-  const [texto, setTexto] = useState('');
-  const termino = useTermino(texto);
-  const sugerencias = useCatalogo('habilidades', { q: termino }, termino !== '');
   const [guardando, setGuardando] = useState(false);
   const [aviso, setAviso] = useState<{ variante: 'exito' | 'error'; mensaje: string; n: number }>();
 
   const lleno = elegidas.length >= MAX_HABILIDADES;
   const hayCambios = huella(guardadas) !== huella(elegidas);
-  const disponibles = useMemo(
-    () => sugerencias.datos.filter((s) => !elegidas.some((e) => e.id === s.id)),
-    [sugerencias.datos, elegidas],
-  );
-  const hayBusqueda = termino !== '' && texto.trim().length >= MINIMO_BUSQUEDA;
+  const excluidas = useMemo(() => elegidas.map((e) => e.id), [elegidas]);
 
   function anunciar(mensaje: string) {
     AccessibilityInfo.announceForAccessibility(mensaje);
@@ -75,7 +45,6 @@ function Contenido({ iniciales }: { iniciales: HabilidadCandidato[] }) {
     if (lleno) return;
     const nuevas = [...elegidas, { id, nombre, nivel: 'basico' as NivelHabilidad }];
     setElegidas(nuevas);
-    setTexto('');
     setAviso(undefined);
     anunciar(
       `${nombre} agregada con nivel básico. ${contadorHabilidadesAccesible(nuevas.length)}.`,
@@ -133,63 +102,12 @@ function Contenido({ iniciales }: { iniciales: HabilidadCandidato[] }) {
         </Texto>
       </View>
 
-      <CampoTexto
-        etiqueta="Buscar una habilidad"
-        value={texto}
-        onChangeText={setTexto}
-        editable={!lleno}
-        placeholder="Por ejemplo: Excel, Python"
-        autoCapitalize="none"
-        returnKeyType="search"
-        ayuda={
-          lleno
-            ? `Llegaste al máximo de ${MAX_HABILIDADES} habilidades. Quita una para agregar otra.`
-            : `Escribe al menos ${MINIMO_BUSQUEDA} letras para ver sugerencias.`
-        }
-        testID="buscador-habilidades"
+      <BuscadorHabilidades
+        excluidas={excluidas}
+        onAgregar={agregar}
+        deshabilitado={lleno}
+        ayudaDeshabilitado={`Llegaste al máximo de ${MAX_HABILIDADES} habilidades. Quita una para agregar otra.`}
       />
-
-      {hayBusqueda && !lleno ? (
-        sugerencias.error ? (
-          <Aviso variante="error" mensaje={sugerencias.error.detail} />
-        ) : sugerencias.cargando ? (
-          <Texto color="textoSecundarioSobreGris">Buscando…</Texto>
-        ) : disponibles.length === 0 ? (
-          <Texto color="textoSecundarioSobreGris" accessibilityLiveRegion="polite">
-            {`No encontramos habilidades con «${termino}».`}
-          </Texto>
-        ) : (
-          <View style={estilos.sugerencias} testID="sugerencias-habilidades">
-            <Texto
-              variante="pequeno"
-              color="textoSecundarioSobreGris"
-              accessibilityLiveRegion="polite"
-            >
-              {`${disponibles.length} ${disponibles.length === 1 ? 'sugerencia' : 'sugerencias'}. Toca una para agregarla.`}
-            </Texto>
-            {disponibles.map((habilidad) => (
-              <Pressable
-                key={habilidad.id}
-                onPress={() => agregar(habilidad.id, habilidad.nombre)}
-                accessibilityRole="button"
-                accessibilityLabel={`Agregar ${habilidad.nombre}`}
-                style={estilos.sugerencia}
-              >
-                <Ionicons
-                  name="add-circle-outline"
-                  size={24}
-                  color={colores.primario}
-                  accessibilityElementsHidden
-                  importantForAccessibility="no"
-                />
-                <Texto accessibilityElementsHidden importantForAccessibility="no">
-                  {habilidad.nombre}
-                </Texto>
-              </Pressable>
-            ))}
-          </View>
-        )
-      ) : null}
 
       {elegidas.length === 0 ? (
         <EstadoVacio
@@ -261,20 +179,6 @@ const estilos = StyleSheet.create({
   panel: { gap: espaciado.md },
   encabezado: { flexDirection: 'row', alignItems: 'center', gap: espaciado.md },
   titulo: { flex: 1 },
-  sugerencias: {
-    backgroundColor: colores.fondo,
-    borderRadius: radio.md,
-    borderWidth: 1,
-    borderColor: colores.bordeSuave,
-    padding: espaciado.sm,
-  },
-  sugerencia: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: espaciado.md,
-    minHeight: AREA_TACTIL_MINIMA,
-    paddingHorizontal: espaciado.sm,
-  },
   chip: {
     gap: espaciado.sm,
     padding: espaciado.md,
