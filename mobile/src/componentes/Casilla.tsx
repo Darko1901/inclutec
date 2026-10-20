@@ -10,6 +10,8 @@ interface CasillaProps {
   texto: string;
   marcada: boolean;
   onCambio: (marcada: boolean) => void;
+  /** Lo que lee el lector de pantalla si debe distinguirse de otra casilla con el mismo texto. */
+  etiquetaAccesible?: string;
   /** Explicación breve debajo del texto; también se lee como pista. */
   ayuda?: string;
   error?: string | null;
@@ -19,6 +21,7 @@ interface CasillaProps {
 
 export function Casilla({
   texto,
+  etiquetaAccesible,
   marcada,
   onCambio,
   ayuda,
@@ -37,7 +40,7 @@ export function Casilla({
         onPress={() => onCambio(!marcada)}
         disabled={deshabilitada}
         accessibilityRole="checkbox"
-        accessibilityLabel={texto}
+        accessibilityLabel={etiquetaAccesible ?? texto}
         accessibilityHint={ayuda}
         accessibilityState={{ checked: marcada, disabled: deshabilitada }}
         style={estilos.fila}
