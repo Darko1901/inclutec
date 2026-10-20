@@ -291,6 +291,25 @@ export class AuthMock implements AuthServicio {
       }
 
       estado.rfcRegistrados.push(empresa.rfc);
+      const empresaId = estado.siguienteIdEmpresa++;
+      estado.empresas.push({
+        id: empresaId,
+        razon_social: empresa.razon_social.trim(),
+        nombre_comercial: empresa.nombre_comercial.trim(),
+        rfc: empresa.rfc,
+        direccion: null,
+        documento_url: null,
+        motivo_estado: null,
+        validada_en: null,
+        logo_url: null,
+        municipio_id: empresa.municipio_id,
+        sector_id: empresa.sector_id,
+        tamano_empresa_id: empresa.tamano_empresa_id,
+        descripcion: null,
+        sitio_web: null,
+        practicas_inclusion: null,
+        estado: 'pendiente',
+      });
       const usuario: Usuario = {
         id: estado.siguienteIdUsuario++,
         correo,
@@ -300,7 +319,7 @@ export class AuthMock implements AuthServicio {
         rol: 'reclutador',
         estado: 'activo',
         empresa: {
-          id: estado.siguienteIdEmpresa++,
+          id: empresaId,
           nombre_comercial: empresa.nombre_comercial.trim(),
           estado: 'pendiente',
         },

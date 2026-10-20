@@ -43,7 +43,15 @@ export interface HabilidadMock {
 
 export interface EmpresaMock {
   id: number;
+  razon_social: string;
   nombre_comercial: string;
+  rfc: string;
+  direccion: string | null;
+  /** Constancia de situación fiscal subida por el reclutador. */
+  documento_url: string | null;
+  /** Motivo del rechazo o la suspensión. */
+  motivo_estado: string | null;
+  validada_en: string | null;
   logo_url: string | null;
   municipio_id: number;
   sector_id: number;
@@ -217,7 +225,13 @@ export function crearNegocioInicial(ahora = Date.now()): NegocioMock {
   const empresas: EmpresaMock[] = [
     {
       id: 1,
+      razon_social: 'Tecnologías Querétaro S.A. de C.V.',
       nombre_comercial: 'TecnoQro',
+      rfc: 'TQU150312AB1',
+      direccion: 'Av. Constituyentes 100, Querétaro',
+      documento_url: '/archivos/documentos/empresa-1.pdf',
+      motivo_estado: null,
+      validada_en: hace(22),
       logo_url: '/archivos/logos/empresa-1.png',
       municipio_id: 3,
       sector_id: 4,
@@ -230,7 +244,13 @@ export function crearNegocioInicial(ahora = Date.now()): NegocioMock {
     },
     {
       id: 2,
+      razon_social: 'Logística Bajío Norte S.A. de C.V.',
       nombre_comercial: 'LogiBajío',
+      rfc: 'LBN180725KQ3',
+      direccion: 'Parque Industrial Bernardo Quintana, El Marqués',
+      documento_url: '/archivos/documentos/empresa-2.pdf',
+      motivo_estado: null,
+      validada_en: hace(20),
       logo_url: null,
       municipio_id: 2,
       sector_id: 1,
@@ -243,7 +263,13 @@ export function crearNegocioInicial(ahora = Date.now()): NegocioMock {
     },
     {
       id: 3,
+      razon_social: 'Contadores Asociados del Centro S.C.',
       nombre_comercial: 'ConCentro',
+      rfc: 'CAC0904158T2',
+      direccion: 'Calle Josefa Vergara 25, Corregidora',
+      documento_url: '/archivos/documentos/empresa-3.pdf',
+      motivo_estado: null,
+      validada_en: hace(18),
       logo_url: null,
       municipio_id: 1,
       sector_id: 3,
@@ -255,7 +281,13 @@ export function crearNegocioInicial(ahora = Date.now()): NegocioMock {
     },
     {
       id: 4,
+      razon_social: 'Estudio Trazo Diseño S.A.S.',
       nombre_comercial: 'Estudio Trazo',
+      rfc: 'ETR2101119P4',
+      direccion: 'Calle 5 de Mayo 40, Centro, Querétaro',
+      documento_url: null,
+      motivo_estado: null,
+      validada_en: null,
       logo_url: null,
       municipio_id: 3,
       sector_id: 3,
@@ -264,6 +296,44 @@ export function crearNegocioInicial(ahora = Date.now()): NegocioMock {
       sitio_web: null,
       practicas_inclusion: null,
       estado: 'pendiente',
+    },
+    // Empresas solo del mock (ids desde 100) para ver las otras dos variantes del banner de REC-01.
+    {
+      id: 100,
+      razon_social: 'Construcciones Rivera del Bajío S.A. de C.V.',
+      nombre_comercial: 'Constructora Rivera',
+      rfc: 'CRB190418HK7',
+      direccion: 'Blvd. Bernardo Quintana 300, Querétaro',
+      documento_url: '/archivos/documentos/empresa-100.pdf',
+      motivo_estado:
+        'La constancia de situación fiscal se ve borrosa y no se alcanza a leer el RFC.',
+      validada_en: null,
+      logo_url: null,
+      municipio_id: 3,
+      sector_id: 2,
+      tamano_empresa_id: 2,
+      descripcion: 'Construcción y remodelación de oficinas.',
+      sitio_web: null,
+      practicas_inclusion: null,
+      estado: 'rechazada',
+    },
+    {
+      id: 101,
+      razon_social: 'Servicios Educativos Alameda S.C.',
+      nombre_comercial: 'Academia Alameda',
+      rfc: 'SEA170930LM2',
+      direccion: 'Calle Hidalgo 12, Centro, Querétaro',
+      documento_url: '/archivos/documentos/empresa-101.pdf',
+      motivo_estado: 'Se recibió un reporte sobre información falsa y la cuenta está en revisión.',
+      validada_en: hace(40),
+      logo_url: null,
+      municipio_id: 3,
+      sector_id: 6,
+      tamano_empresa_id: 1,
+      descripcion: 'Cursos de regularización y computación para adultos.',
+      sitio_web: null,
+      practicas_inclusion: null,
+      estado: 'suspendida',
     },
   ];
 

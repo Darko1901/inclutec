@@ -46,6 +46,7 @@ export interface EstadoMock extends NegocioMock {
   rfcRegistrados: string[];
   siguienteIdUsuario: number;
   siguienteIdEmpresa: number;
+  siguienteIdVacante: number;
   notificaciones: NotificacionMock[];
   preferencias: Map<number, PreferenciaNotificacion[]>;
   dispositivos: Map<string, { usuarioId: number; plataforma: string }>;
@@ -196,6 +197,35 @@ function crearEstadoInicial(): EstadoMock {
         consentimiento_sensibles: false,
       },
     },
+    // Reclutadores solo del mock: uno con la empresa rechazada y otro con la suspendida.
+    {
+      contrasena: CONTRASENA_PRUEBA,
+      usuario: {
+        id: 102,
+        correo: 'rechazada@constructorarivera.mx',
+        nombre: 'Ernesto',
+        apellidos: 'Rivera Campos',
+        telefono: '4425552222',
+        rol: 'reclutador',
+        estado: 'activo',
+        empresa: { id: 100, nombre_comercial: 'Constructora Rivera', estado: 'rechazada' },
+        consentimiento_sensibles: null,
+      },
+    },
+    {
+      contrasena: CONTRASENA_PRUEBA,
+      usuario: {
+        id: 103,
+        correo: 'suspendida@academiaalameda.mx',
+        nombre: 'Gabriela',
+        apellidos: 'Alameda Torres',
+        telefono: '4425553333',
+        rol: 'reclutador',
+        estado: 'activo',
+        empresa: { id: 101, nombre_comercial: 'Academia Alameda', estado: 'suspendida' },
+        consentimiento_sensibles: null,
+      },
+    },
     {
       contrasena: CONTRASENA_PRUEBA,
       usuario: {
@@ -299,10 +329,19 @@ function crearEstadoInicial(): EstadoMock {
 
   return {
     usuarios,
-    rfcRegistrados: ['TQU150312AB1', 'LBN180725KQ3', 'CAC0904158T2', 'ETR2101119P4'],
-    // Después de los ids de S002 (1 a 7) y de las cuentas solo del mock (100 y 101).
-    siguienteIdUsuario: 102,
+    rfcRegistrados: [
+      'TQU150312AB1',
+      'LBN180725KQ3',
+      'CAC0904158T2',
+      'ETR2101119P4',
+      'CRB190418HK7',
+      'SEA170930LM2',
+    ],
+    // Después de los ids de S002 (1 a 7) y de las cuentas solo del mock (100 a 103).
+    siguienteIdUsuario: 104,
     siguienteIdEmpresa: 5,
+    // Después de las vacantes 1 a 8 de S002.
+    siguienteIdVacante: 9,
     siguienteIdPostulacion: 3,
     // Después de la entrevista 1 de S002 y las 100 y 101 solo del mock.
     siguienteIdEntrevista: 102,
