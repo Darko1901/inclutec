@@ -5,6 +5,7 @@ import { EmpresasHttp } from '../empresas';
 import { EntrevistasHttp } from '../entrevistas';
 import { HorariosHttp } from '../horarios';
 import { PostulacionesHttp } from '../postulaciones';
+import { VacantesHttp } from '../vacantes';
 
 describe('servicios HTTP de postulaciones, entrevistas y empresas', () => {
   let get: jest.SpyInstance;
@@ -70,5 +71,72 @@ describe('servicios HTTP de postulaciones, entrevistas y empresas', () => {
       '/empresas?q=logi&sector_id=1&page=1&size=20',
     );
     expect(get.mock.calls[1][0]).toBe('/empresas/1');
+  });
+});
+
+describe('servicios HTTP de la organización y las vacantes del reclutador', () => {
+  let get: jest.SpyInstance;
+  let post: jest.SpyInstance;
+  let put: jest.SpyInstance;
+  let patch: jest.SpyInstance;
+
+  beforeEach(() => {
+    get = jest.spyOn(cliente, 'get').mockResolvedValue({ data: {} });
+    post = jest.spyOn(cliente, 'post').mockResolvedValue({ data: {} });
+    put = jest.spyOn(cliente, 'put').mockResolvedValue({ data: {} });
+    patch = jest.spyOn(cliente, 'patch').mockResolvedValue({ data: {} });
+  });
+  afterEach(() => jest.restoreAllMocks());
+
+  it('usa las rutas del contrato', async () => {
+    const empresas = new EmpresasHttp();
+    const vacantes = new VacantesHttp();
+    const archivo = { uri: 'file:///a.pdf', nombre: 'a.pdf', tipo: 'application/pdf' };
+    await empresas.miOrganizacion();
+    await empresas.misVacantes({ estado: 'borrador', page: 2, size: 20 });
+    await empresas.actualizarMiOrganizacion({
+      nombre_comercial: 'TecnoQro',
+      sector_id: 4,
+      tamano_empresa_id: 3,
+      municipio_id: 3,
+    });
+    await empresas.subirLogo(archivo);
+    await empresas.subirConstancia(archivo);
+    await vacantes.cambiarEstado(1, 'pausada');
+    await vacantes.duplicar(1);
+
+    const [rutaGet, config] = get.mock.calls[1] as [string, AxiosRequestConfig];
+    expect(get.mock.calls[0][0]).toBe('/empresas/me');
+    expect(axios.getUri({ url: rutaGet, ...config })).toBe(
+      '/empresas/me/vacantes?estado=borrador&page=2&size=20',
+    );
+    expect(put.mock.calls[0][0]).toBe('/empresas/me');
+    expect(post.mock.calls.map((llamada: unknown[]) => llamada[0])).toEqual([
+      '/empresas/me/logo',
+      '/empresas/me/documento',
+      '/vacantes/1/duplicar',
+    ]);
+    expect(patch.mock.calls[0]).toEqual(['/vacantes/1/estado', { estado: 'pausada' }]);
+  });
+
+  it('sube el archivo como multipart en el campo «archivo»', async () => {
+    await new EmpresasHttp().subirConstancia({
+      uri: 'file:///a.pdf',
+      nombre: 'a.pdf',
+      tipo: 'application/pdf',
+    });
+    const [, cuerpo, config] = post.mock.calls[0] as [string, FormData, AxiosRequestConfig];
+    expect(cuerpo).toBeInstanceOf(FormData);
+    expect(cuerpo.has('archivo')).toBe(true);
+    expect(config.headers).toMatchObject({ 'Content-Type': 'multipart/form-data' });
+  });
+
+  it('crea y edita vacantes con POST /vacantes y PUT /vacantes/{id}', async () => {
+    const vacantes = new VacantesHttp();
+    const entrada = { titulo: 'x' } as Parameters<VacantesHttp['crear']>[0];
+    await vacantes.crear(entrada);
+    await vacantes.editar(3, entrada);
+    expect(post.mock.calls[0]).toEqual(['/vacantes', entrada]);
+    expect(put.mock.calls[0]).toEqual(['/vacantes/3', entrada]);
   });
 });

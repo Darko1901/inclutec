@@ -68,6 +68,16 @@ export type EmpresaResumen = Esquemas['EmpresaResumen'];
 export type PaginaEmpresas = Esquemas['PaginaEmpresas'];
 export type EmpresaPublica = Esquemas['EmpresaPublica'];
 export type ConsultaEmpresas = NonNullable<operations['get_empresas']['parameters']['query']>;
+export type EmpresaPropia = Esquemas['EmpresaPropia'];
+export type EmpresaEntrada = Esquemas['EmpresaEntrada'];
+export type VacanteReclutador = Esquemas['VacanteReclutador'];
+export type PaginaVacantesReclutador = Esquemas['PaginaVacantesReclutador'];
+export type VacanteEntrada = Esquemas['VacanteEntrada'];
+export type VacanteGuardada = Esquemas['VacanteGuardada'];
+export type CambioEstadoVacante = Esquemas['CambioEstadoVacante'];
+export type ConsultaMisVacantes = NonNullable<
+  operations['get_empresas_me_vacantes']['parameters']['query']
+>;
 export type ReporteEntrada = Esquemas['ReporteEntrada'];
 export type ReporteCreado = Esquemas['ReporteCreado'];
 
