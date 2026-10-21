@@ -401,7 +401,7 @@ describe('REC-05 · Detalle del postulado', () => {
   it('una postulación de otra empresa no se muestra', async () => {
     await abrir(1, CUENTAS.roberto, false);
     expect(await screen.findByText('No encontramos este postulado')).toBeOnTheScreen();
-    await fireEvent.press(screen.getByRole('button', { name: 'Reintentar' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Volver' }));
     expect(volver).toHaveBeenCalled();
   });
 });

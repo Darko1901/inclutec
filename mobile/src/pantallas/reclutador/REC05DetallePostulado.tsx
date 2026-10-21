@@ -12,6 +12,7 @@ import {
   Cargando,
   ChipEstado,
   EstadoError,
+  EstadoVacio,
   Tarjeta,
   Texto,
   useRetornoFoco,
@@ -91,11 +92,16 @@ export default function REC05DetallePostulado({ route, navigation }: Props) {
     const sinPermiso = estado.error.status === 403 || estado.error.status === 404;
     return (
       <SafeAreaView style={estilos.pantalla}>
-        <EstadoError
-          titulo={sinPermiso ? 'No encontramos este postulado' : undefined}
-          mensaje={estado.error.detail}
-          onReintentar={sinPermiso ? () => navigation.goBack() : () => void recargar()}
-        />
+        {sinPermiso ? (
+          <EstadoVacio
+            titulo="No encontramos este postulado"
+            mensaje={estado.error.detail}
+            icono="lock-closed-outline"
+            accion={{ titulo: 'Volver', onPress: () => navigation.goBack() }}
+          />
+        ) : (
+          <EstadoError mensaje={estado.error.detail} onReintentar={() => void recargar()} />
+        )}
       </SafeAreaView>
     );
   }
