@@ -182,3 +182,44 @@ export function formatearFechaHoraHablada(iso: string): string {
   const dia = formatearFechaLarga(iso);
   return dia ? `${dia}, a las ${formatearHoraHablada(iso)}` : '';
 }
+
+/** Suma días a una fecha «AAAA-MM-DD» sin pasar por la zona horaria. */
+export function sumarDias(fecha: string, dias: number): string {
+  const [anio, mes, dia] = fecha.split('-').map(Number);
+  return new Date(Date.UTC(anio, mes - 1, dia + dias)).toISOString().slice(0, 10);
+}
+
+/** Lunes a viernes (los feriados no se consideran). */
+export function esDiaHabil(fecha: string): boolean {
+  const [anio, mes, dia] = fecha.split('-').map(Number);
+  const diaSemana = new Date(Date.UTC(anio, mes - 1, dia)).getUTCDay();
+  return diaSemana !== 0 && diaSemana !== 6;
+}
+
+/** Fecha de hoy («AAAA-MM-DD») en hora de la Ciudad de México. */
+export const hoyEnMexico = (ahora: Date = new Date()) => claveDia(ahora.toISOString());
+
+/**
+ * Instante (ISO, UTC) de una fecha «AAAA-MM-DD» y una hora dadas en hora de la Ciudad de México.
+ * México no tiene horario de verano desde 2022: la diferencia con UTC es siempre de 6 horas.
+ */
+export function iniciarEnMexico(fecha: string, minutosDelDia: number): string {
+  const hora = String(Math.floor(minutosDelDia / 60)).padStart(2, '0');
+  const minutos = String(minutosDelDia % 60).padStart(2, '0');
+  return new Date(`${fecha}T${hora}:${minutos}:00-06:00`).toISOString().replace(/\.\d{3}Z$/, 'Z');
+}
+
+/** «7:00 a.m.» a partir de los minutos desde la medianoche. */
+export function textoHoraDelDia(minutosDelDia: number): string {
+  const hora = Math.floor(minutosDelDia / 60);
+  const hora12 = hora % 12 === 0 ? 12 : hora % 12;
+  return `${hora12}:${String(minutosDelDia % 60).padStart(2, '0')} ${hora < 12 ? 'a.m.' : 'p.m.'}`;
+}
+
+/** «7:00 de la mañana», para el lector de pantalla. */
+export function textoHoraDelDiaHablada(minutosDelDia: number): string {
+  const hora = Math.floor(minutosDelDia / 60);
+  const hora12 = hora % 12 === 0 ? 12 : hora % 12;
+  const periodo = hora < 12 ? 'de la mañana' : hora < 19 ? 'de la tarde' : 'de la noche';
+  return `${hora12}:${String(minutosDelDia % 60).padStart(2, '0')} ${periodo}`;
+}
