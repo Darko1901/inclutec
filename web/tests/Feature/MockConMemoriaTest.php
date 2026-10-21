@@ -25,7 +25,7 @@ class MockConMemoriaTest extends TestCase
         $estado = Almacen::leer();
 
         $this->assertFileExists(Almacen::ruta());
-        $this->assertCount(8, $estado['usuarios']);
+        $this->assertCount(14, $estado['usuarios']);
         $this->assertSame('admin@inclutec.mx', $estado['usuarios'][0]['usuario']['correo']);
         $this->assertSame([], $estado['intentos_login']);
     }
@@ -90,7 +90,7 @@ class MockConMemoriaTest extends TestCase
     {
         file_put_contents(Almacen::ruta(), '{no es json');
 
-        $this->assertCount(8, Almacen::leer()['usuarios']);
+        $this->assertCount(14, Almacen::leer()['usuarios']);
     }
 
     public function test_el_archivo_del_mock_esta_fuera_de_git(): void

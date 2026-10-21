@@ -35,4 +35,22 @@ interface ApiAdmin
      * y 422 `validacion` (con `campos`) si la nueva no cumple la política.
      */
     public function cambiarContrasena(string $contrasenaActual, string $contrasenaNueva): void;
+
+    // --- Administración: estadísticas ---
+
+    /**
+     * GET /admin/estadisticas/resumen. Devuelve el objeto Estadisticas del contrato. `desde` y `hasta`
+     * son AAAA-MM-DD; sin ellos, el API usa los últimos 30 días.
+     *
+     * @return array<string, mixed>
+     */
+    public function estadisticas(?string $desde = null, ?string $hasta = null): array;
+
+    /**
+     * GET /admin/estadisticas/exportar. `formato` es `pdf` o `xlsx`. Devuelve el archivo tal como lo
+     * manda el API: su contenido, su tipo (`Content-Type`) y su nombre (`Content-Disposition`).
+     *
+     * @return array{contenido: string, tipo: string, nombre: string}
+     */
+    public function exportarEstadisticas(string $formato, ?string $desde = null, ?string $hasta = null): array;
 }
