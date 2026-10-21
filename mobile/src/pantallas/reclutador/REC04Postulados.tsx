@@ -212,6 +212,8 @@ export default function REC04Postulados({ route, navigation }: Props) {
             }}
           />
         }
+        // Se pintan los 20 de la primera página: son pocos y el lector de pantalla los recorre todos.
+        initialNumToRender={20}
         onEndReached={() => void lista.cargarMas()}
         onEndReachedThreshold={0.5}
         contentContainerStyle={estilos.contenido}
