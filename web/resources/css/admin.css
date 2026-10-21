@@ -654,3 +654,87 @@ body.dark .modal-cerrar { color: var(--text-main); }
 
 .profile-dropdown-menu .menu-salir { color: var(--danger); }
 body.dark .profile-dropdown-menu .menu-salir { color: #FCA5A5; }
+
+
+/* =========================================
+   DASHBOARD Y GRÁFICAS (WEB-02)
+   Series validadas con contraste ≥ 3:1 sobre la tarjeta y separadas para daltonismo (azul y ámbar);
+   la segunda serie lleva además trama de rayas, forma de marcador y valores escritos.
+========================================= */
+:root {
+    --viz-1: #1D4ED8;
+    --viz-2: #B45309;
+    --viz-superficie: #FFFFFF;
+    --viz-rejilla: #E5E7EB;
+    --viz-texto: #111827;
+    --viz-texto-suave: #4B5563;
+}
+body.dark {
+    --viz-1: #3B82F6;
+    --viz-2: #D97706;
+    --viz-superficie: #1C2639;
+    --viz-rejilla: #334155;
+    --viz-texto: #F8FAFC;
+    --viz-texto-suave: #CBD5E1;
+}
+
+.filtros-periodo, .filtros-fechas { display: contents; }
+.periodo-vigente { margin: -0.5rem 0 1.5rem; color: var(--text-muted); }
+.dashboard-seccion { margin-bottom: 2rem; }
+.dashboard-seccion-titulo { font-size: 1.15rem; margin-bottom: 1rem; }
+.dashboard-seccion .dashboard-grid { margin-bottom: 0; }
+
+.indicadores { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.indicador-titulo { display: flex; align-items: center; gap: 0.5rem; text-transform: none; letter-spacing: 0; font-size: 0.95rem; }
+.indicador-titulo svg { color: var(--primary); flex-shrink: 0; }
+.indicador-valor { margin: 0.25rem 0 0.5rem; }
+.indicador-significado { color: var(--text-muted); font-size: 0.85rem; }
+body.dark .indicador-titulo svg { color: #93C5FD; }
+
+.pendientes { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+.pendiente { display: flex; flex-direction: column; justify-content: space-between; gap: 1.25rem; margin-bottom: 0; }
+.pendiente-cuerpo { display: flex; align-items: center; gap: 1.25rem; }
+.pendiente-cifra { font-size: 2.5rem; font-weight: 700; line-height: 1; color: var(--text-color); }
+.pendiente-texto { font-weight: 600; margin-bottom: 0.4rem; color: var(--text-color); }
+body.dark .pendiente-cifra, body.dark .pendiente-texto { color: var(--text-main); }
+
+.graficas { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 1.5rem; }
+.grafica { margin-bottom: 0; min-width: 0; }
+.grafica-ancha { grid-column: 1 / -1; }
+.grafica-encabezado { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.grafica-titulo { font-size: 1.05rem; letter-spacing: 0; }
+.grafica-descripcion, .grafica-nota { color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem; }
+.grafica-nota { margin-top: 1rem; }
+.grafica-vacia { color: var(--text-muted); padding: 1rem 0; }
+.grafica-boton { gap: 0.4rem; }
+.grafica-chevron { display: inline-flex; transition: transform 0.2s; }
+.grafica-chevron.abierto { transform: rotate(180deg); }
+.grafica-tabla { margin-top: 1.25rem; }
+.grafica-tabla-etiqueta { font-weight: 600; }
+.grafica-tabla-valor { font-variant-numeric: tabular-nums; }
+
+.grafica-leyenda { list-style: none; display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; margin-bottom: 1rem; font-size: 0.85rem; color: var(--viz-texto); }
+.grafica-leyenda li { display: flex; align-items: center; gap: 0.5rem; }
+.grafica-leyenda svg { flex-shrink: 0; }
+
+.barras { list-style: none; display: flex; flex-direction: column; gap: 0.9rem; }
+.barra-grupo { display: grid; grid-template-columns: minmax(7rem, 38%) 1fr; gap: 0.5rem 1rem; align-items: center; }
+.barra-etiqueta { font-size: 0.875rem; color: var(--viz-texto); overflow-wrap: anywhere; }
+.barra-series { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.barra-pista { display: flex; align-items: center; gap: 0.5rem; }
+.barra { display: block; flex: 0 0 auto; height: 18px; }
+.barra-valor { font-size: 0.875rem; font-weight: 700; color: var(--viz-texto); font-variant-numeric: tabular-nums; }
+@media (max-width: 480px) {
+    .barra-grupo { grid-template-columns: 1fr; }
+}
+
+.linea-contenedor { overflow-x: auto; }
+.linea-contenedor:focus-visible { outline-offset: -3px; }
+.linea { display: block; width: 100%; max-width: 760px; min-width: 560px; height: auto; }
+.linea-rejilla { stroke: var(--viz-rejilla); stroke-width: 1; }
+.linea-eje { fill: var(--viz-texto-suave); font-size: 12px; }
+.linea-valor { fill: var(--viz-texto); font-size: 13px; font-weight: 700; paint-order: stroke; stroke: var(--viz-superficie); stroke-width: 3px; stroke-linejoin: round; }
+
+@media (forced-colors: active) {
+    .barra rect, .linea polyline { forced-color-adjust: none; }
+}

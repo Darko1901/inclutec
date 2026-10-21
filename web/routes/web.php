@@ -19,6 +19,7 @@ Route::post('/logout', [SesionController::class, 'salir'])->name('logout');
 
 Route::middleware('admin')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/exportar', [DashboardController::class, 'exportar'])->name('dashboard.exportar');
     Route::get('/usuarios', [UsuarioController::class, 'index'])->name('usuarios');
     Route::get('/empresas', [EmpresaController::class, 'index'])->name('empresas');
     Route::get('/vacantes', [VacanteController::class, 'index'])->name('vacantes');
