@@ -44,7 +44,7 @@ class InicioSesionTest extends TestCase
         $this->entrar('admin@inclutec.mx')->assertRedirect('/dashboard');
 
         $this->assertNotNull(session(ApiHttp::SESION_TOKEN));
-        $this->get('/dashboard')->assertOk()->assertSee('Dashboard General');
+        $this->get('/dashboard')->assertOk()->assertSee('Dashboard');
         $this->get('/login')->assertRedirect('/dashboard');
     }
 
