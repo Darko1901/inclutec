@@ -3,6 +3,9 @@
 namespace App\Servicios\Api;
 
 use App\Servicios\Api\Mock\Almacen;
+use App\Servicios\Api\Mock\CalculadoraEstadisticas;
+use App\Servicios\Api\Mock\ExportadorEstadisticas;
+use Carbon\CarbonImmutable;
 
 /**
  * Implementación con datos simulados. Responde con la forma del contrato y con los mismos códigos
@@ -125,6 +128,80 @@ class ApiMock implements ApiAdmin
 
         if ($resultado instanceof ApiError) {
             throw $resultado;
+        }
+    }
+
+    public function estadisticas(?string $desde = null, ?string $hasta = null): array
+    {
+        $this->simularLatencia();
+
+        return $this->resumen(Almacen::leer(), $desde, $hasta);
+    }
+
+    public function exportarEstadisticas(string $formato, ?string $desde = null, ?string $hasta = null): array
+    {
+        $this->simularLatencia();
+
+        $estado = Almacen::leer();
+        $this->exigirAdministrador($estado);
+        if (! in_array($formato, ['pdf', 'xlsx'], true)) {
+            throw new ApiError(422, 'validacion', self::MENSAJE_VALIDACION, ['formato' => 'Elige pdf o xlsx.']);
+        }
+
+        $resumen = $this->resumen($estado, $desde, $hasta);
+
+        return [
+            'contenido' => $formato === 'pdf' ? ExportadorEstadisticas::pdf($resumen) : ExportadorEstadisticas::xlsx($resumen),
+            'tipo' => $formato === 'pdf' ? ExportadorEstadisticas::TIPO_PDF : ExportadorEstadisticas::TIPO_XLSX,
+            'nombre' => ExportadorEstadisticas::nombre($resumen, $formato),
+        ];
+    }
+
+    /**
+     * Valida el periodo y calcula las estadísticas. Por omisión, los últimos 30 días.
+     *
+     * @param  array<string, mixed>  $estado
+     * @return array<string, mixed>
+     */
+    private function resumen(array $estado, ?string $desde, ?string $hasta): array
+    {
+        $this->exigirAdministrador($estado);
+
+        $campos = [];
+        foreach (['desde' => $desde, 'hasta' => $hasta] as $campo => $valor) {
+            if ($valor !== null && ! $this->esFecha($valor)) {
+                $campos[$campo] = 'Escribe la fecha como AAAA-MM-DD.';
+            }
+        }
+        if ($campos === [] && $desde !== null && $hasta !== null && $desde > $hasta) {
+            $campos['hasta'] = 'La fecha final no puede ser anterior a la inicial.';
+        }
+        if ($campos !== []) {
+            throw new ApiError(422, 'validacion', self::MENSAJE_VALIDACION, $campos);
+        }
+
+        $hasta ??= now()->format('Y-m-d');
+        $desde ??= CarbonImmutable::parse($hasta)->subDays(30)->format('Y-m-d');
+
+        return CalculadoraEstadisticas::calcular($estado, $desde, $hasta);
+    }
+
+    private function esFecha(string $valor): bool
+    {
+        $fecha = \DateTimeImmutable::createFromFormat('!Y-m-d', $valor);
+
+        return $fecha !== false && $fecha->format('Y-m-d') === $valor;
+    }
+
+    /**
+     * @param  array<string, mixed>  $estado
+     *
+     * @throws ApiError 401 sin sesión, 423 cuenta suspendida y 403 si el rol no es administrador.
+     */
+    private function exigirAdministrador(array $estado): void
+    {
+        if ($this->exigirSesion($estado)['rol'] !== 'administrador') {
+            throw new ApiError(403, 'sin_permiso', 'No tienes permiso para esta acción.');
         }
     }
 

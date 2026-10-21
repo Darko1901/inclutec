@@ -38,6 +38,35 @@ class ApiHttp implements ApiAdmin
         ]);
     }
 
+    public function estadisticas(?string $desde = null, ?string $hasta = null): array
+    {
+        return $this->enviar('get', '/admin/estadisticas/resumen', $this->periodo($desde, $hasta))->json();
+    }
+
+    public function exportarEstadisticas(string $formato, ?string $desde = null, ?string $hasta = null): array
+    {
+        $respuesta = $this->enviar('get', '/admin/estadisticas/exportar', ['formato' => $formato] + $this->periodo($desde, $hasta));
+
+        // El nombre viene en Content-Disposition; si falta, se arma con el periodo y el formato.
+        $nombre = preg_match('/filename\*?=(?:UTF-8\'\')?"?([^";]+)"?/i', $respuesta->header('Content-Disposition'), $partes)
+            ? basename(rawurldecode($partes[1]))
+            : "estadisticas.{$formato}";
+
+        return [
+            'contenido' => $respuesta->body(),
+            'tipo' => trim(explode(';', $respuesta->header('Content-Type'))[0]) ?: 'application/octet-stream',
+            'nombre' => $nombre,
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function periodo(?string $desde, ?string $hasta): array
+    {
+        return array_filter(['desde' => $desde, 'hasta' => $hasta], fn (?string $fecha) => $fecha !== null);
+    }
+
     private function peticion(): PendingRequest
     {
         $peticion = Http::baseUrl(rtrim((string) config('inclutec.api_url'), '/'))
