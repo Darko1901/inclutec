@@ -54,8 +54,14 @@ export class ReportesMock implements ReportesServicio {
       } else if (objeto === 'empresa') {
         const empresa = estado.empresas.find((e) => e.id === datos.empresa_id);
         if (!empresa || empresa.estado !== 'validada') throw noEncontrado;
-      } else if (!estado.candidatos.some((c) => c.usuario_id === datos.candidato_id)) {
-        throw noEncontrado;
+      } else {
+        // El reclutador solo reporta a quien se postuló a una vacante de su empresa.
+        const sePostulo = estado.postulaciones.some(
+          (p) =>
+            p.candidato_id === datos.candidato_id &&
+            estado.vacantes.find((v) => v.id === p.vacante_id)?.empresa_id === usuario.empresa?.id,
+        );
+        if (!sePostulo) throw noEncontrado;
       }
 
       const reporte = {

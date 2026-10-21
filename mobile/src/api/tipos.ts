@@ -78,6 +78,19 @@ export type CambioEstadoVacante = Esquemas['CambioEstadoVacante'];
 export type ConsultaMisVacantes = NonNullable<
   operations['get_empresas_me_vacantes']['parameters']['query']
 >;
+export type Postulado = Esquemas['Postulado'];
+export type PaginaPostulados = Esquemas['PaginaPostulados'];
+export type PostuladoDetalle = Esquemas['PostuladoDetalle'];
+export type CambioEstadoPostulacion = Esquemas['CambioEstadoPostulacion'];
+export type ResultadoCambioEstado = Esquemas['ResultadoCambioEstado'];
+export type Observacion = Esquemas['Observacion'];
+export type HorarioEntrada = Esquemas['HorarioEntrada'];
+export type DiaAgenda = Esquemas['DiaAgenda'];
+export type ResultadoEntrevista = Esquemas['ResultadoEntrevista'];
+export type ConsultaPostulados = NonNullable<
+  operations['get_vacantes_id_postulaciones']['parameters']['query']
+>;
+export type ConsultaAgenda = NonNullable<operations['get_entrevistas_me']['parameters']['query']>;
 export type ReporteEntrada = Esquemas['ReporteEntrada'];
 export type ReporteCreado = Esquemas['ReporteCreado'];
 

@@ -1,13 +1,18 @@
 import type {
   AjusteRef,
   Compatibilidad,
+  CV,
   EmpresaPropia,
   EmpresaPublica,
   EmpresaResumen,
   Entrevista,
+  Experiencia,
+  Formacion,
+  HabilidadCandidato,
   PerfilCandidato,
   PostulacionDetalle,
   PostulacionResumen,
+  Usuario,
   VacanteDetalle,
   VacanteReclutador,
   VacanteResumen,
@@ -20,6 +25,8 @@ import {
   type CandidatoMock,
   type EmpresaMock,
   type EntrevistaMock,
+  type ExperienciaMock,
+  type FormacionMock,
   type PostulacionMock,
   type VacanteMock,
 } from './negocio.datos';
@@ -474,4 +481,56 @@ function refDeSector(id: number) {
 function tamanoDe(id: number) {
   const { nombre, rango } = itemDe('tamanos-empresa', id);
   return { id, nombre, rango: rango ?? '' };
+}
+
+// Experiencias de la más reciente a la más antigua: primero el trabajo actual y luego por fin.
+export function claveReciente(experiencia: ExperienciaMock): string {
+  return `${experiencia.actual ? '9999-12-31' : (experiencia.fecha_fin ?? '')}|${experiencia.fecha_inicio}`;
+}
+
+export const vistaExperiencia = (e: ExperienciaMock): Experiencia => ({ ...e });
+
+export function vistaFormacion(f: FormacionMock): Formacion {
+  return {
+    id: f.id,
+    nivel_educativo: nivelDe(f.nivel_educativo_id),
+    institucion: f.institucion,
+    carrera: f.carrera,
+    estado: f.estado,
+    fecha_inicio: f.fecha_inicio,
+    fecha_fin: f.fecha_fin,
+  };
+}
+
+export const vistaHabilidades = (candidato: CandidatoMock): HabilidadCandidato[] =>
+  candidato.habilidades.map(({ habilidad_id, nivel }) => ({
+    id: habilidad_id,
+    nombre: itemDe('habilidades', habilidad_id).nombre,
+    nivel,
+  }));
+
+/** CV tal como lo ve una empresa (sin necesidades de ajuste); el contacto solo si se indica. */
+export function cvDeCandidato(
+  usuario: Pick<Usuario, 'id' | 'nombre' | 'apellidos' | 'correo' | 'telefono'>,
+  candidato: CandidatoMock,
+  conContacto: boolean,
+): CV {
+  return {
+    id: usuario.id,
+    nombre: usuario.nombre,
+    apellidos: usuario.apellidos,
+    foto_url: candidato.foto_url,
+    municipio: candidato.municipio_id ? municipioDe(candidato.municipio_id) : null,
+    resumen: candidato.resumen,
+    modalidades: candidato.modalidad_ids.map((m) => refDe('modalidades', m)),
+    experiencias: [...candidato.experiencias]
+      .sort((a, b) => claveReciente(b).localeCompare(claveReciente(a)))
+      .map(vistaExperiencia),
+    formaciones: [...candidato.formaciones]
+      .sort((a, b) => (b.fecha_inicio ?? '').localeCompare(a.fecha_inicio ?? ''))
+      .map(vistaFormacion),
+    habilidades: vistaHabilidades(candidato),
+    correo: conContacto ? usuario.correo : null,
+    telefono: conContacto ? usuario.telefono : null,
+  };
 }

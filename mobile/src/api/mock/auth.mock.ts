@@ -26,6 +26,7 @@ import {
   buscarPorCorreo,
   CODIGO_RECUPERACION_PRUEBA,
   exigirSesion,
+  nuevoIdUsuario,
   obtenerEstado,
   preferenciasPorOmision,
 } from './datos';
@@ -219,7 +220,7 @@ export class AuthMock implements AuthServicio {
 
       const estado = obtenerEstado();
       const usuario: Usuario = {
-        id: estado.siguienteIdUsuario++,
+        id: nuevoIdUsuario(),
         correo,
         nombre: datos.nombre.trim(),
         apellidos: datos.apellidos.trim(),
@@ -311,7 +312,7 @@ export class AuthMock implements AuthServicio {
         estado: 'pendiente',
       });
       const usuario: Usuario = {
-        id: estado.siguienteIdUsuario++,
+        id: nuevoIdUsuario(),
         correo,
         nombre: reclutador.nombre.trim(),
         apellidos: reclutador.apellidos.trim(),

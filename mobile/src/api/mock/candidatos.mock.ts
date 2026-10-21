@@ -2,11 +2,8 @@ import type { ArchivoLocal, CandidatosServicio } from '../candidatos';
 import type {
   CV,
   EliminarCuenta,
-  Experiencia,
   ExperienciaEntrada,
-  Formacion,
   FormacionEntrada,
-  HabilidadCandidato,
   HabilidadesEntrada,
   NecesidadesEntrada,
   PerfilCandidatoEntrada,
@@ -32,11 +29,12 @@ import { fallo, simular } from './simulador';
 import {
   ajusteRefDe,
   candidatoDe,
-  itemDe,
-  municipioDe,
-  nivelDe,
   perfilDeCandidato,
-  refDe,
+  claveReciente,
+  cvDeCandidato,
+  vistaExperiencia,
+  vistaFormacion,
+  vistaHabilidades,
 } from './vistas';
 
 // Cada operación guarda el cambio en el candidato y deja que la completitud, las secciones
@@ -68,32 +66,6 @@ function esFotoValida(archivo: ArchivoLocal): boolean {
   if (tipo) return ['image/jpeg', 'image/jpg', 'image/png'].includes(tipo);
   return /\.(jpe?g|png)$/i.test(archivo.nombre ?? archivo.uri ?? '');
 }
-
-// Experiencias de la más reciente a la más antigua: primero el trabajo actual y luego por fin.
-function claveReciente(experiencia: ExperienciaMock): string {
-  return `${experiencia.actual ? '9999-12-31' : (experiencia.fecha_fin ?? '')}|${experiencia.fecha_inicio}`;
-}
-
-const vistaExperiencia = (e: ExperienciaMock): Experiencia => ({ ...e });
-
-function vistaFormacion(f: FormacionMock): Formacion {
-  return {
-    id: f.id,
-    nivel_educativo: nivelDe(f.nivel_educativo_id),
-    institucion: f.institucion,
-    carrera: f.carrera,
-    estado: f.estado,
-    fecha_inicio: f.fecha_inicio,
-    fecha_fin: f.fecha_fin,
-  };
-}
-
-const vistaHabilidades = (candidato: CandidatoMock): HabilidadCandidato[] =>
-  candidato.habilidades.map(({ habilidad_id, nivel }) => ({
-    id: habilidad_id,
-    nombre: itemDe('habilidades', habilidad_id).nombre,
-    nivel,
-  }));
 
 function datosDeExperiencia(datos: ExperienciaEntrada): Omit<ExperienciaMock, 'id'> {
   return {
@@ -346,26 +318,8 @@ export class CandidatosMock implements CandidatosServicio {
   vistaPrevia() {
     return simular((): CV => {
       const { usuario, candidato } = sesionCandidato();
-      const { id, nombre, apellidos } = usuario.usuario;
-      return {
-        id,
-        nombre,
-        apellidos,
-        foto_url: candidato.foto_url,
-        municipio: candidato.municipio_id ? municipioDe(candidato.municipio_id) : null,
-        resumen: candidato.resumen,
-        modalidades: candidato.modalidad_ids.map((m) => refDe('modalidades', m)),
-        experiencias: [...candidato.experiencias]
-          .sort((a, b) => claveReciente(b).localeCompare(claveReciente(a)))
-          .map(vistaExperiencia),
-        formaciones: [...candidato.formaciones]
-          .sort((a, b) => (b.fecha_inicio ?? '').localeCompare(a.fecha_inicio ?? ''))
-          .map(vistaFormacion),
-        habilidades: vistaHabilidades(candidato),
-        // El contacto se muestra a la empresa solo desde el estado «entrevista».
-        correo: null,
-        telefono: null,
-      };
+      // El contacto se muestra a la empresa solo desde el estado «entrevista».
+      return cvDeCandidato(usuario.usuario, candidato, false);
     });
   }
 }

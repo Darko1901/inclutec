@@ -220,8 +220,8 @@ describe('mis vacantes', () => {
     expect(pagina.items.find((v) => v.id === 1)).toMatchObject({
       titulo: 'Técnico de soporte de TI',
       modalidad: { id: 3, nombre: 'Híbrido' },
-      postulados: 1,
-      nuevas: 0,
+      postulados: 28,
+      nuevas: 17,
     });
     const borradores = await empresas.misVacantes({ estado: 'borrador' });
     expect(borradores.items.map((v) => v.id)).toEqual([7]);
@@ -443,7 +443,8 @@ describe('editar una vacante con postulados', () => {
       h.habilidad_id === 3 ? { ...h, obligatoria: false } : h,
     );
     const guardada = await vacantes.editar(1, datos);
-    expect(guardada.postulados_notificados).toBe(1);
+    // Los postulados con proceso en curso (28 menos Karla, aceptada, y Gabriela, no seleccionada).
+    expect(guardada.postulados_notificados).toBe(26);
     expect(guardada.vacante.habilidades.find((h) => h.id === 3)!.obligatoria).toBe(false);
 
     conSesion(MARIANA, 'candidato');

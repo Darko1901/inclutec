@@ -1,4 +1,6 @@
 import type { EntrevistasServicio } from '../entrevistas';
+import type { ConsultaAgenda, ResultadoEntrevista } from '../tipos';
+import { agendaDelReclutador, registrarResultado } from './agenda.logica';
 import { exigirSesion, obtenerEstado } from './datos';
 import { cancelarEntrevista } from './entrevistas.logica';
 import { fallo, simular } from './simulador';
@@ -7,6 +9,14 @@ import { vistaDeEntrevista } from './vistas';
 const LONGITUD_MAX_MOTIVO = 255;
 
 export class EntrevistasMock implements EntrevistasServicio {
+  miAgenda(consulta: ConsultaAgenda = {}) {
+    return simular(() => agendaDelReclutador(consulta));
+  }
+
+  registrarResultado(id: number, datos: ResultadoEntrevista) {
+    return simular(() => registrarResultado(id, datos));
+  }
+
   cancelar(id: number, motivo?: string | null) {
     return simular((): void => {
       const usuario = exigirSesion(['candidato']);
