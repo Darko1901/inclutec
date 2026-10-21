@@ -31,7 +31,7 @@
     </svg>
 @endonce
 
-<section id="{{ $id }}" {{ $attributes->class(['card', 'grafica', 'grafica-ancha' => $grafica['tipo'] === 'lineas']) }} aria-labelledby="{{ $id }}-titulo" x-data="{ tabla: false }">
+<article id="{{ $id }}" {{ $attributes->class(['card', 'grafica', 'grafica-ancha' => $grafica['tipo'] === 'lineas']) }} aria-labelledby="{{ $id }}-titulo" x-data="{ tabla: false }">
     <div class="grafica-encabezado">
         <div>
             <h3 id="{{ $id }}-titulo" class="grafica-titulo">{{ $grafica['titulo'] }}</h3>
@@ -94,7 +94,7 @@
         @else
             @php
                 // Geometría de la línea (unidades del viewBox).
-                $ancho = 640; $alto = 300; $izq = 44; $der = 24; $arriba = 28; $abajo = 56;
+                $ancho = 640; $alto = 300; $izq = 44; $der = 24; $arriba = 28; $abajo = 84;
                 $areaX = $ancho - $izq - $der; $areaY = $alto - $arriba - $abajo;
                 $paso = collect([1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000, 5000, 10000])
                     ->first(fn ($p) => ceil($maximo / $p) <= 5) ?? 10000;
@@ -120,9 +120,9 @@
                             // La serie que queda más arriba lleva su valor encima; la otra, debajo.
                             $arribaPrimera = $v1 >= $v2;
                         @endphp
-                        <text x="{{ round($px($i), 1) }}" y="{{ $alto - $abajo + 20 }}" text-anchor="middle" class="linea-eje">{{ $fila['mes'] }}</text>
+                        <text x="{{ round($px($i), 1) }}" y="{{ $alto - $abajo + 42 }}" text-anchor="middle" class="linea-eje">{{ $fila['mes'] }}</text>
                         @if ($i === 0 || $fila['anio'] !== $filas[$i - 1]['anio'])
-                            <text x="{{ round($px($i), 1) }}" y="{{ $alto - $abajo + 36 }}" text-anchor="middle" class="linea-eje">{{ $fila['anio'] }}</text>
+                            <text x="{{ round($px($i), 1) }}" y="{{ $alto - $abajo + 58 }}" text-anchor="middle" class="linea-eje">{{ $fila['anio'] }}</text>
                         @endif
                         <circle cx="{{ round($px($i), 1) }}" cy="{{ round($py($v1), 1) }}" r="5" stroke-width="2" style="fill: var(--viz-1); stroke: var(--viz-superficie)"></circle>
                         <rect x="{{ round($px($i) - 5, 1) }}" y="{{ round($py($v2) - 5, 1) }}" width="10" height="10" stroke-width="2" style="fill: var(--viz-2); stroke: var(--viz-superficie)"></rect>
@@ -156,4 +156,4 @@
             </x-tabla>
         </div>
     @endif
-</section>
+</article>
