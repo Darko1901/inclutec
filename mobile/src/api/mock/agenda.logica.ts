@@ -6,7 +6,7 @@ import type {
   HorarioEntrada,
   ResultadoEntrevista,
 } from '../tipos';
-import { claveDia } from '../../utilidades/fechas';
+import { claveDia, sumarDias } from '../../utilidades/fechas';
 import { exigirSesion, obtenerEstado } from './datos';
 import { empresaDeLaSesion } from './empresas.mock';
 import { aIso, type HorarioMock } from './negocio.datos';
@@ -21,7 +21,6 @@ const DURACIONES = [30, 45, 60];
 const MAX_MOTIVO = 255;
 const LIGA_VALIDA = /^https:\/\/(meet\.google\.com|teams\.microsoft\.com)\/\S+$/i;
 const MINUTO_MS = 60000;
-const DIA_MS = 24 * 3600 * 1000;
 const UTC_MEXICO = '-06:00';
 
 const finDe = (h: HorarioMock) => new Date(h.inicio).getTime() + h.duracion_min * MINUTO_MS;
@@ -116,10 +115,6 @@ const fechaValida = (texto: unknown): texto is string =>
   /^\d{4}-\d{2}-\d{2}$/.test(texto) &&
   !Number.isNaN(Date.parse(`${texto}T00:00:00Z`)) &&
   new Date(`${texto}T00:00:00Z`).toISOString().slice(0, 10) === texto;
-
-/** Suma días a una fecha «AAAA-MM-DD» sin pasar por la zona horaria. */
-export const sumarDias = (fecha: string, dias: number) =>
-  new Date(Date.parse(`${fecha}T00:00:00Z`) + dias * DIA_MS).toISOString().slice(0, 10);
 
 /** Horarios del reclutador (libres y agendados) por día; por omisión, de hoy a 30 días. */
 export function agendaDelReclutador(consulta: ConsultaAgenda = {}): DiaAgenda[] {
