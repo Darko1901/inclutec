@@ -151,7 +151,7 @@ class DashboardTest extends TestCase
             'brecha-habilidades' => 'Habilidades demandadas y habilidades registradas',
         ];
         foreach ($titulos as $id => $titulo) {
-            $this->assertSame(1, preg_match('/<section id="grafica-'.$id.'".*?<\/section>/s', $html, $m), "Falta la gráfica {$id}.");
+            $this->assertSame(1, preg_match('/<article id="grafica-'.$id.'".*?<\/article>/s', $html, $m), "Falta la gráfica {$id}.");
             $grafica = $m[0];
 
             $this->assertStringContainsString('<h3 id="grafica-'.$id.'-titulo" class="grafica-titulo">'.e($titulo).'</h3>', $grafica);
@@ -168,7 +168,7 @@ class DashboardTest extends TestCase
         $this->entrar();
 
         $html = $this->get('/dashboard?periodo=90')->getContent();
-        preg_match('/<section id="grafica-postulaciones-estado".*?<\/section>/s', $html, $m);
+        preg_match('/<article id="grafica-postulaciones-estado".*?<\/article>/s', $html, $m);
 
         foreach (['postulada' => 'Postulada', 'en_revision' => 'En revisión', 'entrevista' => 'Entrevista', 'aceptada' => 'Aceptada', 'no_seleccionada' => 'No seleccionada', 'retirada' => 'Retirada'] as $valor => $texto) {
             $this->assertStringContainsString('data-estado="'.$valor.'"', $m[0]);
@@ -181,8 +181,8 @@ class DashboardTest extends TestCase
         $this->entrar();
 
         $html = $this->get('/dashboard?periodo=90')->getContent();
-        preg_match('/<section id="grafica-brecha-ajustes".*?<\/section>/s', $html, $ajustes);
-        preg_match('/<section id="grafica-evolucion-mensual".*?<\/section>/s', $html, $lineas);
+        preg_match('/<article id="grafica-brecha-ajustes".*?<\/article>/s', $html, $ajustes);
+        preg_match('/<article id="grafica-evolucion-mensual".*?<\/article>/s', $html, $lineas);
 
         $this->assertStringContainsString('<ul class="grafica-leyenda" aria-label="Leyenda">', $ajustes[0]);
         $this->assertStringContainsString('Solicitados por candidatos', $ajustes[0]);
