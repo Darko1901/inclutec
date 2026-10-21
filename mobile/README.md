@@ -63,7 +63,7 @@ Son las de `db/semillas/S002__datos_prueba.sql`. La contraseña de todas es **In
 | **rechazada@constructorarivera.mx** | Reclutador (Ernesto, Constructora Rivera) | Llega a Mis vacantes; su empresa está **rechazada** (con motivo): sirve para ver el banner rojo y subir la constancia (pasa a «pendiente»). |
 | **suspendida@academiaalameda.mx**   | Reclutadora (Gabriela, Academia Alameda)  | Llega a Mis vacantes; su empresa está **suspendida** (con motivo) y no puede subir constancia (409).                                        |
 
-Las cuentas `suspendida@correo.mx`, `notificaciones@correo.mx`, `rechazada@constructorarivera.mx` y `suspendida@academiaalameda.mx` **existen solo en el mock** (no están en la base de datos de prueba). Sus ids son **100 a 103** (los de S002 van del 1 al 7) para que nunca choquen con la base de datos; las dos de reclutador tienen además las empresas 100 (Constructora Rivera, rechazada) y 101 (Academia Alameda, suspendida). Las cuentas que se registren en la app reciben ids desde el 104. Jorge no tiene notificaciones: sirve para ver el estado vacío. Las notificaciones extra del mock tienen id 90 en adelante (la de Roberto, id 3, sí es de S002).
+Las cuentas `suspendida@correo.mx`, `notificaciones@correo.mx`, `rechazada@constructorarivera.mx` y `suspendida@academiaalameda.mx` **existen solo en el mock** (no están en la base de datos de prueba). Sus ids son **100 a 103** (los de S002 van del 1 al 7) para que nunca choquen con la base de datos; las dos de reclutador tienen además las empresas 100 (Constructora Rivera, rechazada) y 101 (Academia Alameda, suspendida). Los candidatos de relleno de REC-04 tienen ids de 110 a 145. Las cuentas que se registren en la app reciben ids desde el 104 (saltando las que ya existen). Jorge no tiene notificaciones: sirve para ver el estado vacío. Las notificaciones extra del mock tienen id 90 en adelante (la de Roberto, id 3, sí es de S002).
 
 Las dos cuentas solo del mock tienen el perfil vacío (sin habilidades ni formación), así que sirven para probar que «Postularme» se bloquea cuando el perfil está incompleto. Igual pasa con cualquier cuenta que se registre en la app.
 
@@ -93,6 +93,21 @@ Además de los de S002, el mock agrega (ids desde 100) lo necesario para probar 
 | Postulación 103, vacante 4, «Retirada»            | Mariana | Estado «Retirada» y sin botón de retirar.                                                                                                                                                                                                |
 | Postulación 100, vacante 6, «Entrevista»          | Jorge   | Entrevista que empieza en 5 horas (Teams): **no se puede cancelar** y la pantalla explica por qué.                                                                                                                                       |
 | Horarios libres de la vacante 1 (ids 2 y 100–104) | Mariana | Dentro de 3, 27, 30, 73 (el horario 2 de S002), 120 y 121 horas, agrupados por día («Hoy» o «Mañana» según la hora a la que abras la app). El de 30 h y 60 min (id 102) **lo toma otro candidato** justo cuando intentas agendarlo: 409. |
+
+Para REC-04 a REC-06 el mock agrega **28 postulados a la vacante 1 de TecnoQro** (ids de postulación 110 a 145 más la de Mariana; sus candidatos son cuentas solo del mock y cualquiera puede entrar con su correo, `nombre.apellido@correo.mx`, y `Inclutec2026`):
+
+| Postulación | Candidato        | Para probar                                                                                                                        |
+| ----------- | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| 1 (S002)    | Mariana          | 83 % para la reclutadora, «Entrevista», necesidades que el lugar ya cubre y una entrevista agendada (horario 1, dentro de 3 días). |
+| 110         | Carlos Mendoza   | 100 %, «Postulada», **no compartió** necesidades («El candidato no compartió esta información.») y contacto oculto.                |
+| 112         | Fernando Silva   | «Postulada» con **ajustes por confirmar** (lector de pantalla y documentos accesibles que la vacante no declara) y una nota.       |
+| 114         | Héctor Ramírez   | «En revisión»: una necesidad cubierta y una que la vacante ofrece **bajo solicitud**.                                              |
+| 115         | Irene Salazar    | «Entrevista» con la entrevista (horario 110) **empezada hace una hora**: se puede marcar como realizada o «No asistió».            |
+| 117 y 113   | Karla y Gabriela | «Aceptada» y «No seleccionada»: no tienen transiciones. 117 empata en 100 % con Carlos (se ordena antes quien se postuló primero). |
+| 118         | Luis Herrera     | «Retirada»: solo sale con el filtro «Retirada»; no cuenta en «28 postulados».                                                      |
+| 130 a 145   | Relleno          | Casi todos «Postulada» con compatibilidades repartidas: hacen falta dos páginas (20 + 8) y sirven para los filtros.                |
+
+Los horarios de Laura (ids 1, 2, 100 a 104 y 110) y los de la vacante 6 (105 y 106) alimentan la agenda; el horario 110 empezó hace una hora para ver las acciones de resultado.
 
 Las vacantes 2 y 5 se dejaron libres a propósito (Mariana puede postularse a ellas). Un retiro **sin** entrevista agendada no genera notificación porque el contrato no define ninguna; con entrevista, el reclutador recibe «Entrevista cancelada».
 
@@ -191,24 +206,26 @@ Las pruebas viven junto al código, en carpetas `__tests__/`.
 
 ## Estado de las pantallas
 
-| Pantalla                                                                               | Estado                                                    |
-| -------------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| MOV-00 Splash · MOV-01 Inicio de sesión                                                | Listas                                                    |
-| MOV-02 Registro (3 pasos, candidato y reclutador) y el aviso de privacidad completo    | Listas                                                    |
-| MOV-03 Recuperar contraseña (correo, código de 6 dígitos y nueva contraseña)           | Lista                                                     |
-| MOV-04 Notificaciones (lista paginada, marcar leídas y preferencias)                   | Lista                                                     |
-| Barras inferiores de candidato y reclutador (con contador de notificaciones no leídas) | Listas                                                    |
-| CAN-01 Vacantes (recomendadas, búsqueda, filtros y «cubre mis necesidades»)            | Lista                                                     |
-| CAN-02 Detalle de vacante (desglose, postulación y reporte)                            | Lista                                                     |
-| CAN-03 Mi perfil (completitud, foto, datos, preferencias, necesidades y cuenta)        | Lista                                                     |
-| CAN-04 Mi CV (experiencia, formación, habilidades y vista previa)                      | Lista                                                     |
-| CAN-05 Mis postulaciones (Activas y Finalizadas, filtro por estado)                    | Lista                                                     |
-| CAN-06 Detalle de postulación (historial, agendar, cancelar entrevista y retirar)      | Lista                                                     |
-| CAN-07 Empresas (directorio y ficha con prácticas de inclusión y reporte)              | Lista                                                     |
-| REC-01 Organización (banner de validación, logo, datos, constancia y cuenta)           | Lista                                                     |
-| REC-02 Mis vacantes (filtro por estado, menú de acciones, duplicar)                    | Lista                                                     |
-| REC-03 Crear o editar vacante (4 pasos, publicar y recálculo de compatibilidad)        | Lista                                                     |
-| REC-04 a REC-06                                                                        | Marcador «Pendiente» (se llenan en las siguientes tareas) |
+| Pantalla                                                                               | Estado |
+| -------------------------------------------------------------------------------------- | ------ |
+| MOV-00 Splash · MOV-01 Inicio de sesión                                                | Listas |
+| MOV-02 Registro (3 pasos, candidato y reclutador) y el aviso de privacidad completo    | Listas |
+| MOV-03 Recuperar contraseña (correo, código de 6 dígitos y nueva contraseña)           | Lista  |
+| MOV-04 Notificaciones (lista paginada, marcar leídas y preferencias)                   | Lista  |
+| Barras inferiores de candidato y reclutador (con contador de notificaciones no leídas) | Listas |
+| CAN-01 Vacantes (recomendadas, búsqueda, filtros y «cubre mis necesidades»)            | Lista  |
+| CAN-02 Detalle de vacante (desglose, postulación y reporte)                            | Lista  |
+| CAN-03 Mi perfil (completitud, foto, datos, preferencias, necesidades y cuenta)        | Lista  |
+| CAN-04 Mi CV (experiencia, formación, habilidades y vista previa)                      | Lista  |
+| CAN-05 Mis postulaciones (Activas y Finalizadas, filtro por estado)                    | Lista  |
+| CAN-06 Detalle de postulación (historial, agendar, cancelar entrevista y retirar)      | Lista  |
+| CAN-07 Empresas (directorio y ficha con prácticas de inclusión y reporte)              | Lista  |
+| REC-01 Organización (banner de validación, logo, datos, constancia y cuenta)           | Lista  |
+| REC-02 Mis vacantes (filtro por estado, menú de acciones, duplicar)                    | Lista  |
+| REC-03 Crear o editar vacante (4 pasos, publicar y recálculo de compatibilidad)        | Lista  |
+| REC-04 Postulados (orden por compatibilidad, filtros y paginación)                     | Lista  |
+| REC-05 Detalle del postulado (desglose, CV, contacto, estado, observaciones, reporte)  | Lista  |
+| REC-06 Agenda de entrevistas (publicar, eliminar, resultado y cancelar)                | Lista  |
 
 ### Cómo probar CAN-01 y CAN-02 en el teléfono
 
@@ -221,7 +238,7 @@ Las pruebas viven junto al código, en carpetas `__tests__/`.
 7. Menú **⋮ › Reportar vacante**: elige un motivo, envía y aparece «Gracias, revisaremos tu reporte».
 8. Para ver el bloqueo por perfil incompleto entra como **notificaciones@correo.mx** (perfil vacío): «Postularme» queda deshabilitado y dice qué falta.
 
-Al tocar una notificación se abre la pantalla de su referencia pasándole el id (CAN-06, REC-05, REC-06, REC-01 o REC-02); CAN-06, REC-01 y REC-02 ya son las pantallas reales y REC-05 y REC-06 siguen siendo marcadores que muestran el id recibido.
+Al tocar una notificación se abre la pantalla de su referencia pasándole el id (CAN-06, REC-05, REC-06, REC-01 o REC-02); todas son ya pantallas reales (CAN-06, REC-01, REC-02, REC-05 y REC-06).
 
 ### Cómo probar CAN-03 y CAN-04 en el teléfono
 
@@ -271,13 +288,27 @@ Los cambios se guardan en memoria: al cerrar la app por completo vuelven los dat
 6. Toca **⋮** de una vacante: el menú solo ofrece lo que permite su estado (borrador: Editar, Publicar, Duplicar; publicada: Editar, Pausar, Cerrar, Duplicar; pausada: Editar, Reanudar, Cerrar, Duplicar; cerrada: Duplicar; suspendida: nada y la tarjeta dice «Suspendida por el administrador»). Pausar, Reanudar, Cerrar y Publicar piden confirmar. **Duplicar** crea un borrador « (copia)».
 7. **+ Nueva vacante** abre el formulario de 4 pasos («Paso 1 de 4», se anuncia al cambiar). «Siguiente» solo revisa el paso actual. Paso 2: busca una habilidad (como en Mi CV) y márcala **Obligatoria** o **Deseable**. Paso 3: tarjetas Presencial, Remoto e Híbrido. Paso 4: los dos bloques de ajustes; uno que marcas en un bloque se deshabilita en el otro, y «Por ahora no contamos con condiciones» limpia los dos.
 8. **Publicar** pide confirmar. Si falta algo (por ejemplo, ninguna habilidad obligatoria o la dirección de una vacante presencial) el formulario vuelve al primer paso con error y marca el campo. Con Estudio Trazo, **Publicar** está deshabilitado con su explicación, pero **Guardar borrador** funciona.
-9. Para ver el recálculo, entra primero como **mariana.lopez@correo.mx**: «Técnico de soporte de TI» tiene 88 %. Con Laura edita esa vacante y, en el paso 2, cambia **SQL** de Obligatoria a Deseable; al guardar dice «Avisamos a 1 postulado…». Mariana ve ahora **91 %** en Vacantes y en el detalle.
+9. Para ver el recálculo, entra primero como **mariana.lopez@correo.mx**: «Técnico de soporte de TI» tiene 88 %. Con Laura edita esa vacante y, en el paso 2, cambia **SQL** de Obligatoria a Deseable; al guardar dice «Avisamos a 26 postulados…» (los de la vacante con proceso en curso). Mariana ve ahora **91 %** en Vacantes y en el detalle.
 10. Si sales del formulario con cambios sin guardar (botón atrás o gesto), pide confirmar antes de descartarlos. Una vacante cerrada o suspendida no se edita y lo explica.
 
-Con TalkBack o VoiceOver cada tarjeta de vacante se lee como un solo elemento con todo su resumen (por ejemplo, «Técnico de soporte de TI. Híbrido. Estado: Publicada. 1 postulado, 0 nuevos. Publicada el 20 oct») y el menú ⋮ es un botón aparte («Más opciones de Técnico de soporte de TI»).
+Con TalkBack o VoiceOver cada tarjeta de vacante se lee como un solo elemento con todo su resumen (por ejemplo, «Técnico de soporte de TI. Híbrido. Estado: Publicada. 28 postulados, 17 nuevos. Publicada el 20 oct») y el menú ⋮ es un botón aparte («Más opciones de Técnico de soporte de TI»).
+
+### Cómo probar REC-04, REC-05 y REC-06 en el teléfono
+
+Los cambios se guardan en memoria: al cerrar la app por completo vuelven los datos de S002 y del mock.
+
+1. Entra como **rh@tecnoqro.mx** y en **Mis vacantes** toca la tarjeta de «Técnico de soporte de TI»: abre **Postulados** con el título y «28 postulados». Abajo del título dice «Ordenados de mayor a menor compatibilidad laboral.» y que el puntaje solo considera habilidades, formación y modalidad. Mariana sale con «Compatibilidad laboral 83 %».
+2. Filtra por estado (chips) y por **Compatibilidad mínima** (50, 70 u 85 %); el texto «Mostrando n postulados con estos filtros.» se anuncia. «Quitar filtros» regresa a la lista completa. Desplázate hasta el final: carga la segunda página. Las tarjetas no dicen nada de discapacidad; solo hay una etiqueta «Ajustes por confirmar» cuando aplica.
+3. Abre a **Mariana** (REC-05): desglose con ✓ y ✕ (le falta SQL), CV, mensaje de la postulación, necesidades («Ya cubierto por la vacante»), contacto (correo y teléfono con **Escribir** y **Llamar**) y la entrevista con **Abrir liga** y **Copiar liga**. Abre a **Carlos Mendoza** (postulada): «El candidato no compartió esta información.» y contacto «Disponibles al pasar a entrevista». Abre a **Fernando Silva**: sus necesidades salen «Por confirmar con la empresa».
+4. En Carlos toca **Cambiar estado**: solo ofrece «En revisión» y «No seleccionada». Elige «En revisión», escribe un mensaje (contador «n / 500» y «El candidato verá este mensaje») y guarda. Luego elige «Entrevista»: el contacto aparece y, si la vacante no tiene horarios libres, el aviso ofrece **Publicar horarios**. «No seleccionada» y «Aceptada» piden confirmar antes de enviarse.
+5. Para ver el cambio del lado del candidato: entra como `carlos.mendoza@correo.mx`, abre Notificaciones («Tu postulación avanzó») y la postulación: el estado y tu mensaje salen en la línea de tiempo.
+6. **Observaciones internas**: la de S002 ya está; agrega otra (contador «n / 1000»). La etiqueta «No visibles para el candidato» está siempre visible. El menú **⋮ › Reportar perfil** envía el reporte con «Gracias, revisaremos tu reporte».
+7. **Agenda**: agrupa por «Hoy», «Mañana» o «jue 22 oct» (VoiceOver lee la fecha completa). Los horarios libres tienen **Eliminar** (con confirmación). El agendado de Mariana tiene **Marcar como realizada** y **No asistió** deshabilitados con la explicación (aún no empieza); el de Irene sí se puede marcar. **Cancelar** pide un motivo obligatorio y avisa a la persona; con Mariana, entra como ella y en la postulación vuelve a aparecer «Elige un horario».
+8. **+ Publicar horarios**: elige la vacante (solo publicadas), el día, la hora (de 7:00 a 20:00 cada 15 min), la duración y la liga de Meet o Teams. Una liga de otro servicio se marca en su campo y un horario que se cruza con otro dice «Este horario se traslapa con otro.». Marca **Repetir en los siguientes días hábiles** (1 a 5) para publicar varios; al final dice cuántos se publicaron y cuáles chocaron. Los nuevos horarios aparecen libres para Mariana en «Elige un horario».
+9. **Ver más días** amplía la agenda de 30 en 30 días.
 
 ## Accesibilidad
 
 WCAG 2.1 AA: contraste de 4.5:1 (hay una prueba que lo comprueba con la paleta), áreas táctiles de 48 × 48 dp, texto que respeta el tamaño de fuente del sistema (hasta 200 %), `accessibilityLabel`, `accessibilityRole` y `accessibilityState` en todo lo interactivo, estados con texto e ícono y errores anunciados con `AccessibilityInfo.announceForAccessibility`.
 
-Patrones de CAN-03 y CAN-04 que conviene reutilizar: `SeccionDesplegable` (botón con estado expandido o contraído; el contenido sigue montado para no perder lo escrito), `ModalFormulario` (título al que va el foco, contenido con scroll y botón fijo dentro del área segura), `useRetornoFoco` (devuelve el foco al botón que abrió un modal), `BarraProgreso` (barra con valor dicho en voz alta, por ejemplo «90 por ciento») `SelectorMesAnio` (fecha de mes y año con listas accesibles, sin el selector nativo), `BuscadorHabilidades` (sugerencias del catálogo; lo usan Mi CV y los requisitos de la vacante), `SelectorUbicacion` (entidad y municipio), `FiltroEstado` (opciones excluyentes con palomita) y `ModalContrasena` (en `pantallas/compartidas/`).
+Patrones de CAN-03 y CAN-04 que conviene reutilizar: `SeccionDesplegable` (botón con estado expandido o contraído; el contenido sigue montado para no perder lo escrito), `ModalFormulario` (título al que va el foco, contenido con scroll y botón fijo dentro del área segura), `useRetornoFoco` (devuelve el foco al botón que abrió un modal), `BarraProgreso` (barra con valor dicho en voz alta, por ejemplo «90 por ciento») `SelectorMesAnio` (fecha de mes y año con listas accesibles, sin el selector nativo), `BuscadorHabilidades` (sugerencias del catálogo; lo usan Mi CV y los requisitos de la vacante), `SelectorUbicacion` (entidad y municipio), `FiltroEstado` (opciones excluyentes con palomita), `ModalContrasena` y `CvCandidato` (el CV como lo ve una empresa, compartido entre la vista previa de Mi CV y REC-05; en `pantallas/compartidas/`).
