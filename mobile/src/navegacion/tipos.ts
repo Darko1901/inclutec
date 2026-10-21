@@ -11,7 +11,8 @@ export type CandidatoTabsParamList = {
 // Los parámetros opcionales llegan desde MOV-04 al tocar una notificación (referencia.id).
 export type ReclutadorTabsParamList = {
   MisVacantes: { vacante_id?: number } | undefined;
-  Agenda: { entrevista_id?: number } | undefined;
+  // `publicar_vacante_id` abre «Publicar horarios» con esa vacante (desde REC-05).
+  Agenda: { entrevista_id?: number; publicar_vacante_id?: number } | undefined;
   Notificaciones: undefined;
   Organizacion: { empresa_id?: number } | undefined;
 };

@@ -15,11 +15,22 @@ import { colores, espaciado } from '../../../tema';
 
 const MAX_DESCRIPCION = 500;
 
-/** Lo que se reporta: una vacante o una empresa (CAN-02 y CAN-07). */
+const TITULO = {
+  vacante: 'Reportar vacante',
+  empresa: 'Reportar empresa',
+  candidato: 'Reportar perfil',
+} as const;
+const NO_DISPONIBLE = {
+  vacante: 'Esta vacante ya no está disponible',
+  empresa: 'Esta empresa ya no está disponible',
+  candidato: 'Este perfil ya no está disponible',
+} as const;
+
+/** Lo que se reporta: una vacante o una empresa (CAN-02 y CAN-07) o un candidato (REC-05). */
 export interface ObjetoReporte {
-  tipo: 'vacante' | 'empresa';
+  tipo: 'vacante' | 'empresa' | 'candidato';
   id: number;
-  /** Título de la vacante o nombre comercial de la empresa. */
+  /** Título de la vacante, nombre comercial de la empresa o nombre del candidato. */
   nombre: string;
 }
 
@@ -58,9 +69,7 @@ function Contenido({ objeto, onCerrar, onEnviado }: Omit<Props, 'visible'>) {
       const error = ApiError.desde(fallo);
       setEnviando(false);
       if (error.status === 404) {
-        setErrorGeneral(
-          `${objeto.tipo === 'vacante' ? 'Esta vacante' : 'Esta empresa'} ya no está disponible, así que no se puede reportar.`,
-        );
+        setErrorGeneral(`${NO_DISPONIBLE[objeto.tipo]}, así que no se puede reportar.`);
       } else if (error.codigo === 'validacion' && error.campos) {
         setErrorMotivo(error.campos.motivo_reporte_id ?? null);
         setErrorDescripcion(error.campos.descripcion ?? null);
@@ -76,7 +85,7 @@ function Contenido({ objeto, onCerrar, onEnviado }: Omit<Props, 'visible'>) {
   return (
     <VentanaModal visible onCerrar={enviando ? () => undefined : onCerrar} testID="modal-reporte">
       <EncabezadoModal
-        titulo={`Reportar ${objeto.tipo}`}
+        titulo={TITULO[objeto.tipo]}
         onVolver={onCerrar}
         pistaVolver="Cierra sin enviar el reporte"
         volverDeshabilitado={enviando}
