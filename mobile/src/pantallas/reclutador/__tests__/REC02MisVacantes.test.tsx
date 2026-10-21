@@ -78,7 +78,7 @@ describe('REC-02 · Mis vacantes', () => {
       expect(
         within(tarjeta(1)).getByText('Técnico de soporte de TI', { hidden: true }),
       ).toBeOnTheScreen();
-      expect(within(tarjeta(1)).getByText('1 postulado', { hidden: true })).toBeOnTheScreen();
+      expect(within(tarjeta(1)).getByText('28 postulados · 17 nuevos', { hidden: true })).toBeOnTheScreen();
       expect(within(tarjeta(7)).getByText('Sin postulados', { hidden: true })).toBeOnTheScreen();
       expect(within(tarjeta(7)).getByText('Sin publicar', { hidden: true })).toBeOnTheScreen();
     });

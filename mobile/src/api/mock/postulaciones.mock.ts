@@ -1,6 +1,8 @@
 import type { PostulacionesServicio } from '../postulaciones';
 import type {
+  CambioEstadoPostulacion,
   ConsultaPostulaciones,
+  ConsultaPostulados,
   Entrevista,
   PaginaPostulaciones,
   PostulacionDetalle,
@@ -9,6 +11,13 @@ import type {
 import { exigirSesion, obtenerEstado } from './datos';
 import { retirarPostulacion } from './entrevistas.logica';
 import { aIso } from './negocio.datos';
+import {
+  agregarObservacionA,
+  cambiarEstadoDePostulacion,
+  detalleDePostulado,
+  listarObservaciones,
+  listarPostulados,
+} from './postulados.logica';
 import { lanzarSiHayCampos, leerPagina, paginar } from './paginacion';
 import { fallo, simular } from './simulador';
 import {
@@ -40,6 +49,26 @@ function postulacionPropia(id: number) {
 }
 
 export class PostulacionesMock implements PostulacionesServicio {
+  postuladosDe(vacanteId: number, consulta: ConsultaPostulados = {}) {
+    return simular(() => listarPostulados(vacanteId, consulta));
+  }
+
+  detallePostulado(id: number) {
+    return simular(() => detalleDePostulado(id));
+  }
+
+  cambiarEstado(id: number, datos: CambioEstadoPostulacion) {
+    return simular(() => cambiarEstadoDePostulacion(id, datos));
+  }
+
+  observaciones(id: number) {
+    return simular(() => listarObservaciones(id));
+  }
+
+  agregarObservacion(id: number, texto: string) {
+    return simular(() => agregarObservacionA(id, texto));
+  }
+
   crear(datos: PostulacionEntrada) {
     return simular((): PostulacionDetalle => {
       const usuario = exigirSesion(['candidato']);

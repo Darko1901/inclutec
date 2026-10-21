@@ -1,9 +1,18 @@
 import type { HorariosServicio } from '../horarios';
-import type { Horario } from '../tipos';
+import type { Horario, HorarioEntrada } from '../tipos';
+import { eliminarHorario, publicarHorario } from './agenda.logica';
 import { exigirSesion, obtenerEstado } from './datos';
 import { fallo, simular } from './simulador';
 
 export class HorariosMock implements HorariosServicio {
+  publicar(datos: HorarioEntrada) {
+    return simular(() => publicarHorario(datos));
+  }
+
+  eliminar(id: number) {
+    return simular(() => eliminarHorario(id));
+  }
+
   disponibles(vacanteId: number) {
     return simular((): Horario[] => {
       const usuario = exigirSesion(['candidato']);

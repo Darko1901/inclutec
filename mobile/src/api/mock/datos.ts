@@ -7,6 +7,7 @@ import type {
   Usuario,
 } from '../tipos';
 import { crearNegocioInicial, type NegocioMock } from './negocio.datos';
+import { crearCandidatosExtra } from './postulados.datos';
 import { fallo } from './simulador';
 import { leerToken } from './tokens';
 
@@ -47,6 +48,8 @@ export interface EstadoMock extends NegocioMock {
   siguienteIdUsuario: number;
   siguienteIdEmpresa: number;
   siguienteIdVacante: number;
+  siguienteIdHorario: number;
+  siguienteIdObservacion: number;
   notificaciones: NotificacionMock[];
   preferencias: Map<number, PreferenciaNotificacion[]>;
   dispositivos: Map<string, { usuarioId: number; plataforma: string }>;
@@ -242,6 +245,20 @@ function crearEstadoInicial(): EstadoMock {
     },
   ];
 
+  // Candidatos extra (ids 110 a 145) que se postularon a la vacante 1: ver postulados.datos.ts.
+  for (const { usuario, candidato } of crearCandidatosExtra(Date.now())) {
+    usuarios.push({
+      contrasena: CONTRASENA_PRUEBA,
+      usuario: {
+        ...usuario,
+        rol: 'candidato',
+        estado: 'activo',
+        empresa: null,
+        consentimiento_sensibles: candidato.consentimiento_sensibles_en !== null,
+      },
+    });
+  }
+
   const hace = (horas: number) =>
     new Date(Date.now() - horas * 3600 * 1000).toISOString().replace(/\.\d{3}Z$/, 'Z');
 
@@ -342,6 +359,9 @@ function crearEstadoInicial(): EstadoMock {
     siguienteIdEmpresa: 5,
     // Después de las vacantes 1 a 8 de S002.
     siguienteIdVacante: 9,
+    // Después de los horarios 1, 2 y 100 a 110 y de las observaciones 1 y las del mock.
+    siguienteIdHorario: 200,
+    siguienteIdObservacion: 100,
     siguienteIdPostulacion: 3,
     // Después de la entrevista 1 de S002 y las 100 y 101 solo del mock.
     siguienteIdEntrevista: 102,
@@ -368,6 +388,14 @@ export function obtenerEstado(): EstadoMock {
 /** Vuelve a los datos iniciales (lo usan las pruebas). */
 export function reiniciarMock(): void {
   estado = crearEstadoInicial();
+}
+
+/** Siguiente id de usuario libre: salta los de las cuentas que ya existen solo en el mock. */
+export function nuevoIdUsuario(): number {
+  while (estado.usuarios.some((u) => u.usuario.id === estado.siguienteIdUsuario)) {
+    estado.siguienteIdUsuario++;
+  }
+  return estado.siguienteIdUsuario++;
 }
 
 export function buscarPorCorreo(correo: string): UsuarioMock | undefined {

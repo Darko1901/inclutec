@@ -406,7 +406,7 @@ describe('REC-03 · Crear o editar vacante', () => {
       const resultado = await screen.findByTestId('resultado-guardado');
       expect(within(resultado).getByText('Cambios guardados')).toBeOnTheScreen();
       expect(
-        within(resultado).getByText(/Avisamos a 1 postulado que cambiaron los requisitos/),
+        within(resultado).getByText(/Avisamos a 26 postulados que cambiaron los requisitos/),
       ).toBeOnTheScreen();
       expect(
         obtenerEstado()

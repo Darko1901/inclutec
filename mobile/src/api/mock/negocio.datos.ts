@@ -1,3 +1,4 @@
+import { crearCandidatosExtra } from './postulados.datos';
 import type {
   CompartirAjustes,
   EstadoEmpresa,
@@ -148,6 +149,14 @@ export interface EntrevistaMock {
   creado_en: string;
 }
 
+export interface ObservacionMock {
+  id: number;
+  postulacion_id: number;
+  autor_id: number;
+  texto: string;
+  creado_en: string;
+}
+
 export interface ReporteMock {
   id: number;
   reportante_id: number;
@@ -214,6 +223,7 @@ export interface NegocioMock {
   horarios: HorarioMock[];
   entrevistas: EntrevistaMock[];
   reportes: ReporteMock[];
+  observaciones: ObservacionMock[];
 }
 
 export function crearNegocioInicial(ahora = Date.now()): NegocioMock {
@@ -881,7 +891,48 @@ export function crearNegocioInicial(ahora = Date.now()): NegocioMock {
     },
   ];
 
-  return { empresas, vacantes, candidatos, postulaciones, horarios, entrevistas, reportes };
+  // Postulados extra de la vacante 1 (ids 110 a 145) para REC-04 y REC-05.
+  for (const extra of crearCandidatosExtra(ahora)) {
+    candidatos.push(extra.candidato);
+    postulaciones.push(extra.postulacion);
+  }
+
+  // Irene (postulación 115) ya está en «entrevista» y su entrevista empezó hace una hora: sirve
+  // para marcarla como realizada o «no asistió» en REC-06.
+  horarios.push({
+    ...horarioLibre(110, antes(1), 45),
+    liga: 'https://teams.microsoft.com/l/meetup-join/prueba-irene',
+    estado: 'agendado',
+  });
+  entrevistas.push({
+    id: 110,
+    horario_id: 110,
+    postulacion_id: 115,
+    estado: 'agendada',
+    motivo_cancelacion: null,
+    creado_en: antes(20),
+  });
+
+  const observaciones: ObservacionMock[] = [
+    {
+      id: 1,
+      postulacion_id: 1,
+      autor_id: 2,
+      texto: 'Perfil sólido en soporte; confirmar disponibilidad de horario.',
+      creado_en: '2026-10-01T15:12:00Z',
+    },
+  ];
+
+  return {
+    empresas,
+    vacantes,
+    candidatos,
+    postulaciones,
+    horarios,
+    entrevistas,
+    reportes,
+    observaciones,
+  };
 }
 
 /** Horario libre de la vacante 1 publicado por Laura (TecnoQro). */
