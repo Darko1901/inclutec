@@ -2,7 +2,7 @@
 
 Panel web en Laravel (Blade) para el administrador de IncluTec. **No tiene base de datos:** todo pasa por el API REST (`api/`), con JSON y un token JWT. El panel guarda ese token en la **sesión del servidor** y nunca lo manda al navegador.
 
-Pantallas: WEB-01 inicio de sesión y «Cambiar contraseña» (listas, con la base de componentes) y WEB-02 a WEB-08 (maquetadas con datos fijos dentro del layout nuevo; se conectan al API en las siguientes tareas). Qué hace cada una: `docs/diseno/pantallas.md` y `docs/diseno/requerimientos.md`.
+Pantallas: WEB-01 inicio de sesión, «Cambiar contraseña» y WEB-02 dashboard y estadísticas (listas, conectadas a `ApiAdmin`) y WEB-03 a WEB-08 (maquetadas con datos fijos dentro del layout nuevo; se conectan al API en las siguientes tareas). Qué hace cada una: `docs/diseno/pantallas.md` y `docs/diseno/requerimientos.md`.
 
 ## Requisitos
 
@@ -63,6 +63,7 @@ Contraseña de todas: `Inclutec2026`. Son las de `db/semillas/S002__datos_prueba
 | `admin@inclutec.mx` | Entra al dashboard. |
 | `mariana.lopez@correo.mx`, `jorge.ramirez@correo.mx` (candidatos) y las cuentas de reclutador (`rh@tecnoqro.mx`, `rh@logibajio.mx`, `talento@concentro.mx`, `contacto@estudiotrazo.mx`) | «Esta cuenta no tiene acceso al panel. Usa la aplicación móvil.» y no se guarda la sesión. |
 | `suspendida@correo.mx` | Existe solo en el mock (id 100): responde 423, «Tu cuenta está suspendida.». |
+| `ana.torres@correo.mx`, `luis.fernandez@correo.mx`, `carmen.vazquez@correo.mx`, `miguel.cruz@correo.mx`, `daniela.morales@correo.mx`, `hector.salinas@correo.mx` | Candidatos solo del mock (ids 101 a 106) que dan volumen a las estadísticas. Tampoco entran al panel. |
 
 Con el mock, cinco intentos fallidos con el mismo correo bloquean el acceso 15 minutos: el sexto responde 429 con `Retry-After`, aunque la contraseña sea correcta.
 
@@ -76,6 +77,7 @@ php artisan inclutec:mock-reiniciar   # borra el archivo y vuelve a los datos in
 
 - Si cambias `Mock/datos.php` (por ejemplo, agregas un grupo nuevo), las llaves que falten se completan solas, pero los registros ya guardados no cambian: corre `inclutec:mock-reiniciar` para verlos.
 - En las pruebas cada caso usa un archivo temporal propio (lo configura `tests/TestCase.php`), así que todos parten de los datos iniciales y nunca tocan el archivo de desarrollo.
+- Las fechas de postulaciones, vacantes y reportes del mock son relativas al día en que se crea el archivo (por ejemplo, «hace 12 días»), para que el periodo por omisión del dashboard siempre tenga datos. Pasados unos días, corre `inclutec:mock-reiniciar` para volver a anclarlas a hoy.
 - Para depurar, el archivo se puede abrir y editar a mano (es JSON).
 
 ## Estructura
@@ -94,7 +96,10 @@ app/
     ApiError.php        excepción con status, codigo, detail y campos (forma del contrato)
     Mock/datos.php      datos iniciales del mock (los de S002); único lugar donde viven
     Mock/Almacen.php    estado persistente del mock (storage/app/mock-api.json)
+    Mock/CalculadoraEstadisticas.php   calcula el objeto Estadisticas con el estado del mock
+    Mock/ExportadorEstadisticas.php    arma el PDF (FPDF) y el XLSX (SimpleXLSXGen) del mock
   Support/
+    PeriodoEstadisticas.php, PresentadorEstadisticas.php   periodo de la URL y datos que pinta el dashboard
     Estados.php         mapa único de estados: valor de BD → texto, ícono y variante (tabla 3.4)
     Iconos.php          íconos SVG de contorno
 bootstrap/app.php       alias del middleware y manejo de ApiError (401 y 423 cierran sesión)
@@ -119,6 +124,10 @@ php artisan test           # pruebas
 ./vendor/bin/pint --test   # estilo (Laravel Pint); sin --test corrige los archivos
 npm run build              # compila el JavaScript
 ```
+
+## Estadísticas y exportación (WEB-02)
+
+Las cifras y las gráficas salen de `ApiAdmin::estadisticas($desde, $hasta)`; `ApiAdmin::exportarEstadisticas($formato, $desde, $hasta)` devuelve el archivo (contenido, tipo y nombre) y el panel lo reenvía al navegador. El periodo vive en la URL: `/dashboard?periodo=7|30|90` o `?periodo=personalizado&desde=AAAA-MM-DD&hasta=AAAA-MM-DD` (máximo 12 meses). En el mock, las cifras se calculan con su estado y el PDF y el XLSX son reales; usan las bibliotecas de Composer `setasign/fpdf` y `shuchkin/simplexlsxgen` (de un solo archivo, sin extensiones adicionales). Las gráficas no usan biblioteca de JavaScript: son HTML y SVG generados en el servidor (`<x-grafica>`).
 
 ## Dependencias y auditoría
 
@@ -152,6 +161,7 @@ Con `APP_ENV=local`, **http://localhost:8001/componentes** muestra todos los com
 | `<x-campo nombre etiqueta tipo valor ayuda obligatorio maximo :opciones>` | Etiqueta, control, ayuda, contador y error con `aria-invalid`/`aria-describedby`; toma el error de `$errors` |
 | `<x-resumen-errores>` | Lista de errores con `role="alert"` que recibe el foco; cada error enlaza a su campo |
 | `<x-modal id titulo>` | Diálogo accesible: foco atrapado, Escape y «Cerrar», devuelve el foco. Se abre con `$dispatch('abrir-modal', 'id')` |
+| `<x-grafica :grafica>` | Gráfica del dashboard (barras o líneas) dibujada en el servidor, con título, leyenda, valores escritos y el botón «Ver como tabla» (`<x-tabla>`) |
 | `<x-confirmacion id titulo pedirMotivo accion metodo>` | «¿Seguro que…?»; con `pedirMotivo` no deja confirmar sin motivo. Con `accion` envía un formulario; sin ella emite el evento `confirmado` |
 
 ### Avisos
