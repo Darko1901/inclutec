@@ -115,7 +115,10 @@ describe('navegación por rol', () => {
     await abrir(<Entrar correo="rh@tecnoqro.mx" />);
 
     await fireEvent.press(await screen.findByTestId('abrir-vacante-6'));
-    expect(await screen.findByText('Vacante n.º 6')).toBeOnTheScreen();
+    expect(await screen.findByTestId('lista-postulados')).toBeOnTheScreen();
+    expect(
+      await screen.findByRole('header', { name: 'Desarrollador web junior' }),
+    ).toBeOnTheScreen();
   });
 
   it('un reclutador recién registrado aterriza en Organización (REC-01)', async () => {

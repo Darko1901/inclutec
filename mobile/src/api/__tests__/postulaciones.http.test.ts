@@ -140,3 +140,86 @@ describe('servicios HTTP de la organización y las vacantes del reclutador', () 
     expect(put.mock.calls[0]).toEqual(['/vacantes/3', entrada]);
   });
 });
+
+describe('servicios HTTP del reclutador: postulados, horarios y agenda', () => {
+  let get: jest.SpyInstance;
+  let post: jest.SpyInstance;
+  let patch: jest.SpyInstance;
+  let borrar: jest.SpyInstance;
+
+  beforeEach(() => {
+    get = jest.spyOn(cliente, 'get').mockResolvedValue({ data: {} });
+    post = jest.spyOn(cliente, 'post').mockResolvedValue({ data: {} });
+    patch = jest.spyOn(cliente, 'patch').mockResolvedValue({ data: {} });
+    borrar = jest.spyOn(cliente, 'delete').mockResolvedValue({ data: undefined });
+  });
+  afterEach(() => jest.restoreAllMocks());
+
+  it('los postulados mandan estado, compatibilidad mínima y paginación como query', async () => {
+    await new PostulacionesHttp().postuladosDe(1, {
+      estado: 'entrevista',
+      compatibilidad_min: 70,
+      page: 2,
+      size: 20,
+    });
+    const [ruta, config] = get.mock.calls[0] as [string, AxiosRequestConfig];
+    expect(ruta).toBe('/vacantes/1/postulaciones');
+    expect(axios.getUri({ url: ruta, ...config })).toBe(
+      '/vacantes/1/postulaciones?estado=entrevista&compatibilidad_min=70&page=2&size=20',
+    );
+  });
+
+  it('usa las rutas del contrato para el detalle, el estado y las observaciones', async () => {
+    const servicio = new PostulacionesHttp();
+    await servicio.detallePostulado(1);
+    await servicio.observaciones(1);
+    await servicio.cambiarEstado(1, { estado: 'aceptada', mensaje: 'Felicidades' });
+    await servicio.agregarObservacion(1, 'Llamar el lunes.');
+
+    expect(get.mock.calls.map((llamada: unknown[]) => llamada[0])).toEqual([
+      '/postulaciones/1/candidato',
+      '/postulaciones/1/observaciones',
+    ]);
+    expect(patch.mock.calls[0]).toEqual([
+      '/postulaciones/1/estado',
+      { estado: 'aceptada', mensaje: 'Felicidades' },
+    ]);
+    expect(post.mock.calls[0]).toEqual([
+      '/postulaciones/1/observaciones',
+      { texto: 'Llamar el lunes.' },
+    ]);
+  });
+
+  it('publica y elimina horarios con las rutas del contrato', async () => {
+    const entrada = {
+      vacante_id: 1,
+      inicio: '2026-10-06T17:00:00Z',
+      duracion_min: 45 as const,
+      liga: 'https://meet.google.com/abc-defg-hij',
+    };
+    await new HorariosHttp().publicar(entrada);
+    await new HorariosHttp().eliminar(7);
+    expect(post.mock.calls[0]).toEqual(['/horarios-entrevista', entrada]);
+    expect(borrar.mock.calls[0][0]).toBe('/horarios-entrevista/7');
+  });
+
+  it('la agenda y el resultado de la entrevista usan /entrevistas', async () => {
+    await new EntrevistasHttp().miAgenda({
+      desde: '2026-10-01',
+      hasta: '2026-10-31',
+      vacante_id: 1,
+    });
+    await new EntrevistasHttp().registrarResultado(1, {
+      estado: 'cancelada',
+      motivo_cancelacion: 'Imprevisto',
+    });
+    const [ruta, config] = get.mock.calls[0] as [string, AxiosRequestConfig];
+    expect(axios.getUri({ url: ruta, ...config })).toBe(
+      '/entrevistas/me?desde=2026-10-01&hasta=2026-10-31&vacante_id=1',
+    );
+    expect(patch.mock.calls[0]).toEqual([
+      '/entrevistas/1',
+      { estado: 'cancelada', motivo_cancelacion: 'Imprevisto' },
+    ]);
+  });
+});
