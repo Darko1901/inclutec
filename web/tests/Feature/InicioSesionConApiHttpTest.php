@@ -60,7 +60,7 @@ class InicioSesionConApiHttpTest extends TestCase
             && ! $p->hasHeader('Authorization'));
 
         // Las peticiones siguientes llevan el Bearer con el token guardado en la sesión.
-        $this->get('/dashboard')->assertOk();
+        $this->get('/usuarios')->assertOk();
         Http::assertSent(fn (Request $p) => str_ends_with($p->url(), '/auth/me')
             && $p->method() === 'GET'
             && $p->hasHeader('Authorization', 'Bearer '.self::TOKEN)
