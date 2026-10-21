@@ -543,22 +543,27 @@ describe('resultado de la entrevista', () => {
   beforeEach(() => conSesion(LAURA));
 
   it('«realizada» antes de la hora de inicio se rechaza (409 transicion_invalida)', async () => {
-    await expect(entrevistas.registrarResultado(1, { estado: 'realizada' })).rejects.toMatchObject({
+    await expect(
+      entrevistas.registrarResultado(1, { estado: 'realizada', motivo_cancelacion: null }),
+    ).rejects.toMatchObject({
       status: 409,
       codigo: 'transicion_invalida',
     });
-    await expect(entrevistas.registrarResultado(1, { estado: 'no_asistio' })).rejects.toMatchObject(
-      { status: 409, codigo: 'transicion_invalida' },
-    );
+    await expect(
+      entrevistas.registrarResultado(1, { estado: 'no_asistio', motivo_cancelacion: null }),
+    ).rejects.toMatchObject({ status: 409, codigo: 'transicion_invalida' });
     expect(obtenerEstado().entrevistas.find((e) => e.id === 1)?.estado).toBe('agendada');
   });
 
   it('después de la hora de inicio se marca realizada o «no asistió» y ya no cambia', async () => {
     // La entrevista 110 (Irene) empezó hace una hora.
-    const resultado = await entrevistas.registrarResultado(110, { estado: 'realizada' });
+    const resultado = await entrevistas.registrarResultado(110, {
+      estado: 'realizada',
+      motivo_cancelacion: null,
+    });
     expect(resultado).toMatchObject({ id: 110, estado: 'realizada', puede_cancelar: false });
     await expect(
-      entrevistas.registrarResultado(110, { estado: 'no_asistio' }),
+      entrevistas.registrarResultado(110, { estado: 'no_asistio', motivo_cancelacion: null }),
     ).rejects.toMatchObject({
       status: 409,
       codigo: 'transicion_invalida',
@@ -566,13 +571,17 @@ describe('resultado de la entrevista', () => {
 
     // Otra entrevista que ya empezó: «no asistió».
     obtenerEstado().horarios.find((h) => h.id === 1)!.inicio = enHoras(-2);
-    expect(await entrevistas.registrarResultado(1, { estado: 'no_asistio' })).toMatchObject({
+    expect(
+      await entrevistas.registrarResultado(1, { estado: 'no_asistio', motivo_cancelacion: null }),
+    ).toMatchObject({
       estado: 'no_asistio',
     });
   });
 
   it('cancelar exige motivo (422), libera al candidato y le avisa', async () => {
-    await expect(entrevistas.registrarResultado(1, { estado: 'cancelada' })).rejects.toMatchObject({
+    await expect(
+      entrevistas.registrarResultado(1, { estado: 'cancelada', motivo_cancelacion: null }),
+    ).rejects.toMatchObject({
       status: 422,
       campos: { motivo_cancelacion: expect.any(String) },
     });
@@ -620,7 +629,7 @@ describe('resultado de la entrevista', () => {
 
   it('valida el estado (422)', async () => {
     await expect(
-      entrevistas.registrarResultado(1, { estado: 'agendada' as never }),
+      entrevistas.registrarResultado(1, { estado: 'agendada' as never, motivo_cancelacion: null }),
     ).rejects.toMatchObject({ status: 422, campos: { estado: expect.any(String) } });
   });
 });
