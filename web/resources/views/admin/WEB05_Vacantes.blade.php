@@ -1,52 +1,60 @@
 @extends('layouts.admin_layout')
 @section('titulo', 'Vacantes')
 @section('content')
-<div x-data="{ 
-    showReviewModal: false,
-    selectedVacante: null,
-    vacantes: [
-        { id: 1, title: 'Diseñador UX/UI', empresa: 'InnovaTech', reportes: 3, status: 'Pública' },
-        { id: 2, title: 'Analista de Datos', empresa: 'Finanzas Sur', reportes: 1, status: 'Pública' }
-    ],
-    get activas() { return this.vacantes.filter(v => v.status === 'Pública'); },
-    hideVacante() {
-        if(this.selectedVacante) this.selectedVacante.status = 'Oculta';
-        this.showReviewModal = false;
-        $dispatch('notify', {msg: 'Vacante dada de baja del sistema', type: 'error'});
-    }
-}">
-    <h1>Moderación de Vacantes</h1>
-    <p style="color:#6B7280; margin-bottom:2rem;">Revisa que las vacantes cumplan con los lineamientos de lenguaje inclusivo.</p>
-    <div class="table-wrapper">
-        <table>
-            <thead><tr><th>Vacante</th><th>Empresa</th><th>Reportes</th><th>Estado</th><th>Acciones</th></tr></thead>
-            <tbody>
-                <template x-for="v in activas" :key="v.id">
-                    <tr x-transition>
-                        <td x-text="v.title" style="font-weight:600;"></td><td x-text="v.empresa"></td>
-                        <td><span style="color:var(--danger); font-weight:800;" x-text="v.reportes + ' Usuarios'"></span></td>
-                        <td><span class="badge badge-active">Pública</span></td>
-                        <td>
-                            <button class="btn btn-outline" style="padding: 0.4rem 0.8rem;" @click="selectedVacante = v; showReviewModal = true">Revisar y Actuar</button>
-                        </td>
-                    </tr>
-                </template>
-                <tr x-show="activas.length === 0"><td colspan="5" style="text-align:center; padding:2rem; color:var(--success); font-weight:600;">No hay vacantes reportadas actualmente.</td></tr>
-            </tbody>
-        </table>
+@php
+    use App\Support\Fechas;
+    use App\Support\Iconos;
+@endphp
+
+<x-encabezado-pagina titulo="Vacantes" descripcion="Todas las vacantes de la plataforma. Revísalas y suspende las que no cumplan las reglas." />
+
+<x-filtros buscar="Buscar por título" placeholderBusqueda="Título de la vacante" etiqueta="Buscar vacantes" :total="$pagina['total']"
+           :selects="[
+               ['nombre' => 'empresa_id', 'etiqueta' => 'Empresa', 'opciones' => $opcionesEmpresa, 'todas' => 'Todas las empresas'],
+               ['nombre' => 'estado', 'etiqueta' => 'Estado', 'opciones' => $opcionesEstado, 'todas' => 'Todos los estados'],
+               ['nombre' => 'categoria_id', 'etiqueta' => 'Categoría', 'opciones' => $opcionesCategoria, 'todas' => 'Todas las categorías'],
+               ['nombre' => 'modalidad_id', 'etiqueta' => 'Modalidad', 'opciones' => $opcionesModalidad, 'todas' => 'Todas las modalidades'],
+           ]">
+    <div class="casilla">
+        <input type="checkbox" id="con_reportes" name="con_reportes" value="1" @checked(request()->boolean('con_reportes'))>
+        <label for="con_reportes">Solo con reportes abiertos</label>
     </div>
-    <div class="modal-overlay" x-show="showReviewModal" style="display: none;" x-transition>
-        <div class="modal-content" @click.away="showReviewModal = false" x-trap.noscroll="showReviewModal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-            <h2 class="modal-title" id="modal-title">Detalle de Reportes</h2>
-            <p style="margin-bottom:1rem;">Analizando vacante: <strong x-text="selectedVacante?.title"></strong></p>
-            <div style="background:#FEE2E2; border:1px solid #FECACA; padding:1rem; border-radius:4px; margin-bottom:1.5rem; color:#B91C1C;">
-                <strong>Motivo principal:</strong> "La vacante exige esfuerzo físico no relacionado al puesto, discriminando a personas con discapacidad motriz."
-            </div>
-            <div class="modal-actions">
-                <button class="btn btn-outline" @click="showReviewModal = false">Cerrar (Ignorar)</button>
-                <button class="btn btn-danger" @click="hideVacante()">Dar de baja Vacante</button>
-            </div>
-        </div>
-    </div>
-</div>
+</x-filtros>
+
+<x-tabla caption="Vacantes" class="tabla-compacta"
+         :columnas="['Título', 'Empresa', 'Categoría', 'Modalidad', 'Estado', 'Fecha de publicación', 'Postulados', 'Reportes abiertos', 'Acciones']"
+         mensajeVacio="No se encontraron vacantes con esos filtros.">
+    @foreach ($pagina['items'] as $vacante)
+        <tr>
+            <td class="celda-nombre">{{ $vacante['titulo'] }}</td>
+            <td>{{ $vacante['empresa']['nombre_comercial'] }}</td>
+            <td>{{ $vacante['categoria']['nombre'] }}</td>
+            <td>{{ $vacante['modalidad']['nombre'] }}</td>
+            <td><x-insignia-estado entidad="vacante" :valor="$vacante['estado']" /></td>
+            <td>
+                @if ($vacante['publicada_en'])
+                    {{ Fechas::dia($vacante['publicada_en']) }}
+                @else
+                    <span aria-hidden="true">—</span><span class="visually-hidden">Sin publicar</span>
+                @endif
+            </td>
+            <td>{{ number_format($vacante['postulados']) }}</td>
+            <td>
+                @if ($vacante['reportes_abiertos'] > 0)
+                    {{-- Resaltado con icono y negritas, no solo con color. --}}
+                    <span class="reportes-resaltados">{!! Iconos::svg('alerta', 14) !!}{{ number_format($vacante['reportes_abiertos']) }}</span>
+                @else
+                    0
+                @endif
+            </td>
+            <td>
+                <div class="acciones-fila">
+                    <x-boton variante="texto" :href="route('vacantes.ver', $vacante['id'])">Ver<span class="visually-hidden"> la vacante {{ $vacante['titulo'] }}</span></x-boton>
+                </div>
+            </td>
+        </tr>
+    @endforeach
+</x-tabla>
+
+<x-paginacion :total="$pagina['total']" :page="$pagina['page']" :size="$pagina['size']" />
 @endsection

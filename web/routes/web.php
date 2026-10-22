@@ -37,6 +37,8 @@ Route::middleware('admin')->group(function () {
     Route::patch('/empresas/{id}/validacion', [EmpresaController::class, 'validacion'])->whereNumber('id')->name('empresas.validacion');
     Route::patch('/empresas/{id}/estado', [EmpresaController::class, 'estado'])->whereNumber('id')->name('empresas.estado');
     Route::get('/vacantes', [VacanteController::class, 'index'])->name('vacantes');
+    Route::get('/vacantes/{id}', [VacanteController::class, 'show'])->whereNumber('id')->name('vacantes.ver');
+    Route::patch('/vacantes/{id}/estado', [VacanteController::class, 'estado'])->whereNumber('id')->name('vacantes.estado');
     Route::get('/habilidades', [HabilidadController::class, 'index'])->name('habilidades');
     Route::get('/catalogos', [CatalogoController::class, 'index'])->name('catalogos');
     Route::get('/reportes', [ReporteController::class, 'index'])->name('reportes');
