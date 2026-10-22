@@ -738,3 +738,32 @@ body.dark .pendiente-cifra, body.dark .pendiente-texto { color: var(--text-main)
 @media (forced-colors: active) {
     .barra rect, .linea polyline { forced-color-adjust: none; }
 }
+
+
+/* =========================================
+   USUARIOS (WEB-03)
+========================================= */
+.celda-nombre { font-weight: 600; }
+.acciones-fila { display: flex; flex-wrap: wrap; gap: 0 0.25rem; }
+.texto-suave { color: var(--text-muted); }
+.formulario-usuario { max-width: 640px; }
+.formulario-acciones { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.5rem; }
+.confirmacion-mensaje { margin-bottom: 1.25rem; }
+body.dark .confirmacion-mensaje { color: var(--text-main); }
+
+.aviso-privacidad {
+    display: flex; align-items: flex-start; gap: 0.75rem; margin: -0.5rem 0 1.5rem; padding: 1rem 1.25rem;
+    background: #DBEAFE; color: #1E3A8A; border: 1px solid #93C5FD; border-radius: 8px; font-weight: 500;
+}
+.aviso-privacidad svg { flex-shrink: 0; margin-top: 0.1rem; }
+body.dark .aviso-privacidad { background: rgba(30, 64, 175, 0.25); color: #DBEAFE !important; border-color: #3B82F6; }
+
+.detalle-columnas { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 1.5rem; align-items: start; }
+.detalle-columnas .card { margin-bottom: 0; }
+.detalle-titulo { font-size: 1.05rem; margin-bottom: 1rem; }
+.detalle-lista > div { display: grid; grid-template-columns: minmax(8rem, 40%) 1fr; gap: 0.5rem 1rem; align-items: center; padding: 0.7rem 0; border-bottom: 1px solid var(--border-color); }
+.detalle-lista > div:last-child { border-bottom: 0; }
+.detalle-lista dt { color: var(--text-muted); font-weight: 600; font-size: 0.85rem; }
+.detalle-lista dd { overflow-wrap: anywhere; }
+.detalle-cifra { font-size: 1.5rem; font-weight: 700; }
+@media (max-width: 480px) { .detalle-lista > div { grid-template-columns: 1fr; } }
