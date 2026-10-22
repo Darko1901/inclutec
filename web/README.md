@@ -2,7 +2,7 @@
 
 Panel web en Laravel (Blade) para el administrador de IncluTec. **No tiene base de datos:** todo pasa por el API REST (`api/`), con JSON y un token JWT. El panel guarda ese token en la **sesión del servidor** y nunca lo manda al navegador.
 
-Pantallas: WEB-01 inicio de sesión, «Cambiar contraseña» WEB-02 dashboard y estadísticas y WEB-03 usuarios (listas, conectadas a `ApiAdmin`) y WEB-04 a WEB-08 (maquetadas con datos fijos dentro del layout nuevo; se conectan al API en las siguientes tareas). Qué hace cada una: `docs/diseno/pantallas.md` y `docs/diseno/requerimientos.md`.
+Pantallas: WEB-01 inicio de sesión, «Cambiar contraseña» WEB-02 dashboard y estadísticas y WEB-03 usuarios y WEB-04 empresas (listas, conectadas a `ApiAdmin`) y WEB-05 a WEB-08 (maquetadas con datos fijos dentro del layout nuevo; se conectan al API en las siguientes tareas). Qué hace cada una: `docs/diseno/pantallas.md` y `docs/diseno/requerimientos.md`.
 
 ## Requisitos
 
@@ -100,9 +100,11 @@ app/
     Mock/CalculadoraEstadisticas.php   calcula el objeto Estadisticas con el estado del mock
     Mock/ExportadorEstadisticas.php    arma el PDF (FPDF) y el XLSX (SimpleXLSXGen) del mock
     Mock/GestionUsuarios.php           listar, detalle, alta, edición y cambio de estado de usuarios con los 409 y 422 del contrato
+    Mock/GestionEmpresas.php           cola de validación, alta, edición, validar o rechazar y suspender o reactivar empresas
   Support/
     PeriodoEstadisticas.php, PresentadorEstadisticas.php   periodo de la URL y datos que pinta el dashboard
     AccionesUsuario.php, Roles.php, Fechas.php             textos de las acciones de estado, roles y fechas en hora de la Ciudad de México
+    Empresas.php                                           pestañas, acciones de estado y formato del RFC de WEB-04
     Estados.php         mapa único de estados: valor de BD → texto, ícono y variante (tabla 3.4)
     Iconos.php          íconos SVG de contorno
 bootstrap/app.php       alias del middleware y manejo de ApiError (401 y 423 cierran sesión)
@@ -135,6 +137,12 @@ Las cifras y las gráficas salen de `ApiAdmin::estadisticas($desde, $hasta)`; `A
 ## Usuarios (WEB-03)
 
 `/usuarios` lista 25 por página con búsqueda (`q`) y filtros por `rol` y `estado` en la URL; `/usuarios/nuevo`, `/usuarios/{id}/editar`, `/usuarios/{id}` (detalle, con el aviso de privacidad y sin necesidades de ajuste) y `PATCH /usuarios/{id}/estado` (Suspender, Reactivar o Dar de baja; el motivo es obligatorio salvo al reactivar). Los errores del contrato se marcan en su campo: `409 correo_duplicado` en el correo, `409 en_uso` en el rol, `422` en cada campo y `409 estado_invalido` como aviso. El selector de empresa del reclutador sale de `ApiAdmin::listarEmpresas()` (`GET /admin/empresas`). Si ya tenías un `mock-api.json`, corre `inclutec:mock-reiniciar`: los usuarios ahora llevan una `ficha` (registro, último acceso, motivo y puesto).
+
+## Empresas (WEB-04)
+
+`/empresas` muestra cuatro pestañas (Pendientes, Validadas, Rechazadas y Suspendidas, con el número de cada una) con `?estado=` y `?q=` en la URL; sin estado abre Pendientes, que salen primero por antigüedad. `/empresas/{id}` es la revisión: datos, reclutadores, verificación del RFC (el formato se comprueba en el panel con el patrón del contrato y la unicidad la manda el API en `rfc_duplicado`) y la constancia. Validar, Rechazar (con motivo), Suspender (con motivo) y Reactivar son confirmaciones sobre `PATCH /admin/empresas/{id}/validacion` y `/estado`; una empresa rechazada no tiene acciones, porque solo vuelve a pendiente cuando el reclutador sube otra constancia. Al suspender, las vacantes publicadas pasan a suspendidas y el aviso dice cuántas; al reactivar siguen suspendidas.
+
+La constancia no se enlaza directo al API: `/empresas/{id}/constancia` la descarga con el token de la sesión y la reenvía, porque el navegador nunca recibe el token. En el mock sale de `public/mock/constancia-ejemplo.pdf` (un PDF ficticio, igual para todas las empresas que tienen documento). El formulario de alta y edición pide sus listas (sectores, tamaños y municipios) a `GET /catalogos/{tipo}` mediante `ApiAdmin::catalogo()`. Corre `inclutec:mock-reiniciar` para que el mock tome las empresas nuevas (10 en total: 3 pendientes, 3 validadas, 2 rechazadas y 2 suspendidas).
 
 ## Dependencias y auditoría
 
@@ -169,6 +177,7 @@ Con `APP_ENV=local`, **http://localhost:8001/componentes** muestra todos los com
 | `<x-resumen-errores>` | Lista de errores con `role="alert"` que recibe el foco; cada error enlaza a su campo |
 | `<x-modal id titulo>` | Diálogo accesible: foco atrapado, Escape y «Cerrar», devuelve el foco. Se abre con `$dispatch('abrir-modal', 'id')` |
 | `<x-usuario-botones :usuario>` / `<x-usuario-confirmaciones :usuario>` | Botones de estado de un usuario (Suspender, Reactivar, Dar de baja) y sus `<x-confirmacion>`; las confirmaciones se dibujan fuera de la tabla |
+| `<x-empresa-botones :empresa>` / `<x-empresa-confirmaciones :empresa>` | Botones de estado de una empresa (Validar, Rechazar, Suspender, Reactivar) y sus `<x-confirmacion>` |
 | `<x-grafica :grafica>` | Gráfica del dashboard (barras o líneas) dibujada en el servidor, con título, leyenda, valores escritos y el botón «Ver como tabla» (`<x-tabla>`) |
 | `<x-confirmacion id titulo pedirMotivo accion metodo>` | «¿Seguro que…?»; con `pedirMotivo` no deja confirmar sin motivo. Con `accion` envía un formulario; sin ella emite el evento `confirmado` |
 
