@@ -2,7 +2,7 @@
 
 Panel web en Laravel (Blade) para el administrador de IncluTec. **No tiene base de datos:** todo pasa por el API REST (`api/`), con JSON y un token JWT. El panel guarda ese token en la **sesión del servidor** y nunca lo manda al navegador.
 
-Pantallas: WEB-01 inicio de sesión, «Cambiar contraseña» y WEB-02 dashboard y estadísticas (listas, conectadas a `ApiAdmin`) y WEB-03 a WEB-08 (maquetadas con datos fijos dentro del layout nuevo; se conectan al API en las siguientes tareas). Qué hace cada una: `docs/diseno/pantallas.md` y `docs/diseno/requerimientos.md`.
+Pantallas: WEB-01 inicio de sesión, «Cambiar contraseña» WEB-02 dashboard y estadísticas y WEB-03 usuarios (listas, conectadas a `ApiAdmin`) y WEB-04 a WEB-08 (maquetadas con datos fijos dentro del layout nuevo; se conectan al API en las siguientes tareas). Qué hace cada una: `docs/diseno/pantallas.md` y `docs/diseno/requerimientos.md`.
 
 ## Requisitos
 
@@ -64,6 +64,7 @@ Contraseña de todas: `Inclutec2026`. Son las de `db/semillas/S002__datos_prueba
 | `mariana.lopez@correo.mx`, `jorge.ramirez@correo.mx` (candidatos) y las cuentas de reclutador (`rh@tecnoqro.mx`, `rh@logibajio.mx`, `talento@concentro.mx`, `contacto@estudiotrazo.mx`) | «Esta cuenta no tiene acceso al panel. Usa la aplicación móvil.» y no se guarda la sesión. |
 | `suspendida@correo.mx` | Existe solo en el mock (id 100): responde 423, «Tu cuenta está suspendida.». |
 | `ana.torres@correo.mx`, `luis.fernandez@correo.mx`, `carmen.vazquez@correo.mx`, `miguel.cruz@correo.mx`, `daniela.morales@correo.mx`, `hector.salinas@correo.mx` | Candidatos solo del mock (ids 101 a 106) que dan volumen a las estadísticas. Tampoco entran al panel. |
+| `nombre.apellido07@correo.mx`… (ids 107 a 152) | Usuarios de relleno del mock: 60 cuentas en total (3 páginas de 25) con roles y estados mezclados. Hay 3 administradores extra; todos entran con `Inclutec2026`. |
 
 Con el mock, cinco intentos fallidos con el mismo correo bloquean el acceso 15 minutos: el sexto responde 429 con `Retry-After`, aunque la contraseña sea correcta.
 
@@ -98,8 +99,10 @@ app/
     Mock/Almacen.php    estado persistente del mock (storage/app/mock-api.json)
     Mock/CalculadoraEstadisticas.php   calcula el objeto Estadisticas con el estado del mock
     Mock/ExportadorEstadisticas.php    arma el PDF (FPDF) y el XLSX (SimpleXLSXGen) del mock
+    Mock/GestionUsuarios.php           listar, detalle, alta, edición y cambio de estado de usuarios con los 409 y 422 del contrato
   Support/
     PeriodoEstadisticas.php, PresentadorEstadisticas.php   periodo de la URL y datos que pinta el dashboard
+    AccionesUsuario.php, Roles.php, Fechas.php             textos de las acciones de estado, roles y fechas en hora de la Ciudad de México
     Estados.php         mapa único de estados: valor de BD → texto, ícono y variante (tabla 3.4)
     Iconos.php          íconos SVG de contorno
 bootstrap/app.php       alias del middleware y manejo de ApiError (401 y 423 cierran sesión)
@@ -128,6 +131,10 @@ npm run build              # compila el JavaScript
 ## Estadísticas y exportación (WEB-02)
 
 Las cifras y las gráficas salen de `ApiAdmin::estadisticas($desde, $hasta)`; `ApiAdmin::exportarEstadisticas($formato, $desde, $hasta)` devuelve el archivo (contenido, tipo y nombre) y el panel lo reenvía al navegador. El periodo vive en la URL: `/dashboard?periodo=7|30|90` o `?periodo=personalizado&desde=AAAA-MM-DD&hasta=AAAA-MM-DD` (máximo 12 meses). En el mock, las cifras se calculan con su estado y el PDF y el XLSX son reales; usan las bibliotecas de Composer `setasign/fpdf` y `shuchkin/simplexlsxgen` (de un solo archivo, sin extensiones adicionales). Las gráficas no usan biblioteca de JavaScript: son HTML y SVG generados en el servidor (`<x-grafica>`).
+
+## Usuarios (WEB-03)
+
+`/usuarios` lista 25 por página con búsqueda (`q`) y filtros por `rol` y `estado` en la URL; `/usuarios/nuevo`, `/usuarios/{id}/editar`, `/usuarios/{id}` (detalle, con el aviso de privacidad y sin necesidades de ajuste) y `PATCH /usuarios/{id}/estado` (Suspender, Reactivar o Dar de baja; el motivo es obligatorio salvo al reactivar). Los errores del contrato se marcan en su campo: `409 correo_duplicado` en el correo, `409 en_uso` en el rol, `422` en cada campo y `409 estado_invalido` como aviso. El selector de empresa del reclutador sale de `ApiAdmin::listarEmpresas()` (`GET /admin/empresas`). Si ya tenías un `mock-api.json`, corre `inclutec:mock-reiniciar`: los usuarios ahora llevan una `ficha` (registro, último acceso, motivo y puesto).
 
 ## Dependencias y auditoría
 
@@ -161,6 +168,7 @@ Con `APP_ENV=local`, **http://localhost:8001/componentes** muestra todos los com
 | `<x-campo nombre etiqueta tipo valor ayuda obligatorio maximo :opciones>` | Etiqueta, control, ayuda, contador y error con `aria-invalid`/`aria-describedby`; toma el error de `$errors` |
 | `<x-resumen-errores>` | Lista de errores con `role="alert"` que recibe el foco; cada error enlaza a su campo |
 | `<x-modal id titulo>` | Diálogo accesible: foco atrapado, Escape y «Cerrar», devuelve el foco. Se abre con `$dispatch('abrir-modal', 'id')` |
+| `<x-usuario-botones :usuario>` / `<x-usuario-confirmaciones :usuario>` | Botones de estado de un usuario (Suspender, Reactivar, Dar de baja) y sus `<x-confirmacion>`; las confirmaciones se dibujan fuera de la tabla |
 | `<x-grafica :grafica>` | Gráfica del dashboard (barras o líneas) dibujada en el servidor, con título, leyenda, valores escritos y el botón «Ver como tabla» (`<x-tabla>`) |
 | `<x-confirmacion id titulo pedirMotivo accion metodo>` | «¿Seguro que…?»; con `pedirMotivo` no deja confirmar sin motivo. Con `accion` envía un formulario; sin ella emite el evento `confirmado` |
 

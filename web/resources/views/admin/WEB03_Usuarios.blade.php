@@ -17,7 +17,7 @@
            ]" />
 
 <x-tabla caption="Usuarios" :columnas="['Nombre', 'Correo', 'Rol', 'Empresa', 'Fecha de registro', 'Estado', 'Acciones']"
-         mensajeVacio="No se encontraron usuarios con esos filtros.">
+         mensajeVacio="No se encontraron usuarios con esos filtros." class="tabla-usuarios">
     @foreach ($pagina['items'] as $usuario)
         @php($nombre = trim($usuario['nombre'].' '.$usuario['apellidos']))
         <tr>
