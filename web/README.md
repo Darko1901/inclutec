@@ -2,7 +2,7 @@
 
 Panel web en Laravel (Blade) para el administrador de IncluTec. **No tiene base de datos:** todo pasa por el API REST (`api/`), con JSON y un token JWT. El panel guarda ese token en la **sesión del servidor** y nunca lo manda al navegador.
 
-Pantallas: WEB-01 inicio de sesión, «Cambiar contraseña» WEB-02 dashboard y estadísticas y WEB-03 usuarios y WEB-04 empresas (listas, conectadas a `ApiAdmin`) y WEB-05 a WEB-08 (maquetadas con datos fijos dentro del layout nuevo; se conectan al API en las siguientes tareas). Qué hace cada una: `docs/diseno/pantallas.md` y `docs/diseno/requerimientos.md`.
+Pantallas: WEB-01 inicio de sesión, «Cambiar contraseña» WEB-02 dashboard y estadísticas y WEB-03 usuarios, WEB-04 empresas y WEB-05 vacantes (listas, conectadas a `ApiAdmin`) y WEB-06 a WEB-08 (maquetadas con datos fijos dentro del layout nuevo; se conectan al API en las siguientes tareas). Qué hace cada una: `docs/diseno/pantallas.md` y `docs/diseno/requerimientos.md`.
 
 ## Requisitos
 
@@ -101,10 +101,12 @@ app/
     Mock/ExportadorEstadisticas.php    arma el PDF (FPDF) y el XLSX (SimpleXLSXGen) del mock
     Mock/GestionUsuarios.php           listar, detalle, alta, edición y cambio de estado de usuarios con los 409 y 422 del contrato
     Mock/GestionEmpresas.php           cola de validación, alta, edición, validar o rechazar y suspender o reactivar empresas
+    Mock/GestionVacantes.php           listado con filtros, detalle y suspender o reactivar vacantes (409 transicion_invalida)
   Support/
     PeriodoEstadisticas.php, PresentadorEstadisticas.php   periodo de la URL y datos que pinta el dashboard
     AccionesUsuario.php, Roles.php, Fechas.php             textos de las acciones de estado, roles y fechas en hora de la Ciudad de México
     Empresas.php                                           pestañas, acciones de estado y formato del RFC de WEB-04
+    AccionesVacante.php                                    acciones de moderación y textos de accesibilidad, experiencia y salario de WEB-05
     Estados.php         mapa único de estados: valor de BD → texto, ícono y variante (tabla 3.4)
     Iconos.php          íconos SVG de contorno
 bootstrap/app.php       alias del middleware y manejo de ApiError (401 y 423 cierran sesión)
@@ -144,6 +146,10 @@ Las cifras y las gráficas salen de `ApiAdmin::estadisticas($desde, $hasta)`; `A
 
 La constancia no se enlaza directo al API: `/empresas/{id}/constancia` la descarga con el token de la sesión y la reenvía, porque el navegador nunca recibe el token. En el mock sale de `public/mock/constancia-ejemplo.pdf` (un PDF ficticio, igual para todas las empresas que tienen documento). El formulario de alta y edición pide sus listas (sectores, tamaños y municipios) a `GET /catalogos/{tipo}` mediante `ApiAdmin::catalogo()`. Corre `inclutec:mock-reiniciar` para que el mock tome las empresas nuevas (10 en total: 3 pendientes, 3 validadas, 2 rechazadas y 2 suspendidas).
 
+## Vacantes (WEB-05)
+
+`/vacantes` lista 25 por página (`GET /admin/vacantes`) con búsqueda por título y filtros por empresa, estado, categoría, modalidad y «Solo con reportes abiertos» en la URL (`q`, `empresa_id`, `estado`, `categoria_id`, `modalidad_id`, `con_reportes=1`); las listas de los selectores salen de `GET /admin/empresas` y de `GET /catalogos/categorias` y `/modalidades`. `/vacantes/{id}` usa `GET /vacantes/{id}`: datos generales, requisitos, condiciones (con el salario aunque no se muestre a los candidatos) y la sección de accesibilidad con los mismos textos que CAN-02. «Suspender» (publicada o pausada, con motivo) y «Reactivar» (solo suspendida) son confirmaciones sobre `PATCH /admin/vacantes/{id}/estado`; cualquier otra transición muestra el mensaje del `409 transicion_invalida`. El mock trae 34 vacantes (ids 1 a 8, 101, 102 y 201 a 224): las 8 publicadas de siempre y 26 más sin publicar (borrador, pausada, cerrada y suspendida) que no cambian las estadísticas. El número de reportes abiertos no es un enlace porque `GET /admin/reportes` no filtra por vacante; WEB-08 lo conectará.
+
 ## Dependencias y auditoría
 
 `npm audit` en `web/` reporta **0 vulnerabilidades** (el JavaScript del panel solo usa Vite, `laravel-vite-plugin`, Alpine.js y la fuente Inter), así que no hay `overrides` ni excepciones. Corre `npm audit` cuando cambies dependencias. Si aparece algo, corrígelo con `npm audit fix` y nunca con `npm audit fix --force`: puede saltar de versión mayor (por ejemplo, de Vite) y romper el build. Después de tocar dependencias, `npm run build` y `php artisan test` deben seguir en verde.
@@ -178,6 +184,7 @@ Con `APP_ENV=local`, **http://localhost:8001/componentes** muestra todos los com
 | `<x-modal id titulo>` | Diálogo accesible: foco atrapado, Escape y «Cerrar», devuelve el foco. Se abre con `$dispatch('abrir-modal', 'id')` |
 | `<x-usuario-botones :usuario>` / `<x-usuario-confirmaciones :usuario>` | Botones de estado de un usuario (Suspender, Reactivar, Dar de baja) y sus `<x-confirmacion>`; las confirmaciones se dibujan fuera de la tabla |
 | `<x-empresa-botones :empresa>` / `<x-empresa-confirmaciones :empresa>` | Botones de estado de una empresa (Validar, Rechazar, Suspender, Reactivar) y sus `<x-confirmacion>` |
+| `<x-vacante-botones :vacante>` / `<x-vacante-confirmaciones :vacante>` | Botones de moderación de una vacante (Suspender, Reactivar) y sus `<x-confirmacion>` |
 | `<x-grafica :grafica>` | Gráfica del dashboard (barras o líneas) dibujada en el servidor, con título, leyenda, valores escritos y el botón «Ver como tabla» (`<x-tabla>`) |
 | `<x-confirmacion id titulo pedirMotivo accion metodo>` | «¿Seguro que…?»; con `pedirMotivo` no deja confirmar sin motivo. Con `accion` envía un formulario; sin ella emite el evento `confirmado` |
 
