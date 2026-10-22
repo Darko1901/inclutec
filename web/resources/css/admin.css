@@ -767,3 +767,10 @@ body.dark .aviso-privacidad { background: rgba(30, 64, 175, 0.25); color: #DBEAF
 .detalle-lista dd { overflow-wrap: anywhere; }
 .detalle-cifra { font-size: 1.5rem; font-weight: 700; }
 @media (max-width: 480px) { .detalle-lista > div { grid-template-columns: 1fr; } }
+.tabla-usuarios th, .tabla-usuarios td { padding: 0.6rem 0.75rem; }
+.tabla-usuarios td { white-space: normal; }
+.tabla-usuarios .celda-nombre { min-width: 8.5rem; }
+.tabla-usuarios td:nth-child(2) { overflow-wrap: anywhere; min-width: 9rem; }
+.tabla-usuarios td:last-child { min-width: 14rem; }
+.tabla-usuarios .btn-texto { min-height: 44px; padding: 0 0.4rem; }
+.tabla-usuarios .badge { white-space: nowrap; }
