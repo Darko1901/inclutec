@@ -118,6 +118,26 @@ class ApiHttp implements ApiAdmin
         return $this->enviar('patch', "/admin/empresas/{$id}/estado", ['estado' => $estado, 'motivo' => $motivo])->json();
     }
 
+    public function vacantes(?string $q = null, ?int $empresaId = null, ?string $estado = null, ?int $categoriaId = null, ?int $modalidadId = null, bool $conReportes = false, int $page = 1, int $size = 25): array
+    {
+        $consulta = array_filter(
+            ['q' => $q, 'empresa_id' => $empresaId, 'estado' => $estado, 'categoria_id' => $categoriaId, 'modalidad_id' => $modalidadId, 'con_reportes' => $conReportes ?: null],
+            fn ($valor) => $valor !== null && $valor !== '',
+        );
+
+        return $this->enviar('get', '/admin/vacantes', $consulta + ['page' => $page, 'size' => $size])->json();
+    }
+
+    public function vacante(int $id): array
+    {
+        return $this->enviar('get', "/vacantes/{$id}")->json();
+    }
+
+    public function moderarVacante(int $id, string $estado, ?string $motivo = null): array
+    {
+        return $this->enviar('patch', "/admin/vacantes/{$id}/estado", ['estado' => $estado, 'motivo' => $motivo])->json();
+    }
+
     public function catalogo(string $tipo, ?int $entidadId = null): array
     {
         return $this->enviar('get', "/catalogos/{$tipo}", $entidadId === null ? [] : ['entidad_id' => $entidadId])->json();
