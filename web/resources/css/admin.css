@@ -767,10 +767,48 @@ body.dark .aviso-privacidad { background: rgba(30, 64, 175, 0.25); color: #DBEAF
 .detalle-lista dd { overflow-wrap: anywhere; }
 .detalle-cifra { font-size: 1.5rem; font-weight: 700; }
 @media (max-width: 480px) { .detalle-lista > div { grid-template-columns: 1fr; } }
-.tabla-usuarios th, .tabla-usuarios td { padding: 0.6rem 0.75rem; }
-.tabla-usuarios td { white-space: normal; }
-.tabla-usuarios .celda-nombre { min-width: 8.5rem; }
+.tabla-usuarios th, .tabla-usuarios td, .tabla-compacta th, .tabla-compacta td { padding: 0.6rem 0.75rem; }
+.tabla-usuarios td, .tabla-compacta td { white-space: normal; }
+.tabla-usuarios .celda-nombre, .tabla-compacta .celda-nombre { min-width: 8.5rem; }
 .tabla-usuarios td:nth-child(2) { overflow-wrap: anywhere; min-width: 9rem; }
 .tabla-usuarios td:last-child { min-width: 14rem; }
-.tabla-usuarios .btn-texto { min-height: 44px; padding: 0 0.4rem; }
-.tabla-usuarios .badge { white-space: nowrap; }
+.tabla-usuarios .btn-texto, .tabla-compacta .btn-texto { min-height: 44px; padding: 0 0.4rem; }
+.tabla-usuarios .badge, .tabla-compacta .badge { white-space: nowrap; }
+
+
+/* =========================================
+   EMPRESAS (WEB-04)
+========================================= */
+.pestanas-lista { list-style: none; display: flex; flex-wrap: wrap; gap: 0.25rem 1.5rem; border-bottom: 1px solid var(--border-color); margin-bottom: 1.5rem; }
+.pestana {
+    display: inline-flex; align-items: center; gap: 0.35rem; min-height: 44px; padding: 0.5rem 0.25rem; border-bottom: 3px solid transparent;
+    color: var(--text-muted); font-weight: 600; font-size: 0.9rem; text-decoration: none;
+}
+.pestana:hover { color: var(--primary); text-decoration: none; }
+.pestana[aria-current="page"] { color: var(--primary); border-bottom-color: var(--primary); font-weight: 700; }
+body.dark .pestana { color: var(--text-muted); }
+body.dark .pestana[aria-current="page"], body.dark .pestana:hover { color: #93C5FD; border-bottom-color: #93C5FD; }
+.pestana-total { font-variant-numeric: tabular-nums; }
+.celda-rfc { font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace; white-space: nowrap !important; }
+
+.rfc-valor { font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace; font-size: 1.35rem; font-weight: 700; letter-spacing: 0.04em; margin-bottom: 1rem; }
+body.dark .rfc-valor { color: var(--text-main) !important; }
+.verificaciones { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1.25rem; }
+.verificaciones li { display: flex; align-items: center; gap: 0.6rem; font-weight: 600; }
+.verificacion-ok { color: var(--success); }
+.verificacion-mal { color: var(--danger); }
+body.dark .verificacion-ok { color: #86EFAC; }
+body.dark .verificacion-mal { color: #FCA5A5; }
+.verificacion-aviso { display: flex; align-items: flex-start; gap: 0.5rem; padding: 0.75rem 1rem; margin-bottom: 1.25rem; background: #FEF3C7; color: #92400E; border-radius: 8px; font-weight: 500; }
+.verificacion-aviso svg { flex-shrink: 0; margin-top: 0.1rem; }
+body.dark .verificacion-aviso { background: rgba(180, 83, 9, 0.25); color: #FDE68A !important; }
+.detalle-subtitulo { font-size: 0.95rem; margin: 0.5rem 0 0.6rem; }
+.enlace-constancia { display: inline-flex; align-items: center; gap: 0.5rem; min-height: 44px; font-weight: 600; }
+.seccion-reclutadores { margin-top: 1.5rem; }
+/* La tabla de empresas tiene nueve columnas: letra y relleno más chicos y acciones en dos renglones. */
+.tabla-compacta th, .tabla-compacta td { padding: 0.5rem 0.55rem; font-size: 0.8rem; }
+.tabla-compacta th { font-size: 0.7rem; }
+.tabla-compacta td:last-child { min-width: 5.5rem; }
+.tabla-compacta .acciones-fila { flex-direction: column; align-items: flex-start; }
+.tabla-compacta .celda-rfc { font-size: 0.75rem; }
+.tabla-compacta .celda-nombre { min-width: 7.5rem; }

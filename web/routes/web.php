@@ -28,6 +28,14 @@ Route::middleware('admin')->group(function () {
     Route::put('/usuarios/{id}', [UsuarioController::class, 'update'])->whereNumber('id')->name('usuarios.actualizar');
     Route::patch('/usuarios/{id}/estado', [UsuarioController::class, 'estado'])->whereNumber('id')->name('usuarios.estado');
     Route::get('/empresas', [EmpresaController::class, 'index'])->name('empresas');
+    Route::get('/empresas/nueva', [EmpresaController::class, 'create'])->name('empresas.crear');
+    Route::post('/empresas', [EmpresaController::class, 'store'])->name('empresas.guardar');
+    Route::get('/empresas/{id}', [EmpresaController::class, 'show'])->whereNumber('id')->name('empresas.ver');
+    Route::get('/empresas/{id}/editar', [EmpresaController::class, 'edit'])->whereNumber('id')->name('empresas.editar');
+    Route::put('/empresas/{id}', [EmpresaController::class, 'update'])->whereNumber('id')->name('empresas.actualizar');
+    Route::get('/empresas/{id}/constancia', [EmpresaController::class, 'constancia'])->whereNumber('id')->name('empresas.constancia');
+    Route::patch('/empresas/{id}/validacion', [EmpresaController::class, 'validacion'])->whereNumber('id')->name('empresas.validacion');
+    Route::patch('/empresas/{id}/estado', [EmpresaController::class, 'estado'])->whereNumber('id')->name('empresas.estado');
     Route::get('/vacantes', [VacanteController::class, 'index'])->name('vacantes');
     Route::get('/habilidades', [HabilidadController::class, 'index'])->name('habilidades');
     Route::get('/catalogos', [CatalogoController::class, 'index'])->name('catalogos');
