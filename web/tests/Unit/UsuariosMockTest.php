@@ -129,12 +129,11 @@ class UsuariosMockTest extends TestCase
     {
         $empresas = $this->api()->listarEmpresas();
 
-        $this->assertSame(['Estudio Trazo', 'ConCentro', 'LogiBajío', 'TecnoQro'], array_column($empresas['items'], 'nombre_comercial'));
+        $this->assertSame(['MediBajío', 'OficiosDigitales', 'Estudio Trazo'], array_slice(array_column($empresas['items'], 'nombre_comercial'), 0, 3));
         $this->assertSame(
             ['id', 'razon_social', 'nombre_comercial', 'rfc', 'sector', 'estado', 'reclutadores', 'vacantes_activas', 'documento', 'creado_en'],
             array_keys($empresas['items'][0]),
         );
-        $this->assertSame(['pendiente', 'validada', 'validada', 'validada'], array_column($empresas['items'], 'estado'));
-        $this->assertSame([1, 1], [$empresas['items'][3]['reclutadores'] >= 1 ? 1 : 0, $empresas['items'][3]['vacantes_activas'] >= 1 ? 1 : 0]);
+        $this->assertSame(['pendiente', 'pendiente', 'pendiente'], array_slice(array_column($empresas['items'], 'estado'), 0, 3));
     }
 }

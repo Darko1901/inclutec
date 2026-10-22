@@ -5,6 +5,7 @@ namespace App\Servicios\Api;
 use App\Servicios\Api\Mock\Almacen;
 use App\Servicios\Api\Mock\CalculadoraEstadisticas;
 use App\Servicios\Api\Mock\ExportadorEstadisticas;
+use App\Servicios\Api\Mock\GestionEmpresas;
 use App\Servicios\Api\Mock\GestionUsuarios;
 use Carbon\CarbonImmutable;
 
@@ -209,35 +210,101 @@ class ApiMock implements ApiAdmin
         });
     }
 
-    public function listarEmpresas(int $page = 1, int $size = 25): array
+    public function listarEmpresas(?string $q = null, ?string $estado = null, ?int $sectorId = null, int $page = 1, int $size = 25): array
     {
         $this->simularLatencia();
-        $estado = Almacen::leer();
-        $this->exigirAdministrador($estado);
+        $datos = Almacen::leer();
+        $this->exigirAdministrador($datos);
 
-        if ($page < 1 || $size < 1 || $size > 100) {
-            throw new ApiError(422, 'validacion', self::MENSAJE_VALIDACION, ['page' => 'Revisa la página y el tamaño (de 1 a 100).']);
+        return GestionEmpresas::listar($datos, $q, $estado, $sectorId, $page, $size);
+    }
+
+    public function empresa(int $id): array
+    {
+        $this->simularLatencia();
+        $datos = Almacen::leer();
+        $this->exigirAdministrador($datos);
+
+        return GestionEmpresas::detalle($datos, $id);
+    }
+
+    public function crearEmpresa(array $datos): array
+    {
+        $this->simularLatencia();
+
+        return Almacen::modificar(function (array &$estado) use ($datos) {
+            $this->exigirAdministrador($estado);
+
+            return GestionEmpresas::crear($estado, $datos);
+        });
+    }
+
+    public function editarEmpresa(int $id, array $datos): array
+    {
+        $this->simularLatencia();
+
+        return Almacen::modificar(function (array &$estado) use ($id, $datos) {
+            $this->exigirAdministrador($estado);
+
+            return GestionEmpresas::editar($estado, $id, $datos);
+        });
+    }
+
+    public function validarEmpresa(int $id, string $decision, ?string $motivo = null): array
+    {
+        $this->simularLatencia();
+
+        return Almacen::modificar(function (array &$estado) use ($id, $decision, $motivo) {
+            $this->exigirAdministrador($estado);
+
+            return GestionEmpresas::validar($estado, $id, $decision, $motivo);
+        });
+    }
+
+    public function cambiarEstadoEmpresa(int $id, string $estado, ?string $motivo = null): array
+    {
+        $this->simularLatencia();
+
+        return Almacen::modificar(function (array &$datos) use ($id, $estado, $motivo) {
+            $this->exigirAdministrador($datos);
+
+            return GestionEmpresas::cambiarEstado($datos, $id, $estado, $motivo);
+        });
+    }
+
+    public function catalogo(string $tipo, ?int $entidadId = null): array
+    {
+        $this->simularLatencia();
+        $c = Almacen::leer()['catalogos'];
+
+        $items = match ($tipo) {
+            'sectores' => array_map(fn (int $id, string $nombre) => ['id' => $id, 'nombre' => $nombre], array_keys($c['sectores']), $c['sectores']),
+            'tamanos-empresa' => array_map(fn (int $id, array $t) => ['id' => $id, 'nombre' => $t[0], 'rango' => $t[1]], array_keys($c['tamanos']), $c['tamanos']),
+            'entidades' => array_map(fn (int $id, string $nombre) => ['id' => $id, 'nombre' => $nombre], array_keys($c['entidades']), $c['entidades']),
+            'municipios' => array_map(
+                fn (int $id, array $m) => ['id' => $id, 'nombre' => $m[0], 'entidad_federativa_id' => $m[1]],
+                array_keys(array_filter($c['municipios'], fn (array $m) => $entidadId === null || $m[1] === $entidadId)),
+                array_filter($c['municipios'], fn (array $m) => $entidadId === null || $m[1] === $entidadId),
+            ),
+            default => throw new ApiError(404, 'no_encontrado', 'El tipo de catálogo no existe.'),
+        };
+        usort($items, fn (array $a, array $b) => mb_strtolower($a['nombre']) <=> mb_strtolower($b['nombre']));
+
+        return $items;
+    }
+
+    public function archivo(string $ruta): array
+    {
+        $this->simularLatencia();
+        $this->exigirAdministrador(Almacen::leer());
+
+        // Los archivos de ejemplo del mock viven en public/mock/.
+        $archivo = str_starts_with($ruta, '/mock/') ? public_path(ltrim($ruta, '/')) : null;
+        if ($archivo === null || ! is_file($archivo) || str_contains($ruta, '..')) {
+            throw new ApiError(404, 'no_encontrado', 'El archivo no existe.');
         }
 
-        // Las pendientes primero (de la más antigua a la más reciente) y después las demás por nombre.
-        $empresas = $estado['empresas'];
-        usort($empresas, fn (array $a, array $b) => [$a['estado'] === 'pendiente' ? 0 : 1, $a['estado'] === 'pendiente' ? $a['creado_en'] : $a['nombre_comercial']]
-            <=> [$b['estado'] === 'pendiente' ? 0 : 1, $b['estado'] === 'pendiente' ? $b['creado_en'] : $b['nombre_comercial']]);
-
-        $items = array_map(fn (array $e) => [
-            'id' => $e['id'],
-            'razon_social' => $e['razon_social'],
-            'nombre_comercial' => $e['nombre_comercial'],
-            'rfc' => $e['rfc'],
-            'sector' => $e['sector'],
-            'estado' => $e['estado'],
-            'reclutadores' => count(array_filter($estado['usuarios'], fn (array $c) => ($c['usuario']['empresa']['id'] ?? null) === $e['id'] && $c['usuario']['rol'] === 'reclutador')),
-            'vacantes_activas' => count(array_filter($estado['vacantes'], fn (array $v) => $v['empresa_id'] === $e['id'] && $v['estado'] === 'publicada')),
-            'documento' => $e['documento'],
-            'creado_en' => $e['creado_en'],
-        ], $empresas);
-
-        return ['items' => array_slice($items, ($page - 1) * $size, $size), 'total' => count($items), 'page' => $page, 'size' => $size];
+        return ['contenido' => (string) file_get_contents($archivo), 'tipo' => 'application/pdf', 'nombre' => basename($archivo)];
     }
 
     /**

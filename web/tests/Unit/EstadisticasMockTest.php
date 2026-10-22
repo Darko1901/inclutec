@@ -85,7 +85,7 @@ class EstadisticasMockTest extends TestCase
             // 37 candidatos activos (las cuentas suspendidas o dadas de baja no cuentan), 3 empresas validadas y 8 vacantes publicadas.
             $this->assertSame([37, 3, 8], [$i['candidatos_activos'], $i['empresas_validadas'], $i['vacantes_publicadas']]);
         }
-        $this->assertSame(['empresas_por_validar' => 1, 'reportes_abiertos' => 1], $mock->estadisticas()['pendientes']);
+        $this->assertSame(['empresas_por_validar' => 3, 'reportes_abiertos' => 1], $mock->estadisticas()['pendientes']);
     }
 
     public function test_agregar_datos_al_estado_cambia_las_cifras(): void
