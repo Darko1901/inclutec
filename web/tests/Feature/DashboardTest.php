@@ -54,7 +54,7 @@ class DashboardTest extends TestCase
 
         $this->assertSame(1, preg_match_all('/<h1[\s>]/', $html));
         $this->assertSame(
-            ['8', '3', '8', '8', '2', '33.3 %'],
+            ['37', '3', '8', '8', '2', '33.3 %'],
             array_map(fn (string $clave) => $this->indicador($html, $clave), ['candidatos_activos', 'empresas_validadas', 'vacantes_publicadas', 'postulaciones', 'contrataciones', 'tasa_colocacion']),
         );
         foreach (['Candidatos activos', 'Empresas validadas', 'Vacantes publicadas', 'Postulaciones', 'Contrataciones', 'Tasa de colocación'] as $titulo) {

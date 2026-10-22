@@ -5,6 +5,7 @@ namespace App\Servicios\Api;
 use App\Servicios\Api\Mock\Almacen;
 use App\Servicios\Api\Mock\CalculadoraEstadisticas;
 use App\Servicios\Api\Mock\ExportadorEstadisticas;
+use App\Servicios\Api\Mock\GestionUsuarios;
 use Carbon\CarbonImmutable;
 
 /**
@@ -155,6 +156,88 @@ class ApiMock implements ApiAdmin
             'tipo' => $formato === 'pdf' ? ExportadorEstadisticas::TIPO_PDF : ExportadorEstadisticas::TIPO_XLSX,
             'nombre' => ExportadorEstadisticas::nombre($resumen, $formato),
         ];
+    }
+
+    public function usuarios(?string $q = null, ?string $rol = null, ?string $estado = null, int $page = 1, int $size = 25): array
+    {
+        $this->simularLatencia();
+        $datos = Almacen::leer();
+        $this->exigirAdministrador($datos);
+
+        return GestionUsuarios::listar($datos, $q, $rol, $estado, $page, $size);
+    }
+
+    public function usuario(int $id): array
+    {
+        $this->simularLatencia();
+        $datos = Almacen::leer();
+        $this->exigirAdministrador($datos);
+
+        return GestionUsuarios::detalle($datos, $id);
+    }
+
+    public function crearUsuario(array $datos): array
+    {
+        $this->simularLatencia();
+
+        return Almacen::modificar(function (array &$estado) use ($datos) {
+            $this->exigirAdministrador($estado);
+
+            return GestionUsuarios::crear($estado, $datos);
+        });
+    }
+
+    public function editarUsuario(int $id, array $datos): array
+    {
+        $this->simularLatencia();
+
+        return Almacen::modificar(function (array &$estado) use ($id, $datos) {
+            $this->exigirAdministrador($estado);
+
+            return GestionUsuarios::editar($estado, $id, $datos);
+        });
+    }
+
+    public function cambiarEstadoUsuario(int $id, string $estado, ?string $motivo = null): array
+    {
+        $this->simularLatencia();
+
+        return Almacen::modificar(function (array &$datos) use ($id, $estado, $motivo) {
+            $this->exigirAdministrador($datos);
+
+            return GestionUsuarios::cambiarEstado($datos, $id, $this->exigirSesion($datos)['id'], $estado, $motivo);
+        });
+    }
+
+    public function listarEmpresas(int $page = 1, int $size = 25): array
+    {
+        $this->simularLatencia();
+        $estado = Almacen::leer();
+        $this->exigirAdministrador($estado);
+
+        if ($page < 1 || $size < 1 || $size > 100) {
+            throw new ApiError(422, 'validacion', self::MENSAJE_VALIDACION, ['page' => 'Revisa la página y el tamaño (de 1 a 100).']);
+        }
+
+        // Las pendientes primero (de la más antigua a la más reciente) y después las demás por nombre.
+        $empresas = $estado['empresas'];
+        usort($empresas, fn (array $a, array $b) => [$a['estado'] === 'pendiente' ? 0 : 1, $a['estado'] === 'pendiente' ? $a['creado_en'] : $a['nombre_comercial']]
+            <=> [$b['estado'] === 'pendiente' ? 0 : 1, $b['estado'] === 'pendiente' ? $b['creado_en'] : $b['nombre_comercial']]);
+
+        $items = array_map(fn (array $e) => [
+            'id' => $e['id'],
+            'razon_social' => $e['razon_social'],
+            'nombre_comercial' => $e['nombre_comercial'],
+            'rfc' => $e['rfc'],
+            'sector' => $e['sector'],
+            'estado' => $e['estado'],
+            'reclutadores' => count(array_filter($estado['usuarios'], fn (array $c) => ($c['usuario']['empresa']['id'] ?? null) === $e['id'] && $c['usuario']['rol'] === 'reclutador')),
+            'vacantes_activas' => count(array_filter($estado['vacantes'], fn (array $v) => $v['empresa_id'] === $e['id'] && $v['estado'] === 'publicada')),
+            'documento' => $e['documento'],
+            'creado_en' => $e['creado_en'],
+        ], $empresas);
+
+        return ['items' => array_slice($items, ($page - 1) * $size, $size), 'total' => count($items), 'page' => $page, 'size' => $size];
     }
 
     /**

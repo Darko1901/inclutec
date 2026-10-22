@@ -53,4 +53,60 @@ interface ApiAdmin
      * @return array{contenido: string, tipo: string, nombre: string}
      */
     public function exportarEstadisticas(string $formato, ?string $desde = null, ?string $hasta = null): array;
+
+    // --- Administración: usuarios ---
+
+    /**
+     * GET /admin/usuarios. Más recientes primero. Devuelve PaginaUsuarios: items (UsuarioAdmin), total,
+     * page y size. `q` busca en nombre, apellidos o correo; `rol` y `estado` filtran.
+     *
+     * @return array{items: list<array<string, mixed>>, total: int, page: int, size: int}
+     */
+    public function usuarios(?string $q = null, ?string $rol = null, ?string $estado = null, int $page = 1, int $size = 25): array;
+
+    /**
+     * GET /admin/usuarios/{id}. Devuelve UsuarioAdminDetalle (nunca trae necesidades de ajuste).
+     * Lanza 404 `no_encontrado`.
+     *
+     * @return array<string, mixed>
+     */
+    public function usuario(int $id): array;
+
+    /**
+     * POST /admin/usuarios con un UsuarioAdminEntrada (rol, nombre, apellidos, correo, telefono,
+     * contrasena, empresa_id, puesto). Devuelve el UsuarioAdmin creado. Lanza 409 `correo_duplicado` y
+     * 422 `validacion` (con `campos`).
+     *
+     * @param  array<string, mixed>  $datos
+     * @return array<string, mixed>
+     */
+    public function crearUsuario(array $datos): array;
+
+    /**
+     * PUT /admin/usuarios/{id} con un UsuarioAdminEntrada (sin contrasena). Devuelve el UsuarioAdmin.
+     * Lanza 404, 409 `correo_duplicado`, 409 `en_uso` (cambio de rol con postulaciones o vacantes) y 422.
+     *
+     * @param  array<string, mixed>  $datos
+     * @return array<string, mixed>
+     */
+    public function editarUsuario(int $id, array $datos): array;
+
+    /**
+     * PATCH /admin/usuarios/{id}/estado con un CambioEstadoUsuario. `estado` es activo, suspendido o
+     * eliminado; el motivo es obligatorio salvo al reactivar. Lanza 404, 409 `estado_invalido` (un
+     * administrador no puede suspenderse a sí mismo) y 422 `validacion`.
+     *
+     * @return array<string, mixed>
+     */
+    public function cambiarEstadoUsuario(int $id, string $estado, ?string $motivo = null): array;
+
+    // --- Administración: empresas ---
+
+    /**
+     * GET /admin/empresas. Devuelve PaginaEmpresasAdmin: las pendientes primero (de la más antigua a la
+     * más reciente) y después las demás por nombre. WEB-03 la usa para elegir la empresa de un reclutador.
+     *
+     * @return array{items: list<array<string, mixed>>, total: int, page: int, size: int}
+     */
+    public function listarEmpresas(int $page = 1, int $size = 25): array;
 }
