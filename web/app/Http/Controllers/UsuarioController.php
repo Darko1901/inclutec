@@ -191,7 +191,7 @@ class UsuarioController extends Controller
     private function opcionesFormulario(): array
     {
         $empresas = [];
-        foreach ($this->api->listarEmpresas(1, 100)['items'] as $empresa) {
+        foreach ($this->api->listarEmpresas(size: 100)['items'] as $empresa) {
             $empresas[$empresa['id']] = $empresa['nombre_comercial'].' · '.Estados::de('empresa', $empresa['estado'])['texto'];
         }
 

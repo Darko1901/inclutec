@@ -89,7 +89,7 @@ class DashboardTest extends TestCase
         $html = $this->get('/dashboard')->getContent();
 
         $this->assertSame('9', $this->indicador($html, 'postulaciones'));
-        $this->assertMatchesRegularExpression('/pendiente-cifra">2<\/p>\s*<div>\s*<p class="pendiente-texto">empresas por validar/', $html);
+        $this->assertMatchesRegularExpression('/pendiente-cifra">4<\/p>\s*<div>\s*<p class="pendiente-texto">empresas por validar/', $html);
     }
 
     public function test_el_periodo_se_conserva_en_la_url_en_el_filtro_y_en_la_exportacion(): void
@@ -130,7 +130,7 @@ class DashboardTest extends TestCase
 
         $html = $this->get('/dashboard')->getContent();
 
-        $this->assertMatchesRegularExpression('/data-pendiente="empresas_por_validar".*?1<\/p>.*?empresa por validar.*?data-estado="pendiente".*?href="[^"]*\/empresas\?estado=pendiente"[^>]*>Ver empresas por validar/s', $html);
+        $this->assertMatchesRegularExpression('/data-pendiente="empresas_por_validar".*?3<\/p>.*?empresas por validar.*?data-estado="pendiente".*?href="[^"]*\/empresas\?estado=pendiente"[^>]*>Ver empresas por validar/s', $html);
         $this->assertMatchesRegularExpression('/data-pendiente="reportes_abiertos".*?1<\/p>.*?reporte abierto.*?data-estado="abierto".*?href="[^"]*\/reportes\?estado=abierto"[^>]*>Ver reportes abiertos/s', $html);
         $this->get('/empresas?estado=pendiente')->assertOk();
         $this->get('/reportes?estado=abierto')->assertOk();

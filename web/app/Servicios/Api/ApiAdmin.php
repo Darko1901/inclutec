@@ -104,9 +104,72 @@ interface ApiAdmin
 
     /**
      * GET /admin/empresas. Devuelve PaginaEmpresasAdmin: las pendientes primero (de la más antigua a la
-     * más reciente) y después las demás por nombre. WEB-03 la usa para elegir la empresa de un reclutador.
+     * más reciente) y después las demás por nombre. `q` busca en razón social, nombre comercial o RFC.
      *
      * @return array{items: list<array<string, mixed>>, total: int, page: int, size: int}
      */
-    public function listarEmpresas(int $page = 1, int $size = 25): array;
+    public function listarEmpresas(?string $q = null, ?string $estado = null, ?int $sectorId = null, int $page = 1, int $size = 25): array;
+
+    /**
+     * GET /admin/empresas/{id}. Devuelve EmpresaAdminDetalle: la empresa, sus reclutadores, `rfc_duplicado`
+     * y los reportes recibidos. Lanza 404 `no_encontrado`.
+     *
+     * @return array<string, mixed>
+     */
+    public function empresa(int $id): array;
+
+    /**
+     * POST /admin/empresas con un EmpresaAdminEntrada. La empresa se crea ya validada; devuelve la
+     * EmpresaPropia. Lanza 409 `rfc_duplicado` y 422 `validacion` (con `campos`).
+     *
+     * @param  array<string, mixed>  $datos
+     * @return array<string, mixed>
+     */
+    public function crearEmpresa(array $datos): array;
+
+    /**
+     * PUT /admin/empresas/{id} con un EmpresaAdminEntrada (el administrador sí puede corregir razón
+     * social y RFC de una empresa validada). Lanza 404, 409 `rfc_duplicado` y 422.
+     *
+     * @param  array<string, mixed>  $datos
+     * @return array<string, mixed>
+     */
+    public function editarEmpresa(int $id, array $datos): array;
+
+    /**
+     * PATCH /admin/empresas/{id}/validacion. `decision` es `validada` o `rechazada` (el motivo es
+     * obligatorio al rechazar). Solo para empresas pendientes: si no, 409 `estado_invalido`. Devuelve la
+     * EmpresaPropia.
+     *
+     * @return array<string, mixed>
+     */
+    public function validarEmpresa(int $id, string $decision, ?string $motivo = null): array;
+
+    /**
+     * PATCH /admin/empresas/{id}/estado. `estado` es `suspendida` (motivo obligatorio) o `validada` para
+     * reactivar. Devuelve ResultadoEstadoEmpresa: la empresa, `vacantes_suspendidas` y
+     * `postulados_notificados`. Lanza 409 `transicion_invalida` y 422.
+     *
+     * @return array{empresa: array<string, mixed>, vacantes_suspendidas: int, postulados_notificados: int}
+     */
+    public function cambiarEstadoEmpresa(int $id, string $estado, ?string $motivo = null): array;
+
+    // --- Catálogos y archivos ---
+
+    /**
+     * GET /catalogos/{tipo}: arreglo de CatalogoItem ordenado por nombre. Tipos que usa el panel:
+     * `sectores`, `tamanos-empresa`, `entidades` y `municipios` (con `entidad_id` opcional).
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function catalogo(string $tipo, ?int $entidadId = null): array;
+
+    /**
+     * Descarga un archivo del API con el token de la sesión (por ejemplo, la constancia fiscal
+     * `/archivos/documentos/empresa-1.pdf`): el navegador nunca recibe el token. Devuelve su contenido, tipo
+     * y nombre. Lanza 404 si no existe.
+     *
+     * @return array{contenido: string, tipo: string, nombre: string}
+     */
+    public function archivo(string $ruta): array;
 }

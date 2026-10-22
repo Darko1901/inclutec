@@ -86,9 +86,56 @@ class ApiHttp implements ApiAdmin
         return $this->enviar('patch', "/admin/usuarios/{$id}/estado", ['estado' => $estado, 'motivo' => $motivo])->json();
     }
 
-    public function listarEmpresas(int $page = 1, int $size = 25): array
+    public function listarEmpresas(?string $q = null, ?string $estado = null, ?int $sectorId = null, int $page = 1, int $size = 25): array
     {
-        return $this->enviar('get', '/admin/empresas', ['page' => $page, 'size' => $size])->json();
+        $consulta = array_filter(['q' => $q, 'estado' => $estado, 'sector_id' => $sectorId], fn ($valor) => $valor !== null && $valor !== '');
+
+        return $this->enviar('get', '/admin/empresas', $consulta + ['page' => $page, 'size' => $size])->json();
+    }
+
+    public function empresa(int $id): array
+    {
+        return $this->enviar('get', "/admin/empresas/{$id}")->json();
+    }
+
+    public function crearEmpresa(array $datos): array
+    {
+        return $this->enviar('post', '/admin/empresas', $datos)->json();
+    }
+
+    public function editarEmpresa(int $id, array $datos): array
+    {
+        return $this->enviar('put', "/admin/empresas/{$id}", $datos)->json();
+    }
+
+    public function validarEmpresa(int $id, string $decision, ?string $motivo = null): array
+    {
+        return $this->enviar('patch', "/admin/empresas/{$id}/validacion", ['decision' => $decision, 'motivo' => $motivo])->json();
+    }
+
+    public function cambiarEstadoEmpresa(int $id, string $estado, ?string $motivo = null): array
+    {
+        return $this->enviar('patch', "/admin/empresas/{$id}/estado", ['estado' => $estado, 'motivo' => $motivo])->json();
+    }
+
+    public function catalogo(string $tipo, ?int $entidadId = null): array
+    {
+        return $this->enviar('get', "/catalogos/{$tipo}", $entidadId === null ? [] : ['entidad_id' => $entidadId])->json();
+    }
+
+    public function archivo(string $ruta): array
+    {
+        // Los archivos se sirven desde el origen del API (http://localhost:8000/archivos/...), fuera de /api/v1.
+        $partes = parse_url((string) config('inclutec.api_url'));
+        $origen = ($partes['scheme'] ?? 'http').'://'.($partes['host'] ?? 'localhost').(isset($partes['port']) ? ':'.$partes['port'] : '');
+
+        $respuesta = $this->enviar('get', $origen.'/'.ltrim($ruta, '/'));
+
+        return [
+            'contenido' => $respuesta->body(),
+            'tipo' => trim(explode(';', $respuesta->header('Content-Type'))[0]) ?: 'application/octet-stream',
+            'nombre' => basename($ruta),
+        ];
     }
 
     /**

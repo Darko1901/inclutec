@@ -145,18 +145,71 @@ return [
             9 => 'Subtitulado en reuniones', 10 => 'Instrucciones por escrito y paso a paso',
             11 => 'Espacio de trabajo tranquilo', 12 => 'Horario flexible', 13 => 'Trabajo remoto',
         ],
+        'sectores' => [
+            1 => 'Manufactura', 2 => 'Comercio', 3 => 'Servicios profesionales', 4 => 'Tecnologías de la información',
+            5 => 'Salud', 6 => 'Educación', 7 => 'Gobierno',
+        ],
+        'tamanos' => [
+            1 => ['Micro', '1 a 10 trabajadores'], 2 => ['Pequeña', '11 a 50 trabajadores'],
+            3 => ['Mediana', '51 a 250 trabajadores'], 4 => ['Grande', 'Más de 250 trabajadores'],
+        ],
+        'entidades' => [9 => 'Ciudad de México', 11 => 'Guanajuato', 14 => 'Jalisco', 15 => 'México', 19 => 'Nuevo León', 22 => 'Querétaro'],
+        // id => [nombre, entidad_federativa_id]
+        'municipios' => [
+            1 => ['Corregidora', 22], 2 => ['El Marqués', 22], 3 => ['Querétaro', 22], 4 => ['San Juan del Río', 22],
+            5 => ['León', 11], 6 => ['Guadalajara', 14], 7 => ['Monterrey', 19], 8 => ['Cuauhtémoc', 9],
+        ],
     ],
 
-    // Campos de EmpresaAdmin (sin los conteos, que calcula ApiMock); `creado_en` ordena el listado.
+    // Campos de EmpresaPropia (EmpresaAdmin y el detalle se arman con ellos); los conteos los calcula
+    // ApiMock. `creado_en` ordena la cola de validación. Las empresas 101 en adelante son solo del mock.
+    // `documento_url` apunta al PDF de ejemplo de public/mock/ (el API real serviría /archivos/...).
     'empresas' => [
         ['id' => 1, 'razon_social' => 'Tecnologías Querétaro S.A. de C.V.', 'nombre_comercial' => 'TecnoQro', 'rfc' => 'TQU150312AB1',
-            'sector' => ['id' => 4, 'nombre' => 'Tecnologías de la información'], 'estado' => 'validada', 'documento' => true, 'creado_en' => $hace(55)],
+            'sector_id' => 4, 'tamano_empresa_id' => 3, 'municipio_id' => 3, 'direccion' => 'Av. Constituyentes 100, Querétaro',
+            'descripcion' => 'Empresa de desarrollo de software y soporte técnico.', 'sitio_web' => 'https://tecnoqro.mx', 'logo_url' => null,
+            'practicas_inclusion' => 'Programa de inclusión laboral desde 2022; personal capacitado en LSM básica.',
+            'documento_url' => '/mock/constancia-ejemplo.pdf', 'estado' => 'validada', 'motivo_estado' => null, 'validada_en' => $hace(54), 'creado_en' => $hace(55)],
         ['id' => 2, 'razon_social' => 'Logística Bajío Norte S.A. de C.V.', 'nombre_comercial' => 'LogiBajío', 'rfc' => 'LBN180725KQ3',
-            'sector' => ['id' => 1, 'nombre' => 'Manufactura'], 'estado' => 'validada', 'documento' => true, 'creado_en' => $hace(48)],
+            'sector_id' => 1, 'tamano_empresa_id' => 4, 'municipio_id' => 2, 'direccion' => 'Parque Industrial Bernardo Quintana, El Marqués',
+            'descripcion' => 'Centro de distribución y logística para la industria automotriz.', 'sitio_web' => null, 'logo_url' => null,
+            'practicas_inclusion' => 'Almacén con rampas y alertas visuales; convenio con una asociación de personas sordas.',
+            'documento_url' => '/mock/constancia-ejemplo.pdf', 'estado' => 'validada', 'motivo_estado' => null, 'validada_en' => $hace(47), 'creado_en' => $hace(48)],
         ['id' => 3, 'razon_social' => 'Contadores Asociados del Centro S.C.', 'nombre_comercial' => 'ConCentro', 'rfc' => 'CAC0904158T2',
-            'sector' => ['id' => 3, 'nombre' => 'Servicios profesionales'], 'estado' => 'validada', 'documento' => true, 'creado_en' => $hace(46)],
+            'sector_id' => 3, 'tamano_empresa_id' => 2, 'municipio_id' => 1, 'direccion' => 'Calle Josefa Vergara 25, Corregidora',
+            'descripcion' => 'Despacho contable con clientes pymes de la región.', 'sitio_web' => null, 'logo_url' => null,
+            'practicas_inclusion' => 'Trabajo remoto y comunicación por escrito para todo el equipo.',
+            'documento_url' => '/mock/constancia-ejemplo.pdf', 'estado' => 'validada', 'motivo_estado' => null, 'validada_en' => $hace(45), 'creado_en' => $hace(46)],
         ['id' => 4, 'razon_social' => 'Estudio Trazo Diseño S.A.S.', 'nombre_comercial' => 'Estudio Trazo', 'rfc' => 'ETR2101119P4',
-            'sector' => ['id' => 3, 'nombre' => 'Servicios profesionales'], 'estado' => 'pendiente', 'documento' => true, 'creado_en' => $hace(6)],
+            'sector_id' => 3, 'tamano_empresa_id' => 1, 'municipio_id' => 3, 'direccion' => 'Calle 5 de Mayo 40, Centro, Querétaro',
+            'descripcion' => 'Estudio de diseño gráfico e ilustración.', 'sitio_web' => null, 'logo_url' => null, 'practicas_inclusion' => null,
+            'documento_url' => '/mock/constancia-ejemplo.pdf', 'estado' => 'pendiente', 'motivo_estado' => null, 'validada_en' => null, 'creado_en' => $hace(6)],
+
+        // Solo en el mock: más solicitudes (la más antigua va primero en la cola), rechazadas y suspendidas.
+        ['id' => 101, 'razon_social' => 'Servicios Médicos del Bajío S.A. de C.V.', 'nombre_comercial' => 'MediBajío', 'rfc' => 'SMB120918JK5',
+            'sector_id' => 5, 'tamano_empresa_id' => 3, 'municipio_id' => 5, 'direccion' => 'Blvd. Adolfo López Mateos 500, León',
+            'descripcion' => 'Red de clínicas de atención primaria.', 'sitio_web' => 'https://medibajio.mx', 'logo_url' => null, 'practicas_inclusion' => 'Consultorios en planta baja y señalización en braille.',
+            'documento_url' => '/mock/constancia-ejemplo.pdf', 'estado' => 'pendiente', 'motivo_estado' => null, 'validada_en' => null, 'creado_en' => $hace(20)],
+        ['id' => 102, 'razon_social' => 'Escuela de Oficios Digitales A.C.', 'nombre_comercial' => 'OficiosDigitales', 'rfc' => 'EOD1507W1AA',
+            'sector_id' => 6, 'tamano_empresa_id' => 1, 'municipio_id' => 4, 'direccion' => null,
+            'descripcion' => 'Cursos de capacitación en oficios y tecnología.', 'sitio_web' => null, 'logo_url' => null, 'practicas_inclusion' => null,
+            'documento_url' => null, 'estado' => 'pendiente', 'motivo_estado' => null, 'validada_en' => null, 'creado_en' => $hace(12)],
+        ['id' => 103, 'razon_social' => 'Comercializadora Rápida del Centro S.A. de C.V.', 'nombre_comercial' => 'RápidaMx', 'rfc' => 'CRC190101AB9',
+            'sector_id' => 2, 'tamano_empresa_id' => 2, 'municipio_id' => 3, 'direccion' => 'Av. Universidad 12, Querétaro',
+            'descripcion' => 'Venta de abarrotes al mayoreo.', 'sitio_web' => null, 'logo_url' => null, 'practicas_inclusion' => null,
+            'documento_url' => '/mock/constancia-ejemplo.pdf', 'estado' => 'rechazada', 'motivo_estado' => 'La constancia de situación fiscal no es legible.', 'validada_en' => null, 'creado_en' => $hace(33)],
+        ['id' => 104, 'razon_social' => 'Gobierno Digital Querétaro S.A.P.I.', 'nombre_comercial' => 'GobDigital', 'rfc' => 'GDQ2003157Q1',
+            'sector_id' => 7, 'tamano_empresa_id' => 3, 'municipio_id' => 3, 'direccion' => 'Calle Reforma 90, Querétaro',
+            'descripcion' => 'Soluciones de software para trámites.', 'sitio_web' => null, 'logo_url' => null, 'practicas_inclusion' => null,
+            'documento_url' => null, 'estado' => 'rechazada', 'motivo_estado' => 'No se pudo comprobar el RFC con la constancia.', 'validada_en' => null, 'creado_en' => $hace(29)],
+        ['id' => 105, 'razon_social' => 'Manufacturas Plásticas del Marqués S.A. de C.V.', 'nombre_comercial' => 'PlastiMarqués', 'rfc' => 'MPM1706212X8',
+            'sector_id' => 1, 'tamano_empresa_id' => 4, 'municipio_id' => 2, 'direccion' => 'Parque Industrial Querétaro, El Marqués',
+            'descripcion' => 'Piezas de plástico para la industria.', 'sitio_web' => null, 'logo_url' => null, 'practicas_inclusion' => null,
+            'documento_url' => '/mock/constancia-ejemplo.pdf', 'estado' => 'suspendida', 'motivo_estado' => 'Varias vacantes reportadas como engañosas.', 'validada_en' => $hace(40), 'creado_en' => $hace(42)],
+        ['id' => 106, 'razon_social' => 'Consultoría Integral Norte S.C.', 'nombre_comercial' => 'ConsultNorte', 'rfc' => 'CIN1109301M3',
+            'sector_id' => 3, 'tamano_empresa_id' => 2, 'municipio_id' => 7, 'direccion' => 'Av. Constitución 300, Monterrey',
+            'descripcion' => 'Consultoría administrativa para pymes.', 'sitio_web' => null, 'logo_url' => null, 'practicas_inclusion' => null,
+            'documento_url' => '/mock/constancia-ejemplo.pdf', 'estado' => 'suspendida', 'motivo_estado' => 'Solicitó pagos a las personas candidatas.', 'validada_en' => $hace(38), 'creado_en' => $hace(41)],
     ],
 
     // Lo que el candidato registró (por usuario_id): necesidades de ajuste y habilidades (ids de catálogo).
