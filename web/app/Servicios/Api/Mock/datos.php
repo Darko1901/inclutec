@@ -94,6 +94,85 @@ for ($n = 0; $n < 46; $n++) {
         $ficha(max(1, 32 - $n), $estado === 'activo' && $n % 4 !== 0 ? $n % 12 : null, $motivo, $rol === 'reclutador' ? $puestos[$n % count($puestos)] : null));
 }
 
+$vacantesBase = [
+    ['id' => 1, 'reclutador_id' => 2, 'empresa_id' => 1, 'titulo' => 'Técnico de soporte de TI', 'categoria_id' => 1, 'modalidad_id' => 3, 'estado' => 'publicada', 'publicada_en' => $hace(0),
+        'habilidades' => [4, 5, 3, 11, 2, 6], 'ajustes' => [[1, 'existente'], [3, 'existente'], [12, 'bajo_solicitud']]],
+    ['id' => 2, 'reclutador_id' => 5, 'empresa_id' => 2, 'titulo' => 'Auxiliar de almacén', 'categoria_id' => 5, 'modalidad_id' => 1, 'estado' => 'publicada', 'publicada_en' => $hace(2),
+        'habilidades' => [14, 15, 6], 'ajustes' => [[1, 'existente'], [2, 'existente'], [3, 'existente'], [8, 'existente'], [6, 'bajo_solicitud']]],
+    ['id' => 3, 'reclutador_id' => 5, 'empresa_id' => 2, 'titulo' => 'Analista de datos de operaciones', 'categoria_id' => 1, 'modalidad_id' => 3, 'estado' => 'publicada', 'publicada_en' => $hace(5),
+        'habilidades' => [3, 1, 6, 14], 'ajustes' => [[4, 'existente'], [5, 'existente'], [12, 'bajo_solicitud']]],
+    ['id' => 4, 'reclutador_id' => 6, 'empresa_id' => 3, 'titulo' => 'Auxiliar contable', 'categoria_id' => 2, 'modalidad_id' => 2, 'estado' => 'publicada', 'publicada_en' => $hace(1),
+        'habilidades' => [7, 8, 6], 'ajustes' => [[13, 'existente'], [7, 'existente'], [10, 'existente']]],
+    ['id' => 5, 'reclutador_id' => 6, 'empresa_id' => 3, 'titulo' => 'Ejecutivo de atención telefónica', 'categoria_id' => 3, 'modalidad_id' => 1, 'estado' => 'publicada', 'publicada_en' => $hace(8),
+        'habilidades' => [9, 10, 11], 'ajustes' => []],
+    ['id' => 6, 'reclutador_id' => 2, 'empresa_id' => 1, 'titulo' => 'Desarrollador web junior', 'categoria_id' => 1, 'modalidad_id' => 2, 'estado' => 'publicada', 'publicada_en' => $hace(3),
+        'habilidades' => [2, 3, 1], 'ajustes' => [[4, 'existente'], [9, 'existente'], [12, 'existente'], [6, 'bajo_solicitud']]],
+    ['id' => 7, 'reclutador_id' => 2, 'empresa_id' => 1, 'titulo' => 'Diseñador gráfico', 'categoria_id' => 4, 'modalidad_id' => 3, 'estado' => 'borrador', 'publicada_en' => null,
+        'habilidades' => [12, 13], 'ajustes' => []],
+    ['id' => 8, 'reclutador_id' => 7, 'empresa_id' => 4, 'titulo' => 'Ilustrador digital', 'categoria_id' => 4, 'modalidad_id' => 2, 'estado' => 'borrador', 'publicada_en' => null,
+        'habilidades' => [12], 'ajustes' => []],
+
+    // Solo en el mock.
+    ['id' => 101, 'reclutador_id' => 2, 'empresa_id' => 1, 'titulo' => 'Community manager', 'categoria_id' => 4, 'modalidad_id' => 2, 'estado' => 'publicada', 'publicada_en' => $hace(12),
+        'habilidades' => [12, 13, 11], 'ajustes' => [[13, 'existente'], [7, 'existente'], [12, 'bajo_solicitud']]],
+    ['id' => 102, 'reclutador_id' => 6, 'empresa_id' => 3, 'titulo' => 'Asesor de atención presencial', 'categoria_id' => 3, 'modalidad_id' => 1, 'estado' => 'publicada', 'publicada_en' => $hace(20),
+        'habilidades' => [9, 10], 'ajustes' => [[1, 'existente'], [3, 'existente'], [11, 'bajo_solicitud']]],
+];
+
+/*
+| Vacantes: `habilidades` lista todas (ids de catálogo) y `deseables` las que no son obligatorias;
+| `ajustes` lleva [ajuste_id, tipo] con tipo existente o bajo_solicitud. Los datos de las ocho primeras y
+| las 101 y 102 son los de S002 y de las estadísticas; los demás campos son los de VacanteDetalle.
+| Las vacantes 201 en adelante (solo en el mock) llenan el listado de moderación con todos los
+| estados; ninguna está publicada, así que no cambian las estadísticas del dashboard.
+*/
+$detalleVacante = [
+    1 => ['descripcion' => 'Atención a usuarios internos, mantenimiento de equipos y redes.', 'jornada_id' => 1, 'tipo_contrato_id' => 1, 'municipio_id' => 3, 'direccion' => 'Av. Constituyentes 100, Querétaro',
+        'plazas' => 2, 'salario_min' => 14000, 'salario_max' => 18000, 'mostrar_salario' => true, 'nivel_educativo_id' => 4, 'experiencia_anios' => 1, 'deseables' => [2, 6], 'sin_condiciones_accesibilidad' => false, 'notas_accesibilidad' => null],
+    2 => ['descripcion' => 'Recepción, acomodo y surtido de mercancía con apoyo de terminal portátil.', 'jornada_id' => 1, 'tipo_contrato_id' => 1, 'municipio_id' => 2, 'direccion' => 'Parque Industrial Bernardo Quintana, El Marqués',
+        'plazas' => 3, 'salario_min' => 9500, 'salario_max' => 11000, 'mostrar_salario' => true, 'nivel_educativo_id' => 3, 'experiencia_anios' => 0, 'deseables' => [15, 6], 'sin_condiciones_accesibilidad' => false, 'notas_accesibilidad' => 'Pasillos de 1.5 m y estaciones de trabajo a dos alturas.'],
+    3 => ['descripcion' => 'Reportes de inventario y tableros de indicadores para el área de operaciones.', 'jornada_id' => 1, 'tipo_contrato_id' => 1, 'municipio_id' => 2, 'direccion' => 'Parque Industrial Bernardo Quintana, El Marqués',
+        'plazas' => 1, 'salario_min' => 16000, 'salario_max' => 21000, 'mostrar_salario' => true, 'nivel_educativo_id' => 5, 'experiencia_anios' => 1, 'deseables' => [14], 'sin_condiciones_accesibilidad' => false, 'notas_accesibilidad' => null],
+    4 => ['descripcion' => 'Registro de pólizas, conciliaciones bancarias y emisión de facturas.', 'jornada_id' => 2, 'tipo_contrato_id' => 2, 'municipio_id' => 1, 'direccion' => null,
+        'plazas' => 1, 'salario_min' => 8000, 'salario_max' => 9000, 'mostrar_salario' => false, 'nivel_educativo_id' => 4, 'experiencia_anios' => 1, 'deseables' => [], 'sin_condiciones_accesibilidad' => false, 'notas_accesibilidad' => null],
+    5 => ['descripcion' => 'Atención de llamadas de clientes y registro de casos en el CRM.', 'jornada_id' => 1, 'tipo_contrato_id' => 1, 'municipio_id' => 1, 'direccion' => 'Calle Josefa Vergara 25, Corregidora',
+        'plazas' => 2, 'salario_min' => 10000, 'salario_max' => 12000, 'mostrar_salario' => true, 'nivel_educativo_id' => 3, 'experiencia_anios' => 0, 'deseables' => [10, 11], 'sin_condiciones_accesibilidad' => true, 'notas_accesibilidad' => null],
+    6 => ['descripcion' => 'Desarrollo y mantenimiento de aplicaciones web internas.', 'jornada_id' => 1, 'tipo_contrato_id' => 1, 'municipio_id' => 3, 'direccion' => null,
+        'plazas' => 1, 'salario_min' => 15000, 'salario_max' => 20000, 'mostrar_salario' => true, 'nivel_educativo_id' => 5, 'experiencia_anios' => 0, 'deseables' => [3, 1], 'sin_condiciones_accesibilidad' => false, 'notas_accesibilidad' => null],
+    7 => ['descripcion' => 'Material gráfico para redes sociales y presentaciones.', 'jornada_id' => 2, 'tipo_contrato_id' => 3, 'municipio_id' => 3, 'direccion' => null,
+        'plazas' => 1, 'salario_min' => null, 'salario_max' => null, 'mostrar_salario' => false, 'nivel_educativo_id' => null, 'experiencia_anios' => 0, 'deseables' => [13], 'sin_condiciones_accesibilidad' => false, 'notas_accesibilidad' => null],
+    8 => ['descripcion' => 'Ilustraciones para proyectos editoriales.', 'jornada_id' => 3, 'tipo_contrato_id' => 3, 'municipio_id' => 3, 'direccion' => null,
+        'plazas' => 1, 'salario_min' => null, 'salario_max' => null, 'mostrar_salario' => false, 'nivel_educativo_id' => null, 'experiencia_anios' => 1, 'deseables' => [], 'sin_condiciones_accesibilidad' => false, 'notas_accesibilidad' => null],
+    101 => ['descripcion' => 'Contenido y atención de redes sociales de la empresa.', 'jornada_id' => 1, 'tipo_contrato_id' => 1, 'municipio_id' => 3, 'direccion' => null,
+        'plazas' => 1, 'salario_min' => 12000, 'salario_max' => 15000, 'mostrar_salario' => true, 'nivel_educativo_id' => 5, 'experiencia_anios' => 1, 'deseables' => [13, 11], 'sin_condiciones_accesibilidad' => false, 'notas_accesibilidad' => 'Trabajo remoto con horario flexible.'],
+    102 => ['descripcion' => 'Atención presencial a clientes en sucursal.', 'jornada_id' => 1, 'tipo_contrato_id' => 2, 'municipio_id' => 1, 'direccion' => 'Calle Josefa Vergara 25, Corregidora',
+        'plazas' => 2, 'salario_min' => 9000, 'salario_max' => 9000, 'mostrar_salario' => true, 'nivel_educativo_id' => 3, 'experiencia_anios' => 0, 'deseables' => [10], 'sin_condiciones_accesibilidad' => false, 'notas_accesibilidad' => null],
+];
+$vacantesBase = array_map(fn (array $v) => $v + $detalleVacante[$v['id']] + ['motivo_estado' => null, 'actualizado_en' => $v['publicada_en'] ?? $hace(30)], $vacantesBase);
+
+// Vacantes de relleno (ids 201 a 224): ninguna publicada. Las suspendidas explican el motivo.
+$titulosRelleno = ['Auxiliar administrativo', 'Cajero de sucursal', 'Operador de montacargas', 'Soporte técnico nivel 1', 'Recepcionista bilingüe', 'Capturista de datos',
+    'Diseñador de interfaces', 'Almacenista nocturno', 'Analista de nómina', 'Mesa de ayuda', 'Redactor de contenidos', 'Supervisor de línea',
+    'Asistente contable', 'Ejecutivo de ventas', 'Programador de pruebas', 'Auxiliar de logística', 'Editor de video', 'Coordinador de turno',
+    'Técnico en redes', 'Asesor telefónico', 'Auxiliar de compras', 'Dibujante técnico', 'Gestor de cobranza', 'Empacador'];
+$estadosRelleno = ['pausada', 'cerrada', 'suspendida', 'borrador', 'cerrada', 'pausada'];
+$vacantesRelleno = [];
+foreach ($titulosRelleno as $n => $titulo) {
+    $estado = $estadosRelleno[$n % count($estadosRelleno)];
+    $categoria = 1 + $n % 5;
+    $empresa = [1, 2, 3, 1, 2, 3, 4, 3][$n % 8];
+    $habilidades = [[4, 5, 3], [7, 8, 6], [9, 10, 11], [12, 13, 11], [14, 15, 6]][$categoria - 1];
+    $vacantesRelleno[] = [
+        'id' => 201 + $n, 'reclutador_id' => [2, 5, 6, 2, 5, 6, 7, 6][$n % 8], 'empresa_id' => $empresa, 'titulo' => $titulo, 'categoria_id' => $categoria, 'modalidad_id' => 1 + $n % 3,
+        'estado' => $estado, 'publicada_en' => $estado === 'borrador' || $empresa === 4 ? null : $hace(35 + $n), 'habilidades' => $habilidades, 'deseables' => [$habilidades[2]],
+        'ajustes' => $n % 4 === 0 ? [] : [[1 + $n % 13, 'existente'], [1 + ($n + 5) % 13, 'bajo_solicitud']],
+        'descripcion' => "Vacante de prueba «{$titulo}» para revisar el listado de moderación.", 'jornada_id' => 1 + $n % 4, 'tipo_contrato_id' => 1 + $n % 4, 'municipio_id' => 1 + $n % 4,
+        'direccion' => $n % 3 === 1 ? null : 'Calle de Prueba '.(10 + $n).', Querétaro', 'plazas' => 1 + $n % 3, 'salario_min' => 9000 + 500 * $n, 'salario_max' => 11000 + 500 * $n,
+        'mostrar_salario' => $n % 2 === 0, 'nivel_educativo_id' => 3 + $n % 3, 'experiencia_anios' => $n % 3, 'sin_condiciones_accesibilidad' => $n % 4 === 0, 'notas_accesibilidad' => null,
+        'motivo_estado' => $estado === 'suspendida' ? 'Solicita pagos a los candidatos.' : null, 'actualizado_en' => $hace(max(1, 30 - $n)),
+    ];
+}
+
 return [
 
     'usuarios' => [
@@ -152,6 +231,20 @@ return [
         'tamanos' => [
             1 => ['Micro', '1 a 10 trabajadores'], 2 => ['Pequeña', '11 a 50 trabajadores'],
             3 => ['Mediana', '51 a 250 trabajadores'], 4 => ['Grande', 'Más de 250 trabajadores'],
+        ],
+        'jornadas' => [1 => 'Tiempo completo', 2 => 'Medio tiempo', 3 => 'Por horas', 4 => 'Fines de semana'],
+        'tipos_contrato' => [1 => 'Indefinido', 2 => 'Temporal', 3 => 'Por proyecto', 4 => 'Prácticas profesionales'],
+        // id => [nombre, orden]
+        'niveles' => [1 => ['Primaria', 1], 2 => ['Secundaria', 2], 3 => ['Bachillerato', 3], 4 => ['Técnico superior universitario', 4], 5 => ['Licenciatura', 5], 6 => ['Posgrado', 6]],
+        // id => [categoría, descripción en lenguaje claro]
+        'ajustes_detalle' => [
+            1 => ['movilidad', 'Entrada y áreas de trabajo accesibles en silla de ruedas'], 2 => ['movilidad', 'Acceso a pisos superiores sin escaleras'],
+            3 => ['movilidad', 'Sanitario adaptado para personas usuarias de silla de ruedas'],
+            4 => ['visual', 'Herramientas de trabajo que funcionan con NVDA, JAWS o VoiceOver'], 5 => ['visual', 'Materiales en formatos legibles por lector de pantalla o en macrotipo'],
+            6 => ['auditiva', 'Intérprete de LSM en reuniones y capacitaciones'], 7 => ['auditiva', 'Instrucciones y avisos por mensaje o correo'], 8 => ['auditiva', 'Alarmas y avisos con señal luminosa'],
+            9 => ['comunicacion', 'Subtítulos en videollamadas y capacitaciones'],
+            10 => ['cognitiva_psicosocial', 'Tareas explicadas por escrito y en pasos claros'], 11 => ['cognitiva_psicosocial', 'Área con poco ruido y pocas distracciones'],
+            12 => ['general', 'Posibilidad de ajustar horarios de entrada y salida'], 13 => ['general', 'Posibilidad de trabajar desde casa'],
         ],
         'entidades' => [9 => 'Ciudad de México', 11 => 'Guanajuato', 14 => 'Jalisco', 15 => 'México', 19 => 'Nuevo León', 22 => 'Querétaro'],
         // id => [nombre, entidad_federativa_id]
@@ -225,30 +318,7 @@ return [
     ],
 
     // `ajustes` lleva el tipo de vacante_ajuste: existente o bajo_solicitud.
-    'vacantes' => [
-        ['id' => 1, 'reclutador_id' => 2, 'empresa_id' => 1, 'titulo' => 'Técnico de soporte de TI', 'categoria_id' => 1, 'modalidad_id' => 3, 'estado' => 'publicada', 'publicada_en' => $hace(0),
-            'habilidades' => [4, 5, 3, 11, 2, 6], 'ajustes' => [[1, 'existente'], [3, 'existente'], [12, 'bajo_solicitud']]],
-        ['id' => 2, 'reclutador_id' => 5, 'empresa_id' => 2, 'titulo' => 'Auxiliar de almacén', 'categoria_id' => 5, 'modalidad_id' => 1, 'estado' => 'publicada', 'publicada_en' => $hace(2),
-            'habilidades' => [14, 15, 6], 'ajustes' => [[1, 'existente'], [2, 'existente'], [3, 'existente'], [8, 'existente'], [6, 'bajo_solicitud']]],
-        ['id' => 3, 'reclutador_id' => 5, 'empresa_id' => 2, 'titulo' => 'Analista de datos de operaciones', 'categoria_id' => 1, 'modalidad_id' => 3, 'estado' => 'publicada', 'publicada_en' => $hace(5),
-            'habilidades' => [3, 1, 6, 14], 'ajustes' => [[4, 'existente'], [5, 'existente'], [12, 'bajo_solicitud']]],
-        ['id' => 4, 'reclutador_id' => 6, 'empresa_id' => 3, 'titulo' => 'Auxiliar contable', 'categoria_id' => 2, 'modalidad_id' => 2, 'estado' => 'publicada', 'publicada_en' => $hace(1),
-            'habilidades' => [7, 8, 6], 'ajustes' => [[13, 'existente'], [7, 'existente'], [10, 'existente']]],
-        ['id' => 5, 'reclutador_id' => 6, 'empresa_id' => 3, 'titulo' => 'Ejecutivo de atención telefónica', 'categoria_id' => 3, 'modalidad_id' => 1, 'estado' => 'publicada', 'publicada_en' => $hace(8),
-            'habilidades' => [9, 10, 11], 'ajustes' => []],
-        ['id' => 6, 'reclutador_id' => 2, 'empresa_id' => 1, 'titulo' => 'Desarrollador web junior', 'categoria_id' => 1, 'modalidad_id' => 2, 'estado' => 'publicada', 'publicada_en' => $hace(3),
-            'habilidades' => [2, 3, 1], 'ajustes' => [[4, 'existente'], [9, 'existente'], [12, 'existente'], [6, 'bajo_solicitud']]],
-        ['id' => 7, 'reclutador_id' => 2, 'empresa_id' => 1, 'titulo' => 'Diseñador gráfico', 'categoria_id' => 4, 'modalidad_id' => 3, 'estado' => 'borrador', 'publicada_en' => null,
-            'habilidades' => [12, 13], 'ajustes' => []],
-        ['id' => 8, 'reclutador_id' => 7, 'empresa_id' => 4, 'titulo' => 'Ilustrador digital', 'categoria_id' => 4, 'modalidad_id' => 2, 'estado' => 'borrador', 'publicada_en' => null,
-            'habilidades' => [12], 'ajustes' => []],
-
-        // Solo en el mock.
-        ['id' => 101, 'reclutador_id' => 2, 'empresa_id' => 1, 'titulo' => 'Community manager', 'categoria_id' => 4, 'modalidad_id' => 2, 'estado' => 'publicada', 'publicada_en' => $hace(12),
-            'habilidades' => [12, 13, 11], 'ajustes' => [[13, 'existente'], [7, 'existente'], [12, 'bajo_solicitud']]],
-        ['id' => 102, 'reclutador_id' => 6, 'empresa_id' => 3, 'titulo' => 'Asesor de atención presencial', 'categoria_id' => 3, 'modalidad_id' => 1, 'estado' => 'publicada', 'publicada_en' => $hace(20),
-            'habilidades' => [9, 10], 'ajustes' => [[1, 'existente'], [3, 'existente'], [11, 'bajo_solicitud']]],
-    ],
+    'vacantes' => [...$vacantesBase, ...$vacantesRelleno],
 
     // `historial` imita historial_postulacion: cada cambio de estado con su fecha. Las contrataciones
     // del periodo son las postulaciones cuyo historial pasa a «aceptada» dentro de él.
@@ -288,6 +358,9 @@ return [
     'reportes' => [
         ['id' => 1, 'reportante_id' => 4, 'vacante_id' => 5, 'candidato_id' => null, 'estado' => 'abierto', 'creado_en' => $hace(3)],
         ['id' => 101, 'reportante_id' => 3, 'vacante_id' => 2, 'candidato_id' => null, 'estado' => 'en_revision', 'creado_en' => $hace(10)],
+        ['id' => 102, 'reportante_id' => 4, 'vacante_id' => 1, 'candidato_id' => null, 'estado' => 'abierto', 'creado_en' => $hace(2)],
+        ['id' => 103, 'reportante_id' => 101, 'vacante_id' => 5, 'candidato_id' => null, 'estado' => 'abierto', 'creado_en' => $hace(1)],
+        ['id' => 104, 'reportante_id' => 102, 'vacante_id' => 203, 'candidato_id' => null, 'estado' => 'resuelto', 'creado_en' => $hace(25)],
     ],
 
 ];

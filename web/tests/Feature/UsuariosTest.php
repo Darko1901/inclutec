@@ -393,7 +393,7 @@ class UsuariosTest extends TestCase
 
         $this->assertStringContainsString('TecnoQro', $html);
         $this->assertStringContainsString('Coordinadora de Recursos Humanos', $html);
-        $this->assertMatchesRegularExpression('/<dt>Vacantes<\/dt><dd class="detalle-cifra">4<\/dd>/', $html);
+        $this->assertMatchesRegularExpression('/<dt>Vacantes<\/dt><dd class="detalle-cifra">10<\/dd>/', $html);
         $this->assertStringNotContainsString('<dt>Postulaciones</dt>', $html);
     }
 

@@ -154,11 +154,39 @@ interface ApiAdmin
      */
     public function cambiarEstadoEmpresa(int $id, string $estado, ?string $motivo = null): array;
 
+    // --- Administración: vacantes ---
+
+    /**
+     * GET /admin/vacantes. Devuelve PaginaVacantesAdmin (VacanteAdmin: título, empresa, categoría,
+     * modalidad, estado, fecha de publicación, postulados y reportes abiertos). `q` busca en el título y
+     * `conReportes` deja solo las vacantes con reportes abiertos.
+     *
+     * @return array{items: list<array<string, mixed>>, total: int, page: int, size: int}
+     */
+    public function vacantes(?string $q = null, ?int $empresaId = null, ?string $estado = null, ?int $categoriaId = null, ?int $modalidadId = null, bool $conReportes = false, int $page = 1, int $size = 25): array;
+
+    /**
+     * GET /vacantes/{id}. Devuelve el VacanteDetalle (para el administrador, con `postulados`). Lanza 404
+     * `no_encontrado`.
+     *
+     * @return array<string, mixed>
+     */
+    public function vacante(int $id): array;
+
+    /**
+     * PATCH /admin/vacantes/{id}/estado. `estado` es `suspendida` (motivo obligatorio) o `publicada` para
+     * reactivar. Devuelve el VacanteDetalle. Lanza 409 `transicion_invalida` (solo se suspende una publicada
+     * o pausada y solo se reactiva una suspendida) y 422 `validacion`.
+     *
+     * @return array<string, mixed>
+     */
+    public function moderarVacante(int $id, string $estado, ?string $motivo = null): array;
+
     // --- Catálogos y archivos ---
 
     /**
      * GET /catalogos/{tipo}: arreglo de CatalogoItem ordenado por nombre. Tipos que usa el panel:
-     * `sectores`, `tamanos-empresa`, `entidades` y `municipios` (con `entidad_id` opcional).
+     * `sectores`, `tamanos-empresa`, `entidades`, `municipios` (con `entidad_id` opcional), `categorias` y `modalidades`.
      *
      * @return list<array<string, mixed>>
      */

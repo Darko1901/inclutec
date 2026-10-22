@@ -7,6 +7,7 @@ use App\Servicios\Api\Mock\CalculadoraEstadisticas;
 use App\Servicios\Api\Mock\ExportadorEstadisticas;
 use App\Servicios\Api\Mock\GestionEmpresas;
 use App\Servicios\Api\Mock\GestionUsuarios;
+use App\Servicios\Api\Mock\GestionVacantes;
 use Carbon\CarbonImmutable;
 
 /**
@@ -272,6 +273,35 @@ class ApiMock implements ApiAdmin
         });
     }
 
+    public function vacantes(?string $q = null, ?int $empresaId = null, ?string $estado = null, ?int $categoriaId = null, ?int $modalidadId = null, bool $conReportes = false, int $page = 1, int $size = 25): array
+    {
+        $this->simularLatencia();
+        $datos = Almacen::leer();
+        $this->exigirAdministrador($datos);
+
+        return GestionVacantes::listar($datos, $q, $empresaId, $estado, $categoriaId, $modalidadId, $conReportes, $page, $size);
+    }
+
+    public function vacante(int $id): array
+    {
+        $this->simularLatencia();
+        $datos = Almacen::leer();
+        $this->exigirAdministrador($datos);
+
+        return GestionVacantes::detalle($datos, $id);
+    }
+
+    public function moderarVacante(int $id, string $estado, ?string $motivo = null): array
+    {
+        $this->simularLatencia();
+
+        return Almacen::modificar(function (array &$datos) use ($id, $estado, $motivo) {
+            $this->exigirAdministrador($datos);
+
+            return GestionVacantes::moderar($datos, $id, $estado, $motivo);
+        });
+    }
+
     public function catalogo(string $tipo, ?int $entidadId = null): array
     {
         $this->simularLatencia();
@@ -280,6 +310,8 @@ class ApiMock implements ApiAdmin
         $items = match ($tipo) {
             'sectores' => array_map(fn (int $id, string $nombre) => ['id' => $id, 'nombre' => $nombre], array_keys($c['sectores']), $c['sectores']),
             'tamanos-empresa' => array_map(fn (int $id, array $t) => ['id' => $id, 'nombre' => $t[0], 'rango' => $t[1]], array_keys($c['tamanos']), $c['tamanos']),
+            'categorias' => array_map(fn (int $id, string $nombre) => ['id' => $id, 'nombre' => $nombre], array_keys($c['categorias']), $c['categorias']),
+            'modalidades' => array_map(fn (int $id, string $nombre) => ['id' => $id, 'nombre' => $nombre], array_keys($c['modalidades']), $c['modalidades']),
             'entidades' => array_map(fn (int $id, string $nombre) => ['id' => $id, 'nombre' => $nombre], array_keys($c['entidades']), $c['entidades']),
             'municipios' => array_map(
                 fn (int $id, array $m) => ['id' => $id, 'nombre' => $m[0], 'entidad_federativa_id' => $m[1]],
