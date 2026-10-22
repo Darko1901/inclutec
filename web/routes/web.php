@@ -21,6 +21,12 @@ Route::middleware('admin')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/exportar', [DashboardController::class, 'exportar'])->name('dashboard.exportar');
     Route::get('/usuarios', [UsuarioController::class, 'index'])->name('usuarios');
+    Route::get('/usuarios/nuevo', [UsuarioController::class, 'create'])->name('usuarios.crear');
+    Route::post('/usuarios', [UsuarioController::class, 'store'])->name('usuarios.guardar');
+    Route::get('/usuarios/{id}', [UsuarioController::class, 'show'])->whereNumber('id')->name('usuarios.ver');
+    Route::get('/usuarios/{id}/editar', [UsuarioController::class, 'edit'])->whereNumber('id')->name('usuarios.editar');
+    Route::put('/usuarios/{id}', [UsuarioController::class, 'update'])->whereNumber('id')->name('usuarios.actualizar');
+    Route::patch('/usuarios/{id}/estado', [UsuarioController::class, 'estado'])->whereNumber('id')->name('usuarios.estado');
     Route::get('/empresas', [EmpresaController::class, 'index'])->name('empresas');
     Route::get('/vacantes', [VacanteController::class, 'index'])->name('vacantes');
     Route::get('/habilidades', [HabilidadController::class, 'index'])->name('habilidades');
