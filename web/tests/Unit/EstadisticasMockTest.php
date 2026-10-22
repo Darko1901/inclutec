@@ -82,8 +82,8 @@ class EstadisticasMockTest extends TestCase
         foreach ([['2026-10-14', '2026-10-21'], ['2026-07-23', '2026-10-21']] as [$desde, $hasta]) {
             $i = $mock->estadisticas($desde, $hasta)['indicadores'];
 
-            // 8 candidatos activos (la cuenta suspendida no cuenta), 3 empresas validadas y 8 vacantes publicadas.
-            $this->assertSame([8, 3, 8], [$i['candidatos_activos'], $i['empresas_validadas'], $i['vacantes_publicadas']]);
+            // 37 candidatos activos (las cuentas suspendidas o dadas de baja no cuentan), 3 empresas validadas y 8 vacantes publicadas.
+            $this->assertSame([37, 3, 8], [$i['candidatos_activos'], $i['empresas_validadas'], $i['vacantes_publicadas']]);
         }
         $this->assertSame(['empresas_por_validar' => 1, 'reportes_abiertos' => 1], $mock->estadisticas()['pendientes']);
     }

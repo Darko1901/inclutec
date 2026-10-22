@@ -59,6 +59,38 @@ class ApiHttp implements ApiAdmin
         ];
     }
 
+    public function usuarios(?string $q = null, ?string $rol = null, ?string $estado = null, int $page = 1, int $size = 25): array
+    {
+        $consulta = array_filter(['q' => $q, 'rol' => $rol, 'estado' => $estado], fn (?string $valor) => $valor !== null && $valor !== '');
+
+        return $this->enviar('get', '/admin/usuarios', $consulta + ['page' => $page, 'size' => $size])->json();
+    }
+
+    public function usuario(int $id): array
+    {
+        return $this->enviar('get', "/admin/usuarios/{$id}")->json();
+    }
+
+    public function crearUsuario(array $datos): array
+    {
+        return $this->enviar('post', '/admin/usuarios', $datos)->json();
+    }
+
+    public function editarUsuario(int $id, array $datos): array
+    {
+        return $this->enviar('put', "/admin/usuarios/{$id}", $datos)->json();
+    }
+
+    public function cambiarEstadoUsuario(int $id, string $estado, ?string $motivo = null): array
+    {
+        return $this->enviar('patch', "/admin/usuarios/{$id}/estado", ['estado' => $estado, 'motivo' => $motivo])->json();
+    }
+
+    public function listarEmpresas(int $page = 1, int $size = 25): array
+    {
+        return $this->enviar('get', '/admin/empresas', ['page' => $page, 'size' => $size])->json();
+    }
+
     /**
      * @return array<string, string>
      */
