@@ -250,7 +250,7 @@ class ComponentesBladeTest extends TestCase
     {
         $css = file_get_contents(resource_path('css/admin.css'));
 
-        $this->assertMatchesRegularExpression('/\.btn, \.form-control, \.export-btn \{[^}]*min-height: 44px/s', $css);
+        $this->assertMatchesRegularExpression('/\.btn, \.form-control \{[^}]*min-height: 44px/s', $css);
         $this->assertMatchesRegularExpression('/\.btn-texto \{[^}]*min-height: 44px/s', $css);
     }
 
