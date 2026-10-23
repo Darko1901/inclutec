@@ -155,6 +155,83 @@ class ApiHttp implements ApiAdmin
         return $this->enviar('patch', "/admin/reportes/{$id}", ['estado' => $estado, 'comentario' => $comentario, 'resolucion' => $resolucion, 'accion' => $accion])->json();
     }
 
+    public function categorias(?string $q = null): array
+    {
+        return $this->enviar('get', '/admin/categorias', $q === null || $q === '' ? [] : ['q' => $q])->json();
+    }
+
+    public function crearCategoria(array $datos): array
+    {
+        return $this->enviar('post', '/admin/categorias', $datos)->json();
+    }
+
+    public function editarCategoria(int $id, array $datos): array
+    {
+        return $this->enviar('put', "/admin/categorias/{$id}", $datos)->json();
+    }
+
+    public function activarCategoria(int $id, bool $activo): array
+    {
+        return $this->enviar('patch', "/admin/categorias/{$id}", ['activo' => $activo])->json();
+    }
+
+    public function eliminarCategoria(int $id): void
+    {
+        $this->enviar('delete', "/admin/categorias/{$id}");
+    }
+
+    public function habilidades(?string $q = null, ?int $categoriaId = null, int $page = 1, int $size = 25): array
+    {
+        $consulta = array_filter(['q' => $q, 'categoria_id' => $categoriaId], fn ($valor) => $valor !== null && $valor !== '');
+
+        return $this->enviar('get', '/admin/habilidades', $consulta + ['page' => $page, 'size' => $size])->json();
+    }
+
+    public function crearHabilidad(array $datos): array
+    {
+        return $this->enviar('post', '/admin/habilidades', $datos)->json();
+    }
+
+    public function editarHabilidad(int $id, array $datos): array
+    {
+        return $this->enviar('put', "/admin/habilidades/{$id}", $datos)->json();
+    }
+
+    public function activarHabilidad(int $id, bool $activo): array
+    {
+        return $this->enviar('patch', "/admin/habilidades/{$id}", ['activo' => $activo])->json();
+    }
+
+    public function eliminarHabilidad(int $id): void
+    {
+        $this->enviar('delete', "/admin/habilidades/{$id}");
+    }
+
+    public function catalogoAdmin(string $tipo): array
+    {
+        return $this->enviar('get', "/admin/catalogos/{$tipo}")->json();
+    }
+
+    public function crearElementoCatalogo(string $tipo, array $datos): array
+    {
+        return $this->enviar('post', "/admin/catalogos/{$tipo}", $datos)->json();
+    }
+
+    public function editarElementoCatalogo(string $tipo, int $id, array $datos): array
+    {
+        return $this->enviar('put', "/admin/catalogos/{$tipo}/{$id}", $datos)->json();
+    }
+
+    public function activarElementoCatalogo(string $tipo, int $id, bool $activo): array
+    {
+        return $this->enviar('patch', "/admin/catalogos/{$tipo}/{$id}", ['activo' => $activo])->json();
+    }
+
+    public function eliminarElementoCatalogo(string $tipo, int $id): void
+    {
+        $this->enviar('delete', "/admin/catalogos/{$tipo}/{$id}");
+    }
+
     public function catalogo(string $tipo, ?int $entidadId = null): array
     {
         return $this->enviar('get', "/catalogos/{$tipo}", $entidadId === null ? [] : ['entidad_id' => $entidadId])->json();
