@@ -42,6 +42,9 @@ Route::middleware('admin')->group(function () {
     Route::get('/habilidades', [HabilidadController::class, 'index'])->name('habilidades');
     Route::get('/catalogos', [CatalogoController::class, 'index'])->name('catalogos');
     Route::get('/reportes', [ReporteController::class, 'index'])->name('reportes');
+    Route::get('/reportes/{id}', [ReporteController::class, 'show'])->whereNumber('id')->name('reportes.ver');
+    Route::patch('/reportes/{id}', [ReporteController::class, 'seguimiento'])->whereNumber('id')->name('reportes.seguimiento');
+    Route::patch('/reportes/{id}/suspension', [ReporteController::class, 'suspension'])->whereNumber('id')->name('reportes.suspension');
     Route::get('/perfil', [PerfilController::class, 'index'])->name('perfil');
     Route::put('/perfil', [PerfilController::class, 'actualizar'])->name('perfil.actualizar');
 

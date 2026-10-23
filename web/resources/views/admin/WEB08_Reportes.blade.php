@@ -1,33 +1,56 @@
 @extends('layouts.admin_layout')
 @section('titulo', 'Reportes')
 @section('content')
-<div x-data="{ 
-    reports: [
-        { id: '#REP-001', user: 'Juan Pérez', subject: 'Discriminación en entrevista', date: '08/10/2026', status: 'Abierto' },
-        { id: '#REP-002', user: 'María López', subject: 'Vacante engañosa o fraudulenta', date: '08/10/2026', status: 'Abierto' }
-    ],
-    resolve(report) {
-        report.status = 'Resuelto';
-        $dispatch('notify', {msg: report.id + ' marcado como Resuelto', type: 'success'});
-    }
-}">
-    <h1>Moderación de Reportes</h1>
-    <p style="color:#6B7280; margin-bottom:2rem;">Atiende los reportes de discriminación o mal comportamiento en la plataforma.</p>
-    <div class="table-wrapper">
-        <table>
-            <thead><tr><th>Reporte ID</th><th>Usuario</th><th>Motivo</th><th>Fecha</th><th>Estado</th><th>Acciones</th></tr></thead>
-            <tbody>
-                <template x-for="t in reports" :key="t.id">
-                    <tr x-transition>
-                        <td><strong style="color:var(--primary);" x-text="t.id"></strong></td><td x-text="t.user"></td><td x-text="t.subject"></td><td x-text="t.date"></td>
-                        <td><span class="badge" :class="{'badge-pending': t.status === 'Abierto', 'badge-active': t.status === 'Resuelto'}" x-text="t.status"></span></td>
-                        <td>
-                            <button x-show="t.status === 'Abierto'" class="btn btn-success" style="padding: 0.4rem 0.8rem;" @click="resolve(t)">Marcar Resuelto</button>
-                        </td>
-                    </tr>
-                </template>
-            </tbody>
-        </table>
-    </div>
-</div>
+@php
+    use App\Support\Fechas;
+    use App\Support\Reportes;
+@endphp
+
+<x-encabezado-pagina titulo="Reportes" descripcion="Reportes de vacantes, empresas y candidatos. Revísalos, da seguimiento y ciérralos con una resolución." />
+
+{{-- Pestañas por estado: enlaces con aria-current en la actual y el número de reportes de cada una. --}}
+<nav class="pestanas" aria-label="Estado de los reportes">
+    <ul class="pestanas-lista">
+        @foreach (Reportes::PESTANAS as $valor => $nombre)
+            <li>
+                <a href="{{ route('reportes', ['estado' => $valor] + $filtrosPestana) }}" class="pestana"
+                   @if ($valor === $estadoActual) aria-current="page" @endif>
+                    {{ $nombre }} <span class="pestana-total">({{ number_format($totales[$valor]) }})</span>
+                </a>
+            </li>
+        @endforeach
+    </ul>
+</nav>
+
+<x-filtros etiqueta="Filtrar reportes" :accion="route('reportes', ['estado' => $estadoActual])" :total="$pagina['total']"
+           :selects="[
+               ['nombre' => 'tipo', 'etiqueta' => 'Tipo', 'opciones' => Reportes::TIPOS, 'todas' => 'Todos los tipos'],
+               ['nombre' => 'motivo_reporte_id', 'etiqueta' => 'Motivo', 'opciones' => $opcionesMotivo, 'todas' => 'Todos los motivos'],
+               ['nombre' => 'orden', 'etiqueta' => 'Orden', 'opciones' => Reportes::ORDENES, 'todas' => null],
+           ]">
+    <input type="hidden" name="estado" value="{{ $estadoActual }}">
+</x-filtros>
+
+<x-tabla :caption="'Reportes: '.Reportes::PESTANAS[$estadoActual]" class="tabla-compacta"
+         :columnas="['Folio', 'Tipo', 'Elemento reportado', 'Motivo', 'Quién reporta', 'Fecha', 'Estado', 'Acciones']"
+         mensajeVacio="No hay reportes con esos filtros en esta pestaña.">
+    @foreach ($pagina['items'] as $reporte)
+        <tr>
+            <td class="celda-nombre">#{{ $reporte['id'] }}</td>
+            <td>{{ Reportes::TIPOS[$reporte['tipo']] }}</td>
+            <td>{{ $reporte['objeto']['nombre'] }}</td>
+            <td>{{ $reporte['motivo']['nombre'] }}</td>
+            <td>{{ $reporte['reportante']['nombre'] }} {{ $reporte['reportante']['apellidos'] }}</td>
+            <td>{{ Fechas::dia($reporte['creado_en']) }}</td>
+            <td><x-insignia-estado entidad="reporte" :valor="$reporte['estado']" /></td>
+            <td>
+                <div class="acciones-fila">
+                    <x-boton variante="texto" :href="route('reportes.ver', $reporte['id'])">{{ in_array($reporte['estado'], ['abierto', 'en_revision'], true) ? 'Revisar' : 'Ver' }}<span class="visually-hidden"> el reporte {{ $reporte['id'] }}</span></x-boton>
+                </div>
+            </td>
+        </tr>
+    @endforeach
+</x-tabla>
+
+<x-paginacion :total="$pagina['total']" :page="$pagina['page']" :size="$pagina['size']" />
 @endsection
