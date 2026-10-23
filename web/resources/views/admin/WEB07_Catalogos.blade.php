@@ -16,12 +16,12 @@
         </ul>
     </nav>
 
-    <section class="catalogos-contenido" aria-labelledby="catalogo-actual">
-        <h2 id="catalogo-actual" class="catalogo-titulo">{{ Catalogos::TIPOS[$tipo] }}</h2>
+    <div class="catalogos-contenido">
+        <h2 class="catalogo-titulo">{{ Catalogos::TIPOS[$tipo] }}</h2>
         @if ($tipo === 'ajustes')
             <p class="texto-suave catalogo-nota">Cada ajuste se describe en lenguaje claro y se agrupa por categoría.</p>
         @endif
         <x-catalogo :clave="$tipo" :filas="$filas" :grupos="$grupos" />
-    </section>
+    </div>
 </div>
 @endsection
