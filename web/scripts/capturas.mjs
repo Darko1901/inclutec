@@ -4,7 +4,7 @@ import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { abrir, abrirNavegador, contextoConSesion, iniciarPanel, RAIZ } from './lib/panel.mjs';
 
-const DESTINO = join(RAIZ, 'docs', 'capturas', 'web');
+const DESTINO = join(RAIZ, '..', 'docs', 'capturas', 'web');
 const solo = (process.env.SOLO || '').toLowerCase();
 const VISTA = { ancho: 1440, alto: 900 };
 
