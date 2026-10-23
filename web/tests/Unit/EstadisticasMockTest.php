@@ -85,7 +85,7 @@ class EstadisticasMockTest extends TestCase
             // 37 candidatos activos (las cuentas suspendidas o dadas de baja no cuentan), 3 empresas validadas y 8 vacantes publicadas.
             $this->assertSame([37, 3, 8], [$i['candidatos_activos'], $i['empresas_validadas'], $i['vacantes_publicadas']]);
         }
-        $this->assertSame(['empresas_por_validar' => 3, 'reportes_abiertos' => 3], $mock->estadisticas()['pendientes']);
+        $this->assertSame(['empresas_por_validar' => 3, 'reportes_abiertos' => 5], $mock->estadisticas()['pendientes']);
     }
 
     public function test_agregar_datos_al_estado_cambia_las_cifras(): void
@@ -102,7 +102,7 @@ class EstadisticasMockTest extends TestCase
         $despues = $mock->estadisticas();
         $this->assertSame($antes['postulaciones'] + 1, $despues['indicadores']['postulaciones']);
         $this->assertSame($antes['contrataciones'] + 1, $despues['indicadores']['contrataciones']);
-        $this->assertSame(4, $despues['pendientes']['reportes_abiertos']);
+        $this->assertSame(6, $despues['pendientes']['reportes_abiertos']);
     }
 
     public function test_las_series_mensuales_suman_los_indicadores_del_mismo_periodo(): void

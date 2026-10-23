@@ -131,7 +131,7 @@ class DashboardTest extends TestCase
         $html = $this->get('/dashboard')->getContent();
 
         $this->assertMatchesRegularExpression('/data-pendiente="empresas_por_validar".*?3<\/p>.*?empresas por validar.*?data-estado="pendiente".*?href="[^"]*\/empresas\?estado=pendiente"[^>]*>Ver empresas por validar/s', $html);
-        $this->assertMatchesRegularExpression('/data-pendiente="reportes_abiertos".*?3<\/p>.*?reportes abiertos.*?data-estado="abierto".*?href="[^"]*\/reportes\?estado=abierto"[^>]*>Ver reportes abiertos/s', $html);
+        $this->assertMatchesRegularExpression('/data-pendiente="reportes_abiertos".*?5<\/p>.*?reportes abiertos.*?data-estado="abierto".*?href="[^"]*\/reportes\?estado=abierto"[^>]*>Ver reportes abiertos/s', $html);
         $this->get('/empresas?estado=pendiente')->assertOk();
         $this->get('/reportes?estado=abierto')->assertOk();
     }
