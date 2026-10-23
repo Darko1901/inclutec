@@ -2,7 +2,7 @@
 
 Panel web en Laravel (Blade) para el administrador de IncluTec. **No tiene base de datos:** todo pasa por el API REST (`api/`), con JSON y un token JWT. El panel guarda ese token en la **sesión del servidor** y nunca lo manda al navegador.
 
-Pantallas: WEB-01 inicio de sesión, «Cambiar contraseña» WEB-02 dashboard y estadísticas y WEB-03 usuarios, WEB-04 empresas, WEB-05 vacantes y WEB-08 reportes (listas, conectadas a `ApiAdmin`) y WEB-06 y WEB-07 (maquetadas con datos fijos dentro del layout nuevo; se conectan al API en las siguientes tareas). Qué hace cada una: `docs/diseno/pantallas.md` y `docs/diseno/requerimientos.md`.
+Pantallas: WEB-01 inicio de sesión, «Cambiar contraseña» WEB-02 dashboard y estadísticas y WEB-03 usuarios, WEB-04 empresas, WEB-05 vacantes, WEB-06 categorías y habilidades, WEB-07 catálogos y WEB-08 reportes (listas, conectadas a `ApiAdmin`) (maquetadas con datos fijos dentro del layout nuevo; se conectan al API en las siguientes tareas). Qué hace cada una: `docs/diseno/pantallas.md` y `docs/diseno/requerimientos.md`.
 
 ## Requisitos
 
@@ -103,12 +103,14 @@ app/
     Mock/GestionEmpresas.php           cola de validación, alta, edición, validar o rechazar y suspender o reactivar empresas
     Mock/GestionVacantes.php           listado con filtros, detalle y suspender o reactivar vacantes (409 transicion_invalida)
     Mock/GestionReportes.php           bandeja, detalle con historial y reportes previos, y seguimiento con las transiciones del contrato
+    Mock/GestionCatalogos.php          categorías, habilidades y ocho catálogos: nombre único, `en_uso` y eliminar solo sin uso
   Support/
     PeriodoEstadisticas.php, PresentadorEstadisticas.php   periodo de la URL y datos que pinta el dashboard
     AccionesUsuario.php, Roles.php, Fechas.php             textos de las acciones de estado, roles y fechas en hora de la Ciudad de México
     Empresas.php                                           pestañas, acciones de estado y formato del RFC de WEB-04
     AccionesVacante.php                                    acciones de moderación y textos de accesibilidad, experiencia y salario de WEB-05
     Reportes.php                                           pestañas, tipos, acciones de seguimiento y elemento reportado de WEB-08
+    Catalogos.php                                          definición de los diez catálogos de WEB-06 y WEB-07 (campos, textos y filas)
     Estados.php         mapa único de estados: valor de BD → texto, ícono y variante (tabla 3.4)
     Iconos.php          íconos SVG de contorno
 bootstrap/app.php       alias del middleware y manejo de ApiError (401 y 423 cierran sesión)
@@ -156,6 +158,12 @@ La constancia no se enlaza directo al API: `/empresas/{id}/constancia` la descar
 
 `/reportes` es la bandeja: pestañas por estado (Abiertos por omisión, con el número de cada una), filtros por tipo y motivo, orden por antigüedad (`?estado=`, `?tipo=`, `?motivo_reporte_id=`, `?orden=antiguos|recientes`) y paginación de 25. `/reportes/{id}` muestra el reporte, el elemento reportado con su estado actual y enlace a su pantalla (vacante, empresa o usuario), los reportes anteriores contra el mismo elemento y el historial. El seguimiento sigue la tabla del contrato: abierto → «Tomar en revisión» o «Descartar»; en revisión → «Resolver» o «Descartar»; cerrar exige la resolución (y, al resolver, la acción tomada: ninguna o suspensión). La suspensión del elemento usa el endpoint de su tipo (`moderarVacante`, `cambiarEstadoEmpresa` o `cambiarEstadoUsuario`) desde `PATCH /reportes/{id}/suspension`, mientras el reporte siga abierto. El mock trae 39 reportes de los tres tipos (los 31 resueltos llenan dos páginas); `<x-confirmacion>` ahora acepta `campoMotivo`, `maximoMotivo` y `mensajeVacio` para pedir la resolución.
 
+## Categorías, habilidades y catálogos (WEB-06 y WEB-07)
+
+Las dos pantallas usan **un solo componente**, `<x-catalogo>`, armado con la definición de `App\Support\Catalogos`: cada catálogo (`categorias`, `habilidades` y los ocho tipos de `/admin/catalogos/{tipo}`) declara sus campos (los de `CatalogoEntrada`), sus columnas y sus textos. Para agregar un campo o un catálogo se toca esa clase, no las vistas. `/habilidades?seccion=categorias|habilidades` (con `q`, `categoria_id` y `page`) es WEB-06; `/catalogos?tipo=ajustes|modalidades|jornadas|tipos-contrato|niveles-educativos|sectores|tamanos-empresa|motivos-reporte` es WEB-07, con los ajustes agrupados por categoría. Alta, edición, activar o desactivar y eliminar van por `/catalogo/{clave}` (un solo controlador para los diez). Desactivar siempre se puede; eliminar un registro en uso responde `409 en_uso` y la pantalla lo explica y ofrece «Desactivar». No hay catálogos de tipos de discapacidad ni de niveles de soporte: el proyecto registra necesidades de ajuste, nunca diagnósticos.
+
+En el mock, `catalogos_admin` guarda los registros con `activo` y sus campos propios, y cada cambio reconstruye `catalogos` (lo que leen vacantes, empresas, reportes y estadísticas); `GET /catalogos/{tipo}` solo ofrece los activos, así que lo desactivado deja de aparecer en los formularios nuevos. Corre `inclutec:mock-reiniciar` si ya tenías un `mock-api.json`.
+
 ## Dependencias y auditoría
 
 `npm audit` en `web/` reporta **0 vulnerabilidades** (el JavaScript del panel solo usa Vite, `laravel-vite-plugin`, Alpine.js y la fuente Inter), así que no hay `overrides` ni excepciones. Corre `npm audit` cuando cambies dependencias. Si aparece algo, corrígelo con `npm audit fix` y nunca con `npm audit fix --force`: puede saltar de versión mayor (por ejemplo, de Vite) y romper el build. Después de tocar dependencias, `npm run build` y `php artisan test` deben seguir en verde.
@@ -192,6 +200,7 @@ Con `APP_ENV=local`, **http://localhost:8001/componentes** muestra todos los com
 | `<x-empresa-botones :empresa>` / `<x-empresa-confirmaciones :empresa>` | Botones de estado de una empresa (Validar, Rechazar, Suspender, Reactivar) y sus `<x-confirmacion>` |
 | `<x-vacante-botones :vacante>` / `<x-vacante-confirmaciones :vacante>` | Botones de moderación de una vacante (Suspender, Reactivar) y sus `<x-confirmacion>` |
 | `<x-reporte-botones :reporte :elemento>` / `<x-reporte-confirmaciones :reporte :elemento>` | Seguimiento de un reporte (Tomar en revisión, Resolver, Descartar) y suspensión del elemento reportado, con sus `<x-confirmacion>` |
+| `<x-catalogo :clave :filas :grupos :opciones>` | Administrador de un catálogo (tabla con «En uso» y estado, alta y edición en ventana, activar o desactivar y eliminar con confirmación). Lo usan WEB-06 y WEB-07 |
 | `<x-grafica :grafica>` | Gráfica del dashboard (barras o líneas) dibujada en el servidor, con título, leyenda, valores escritos y el botón «Ver como tabla» (`<x-tabla>`) |
 | `<x-confirmacion id titulo pedirMotivo accion metodo>` | «¿Seguro que…?»; con `pedirMotivo` no deja confirmar sin motivo. Con `accion` envía un formulario; sin ella emite el evento `confirmado` |
 
