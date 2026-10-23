@@ -23,7 +23,7 @@
     @endif
     @foreach ($selects as $select)
         <x-campo :nombre="$select['nombre']" :etiqueta="$select['etiqueta']" tipo="select" :opciones="$select['opciones']"
-                 :vacio="$select['todas'] ?? 'Todos'" :valor="request($select['nombre'])" />
+                 :vacio="array_key_exists('todas', $select) ? $select['todas'] : 'Todos'" :valor="request($select['nombre'])" />
     @endforeach
     {{ $slot }}
     <div class="filtros-acciones">

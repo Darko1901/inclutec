@@ -837,3 +837,10 @@ body.dark .lista-ajustes .ajuste-bajo_solicitud svg { color: #93C5FD; }
 .aviso-sin-condiciones svg { flex-shrink: 0; margin-top: 0.1rem; }
 body.dark .aviso-sin-condiciones { background: rgba(180, 83, 9, 0.25); color: #FDE68A !important; }
 .nota-salario { display: block; color: var(--text-muted); font-size: 0.85rem; margin-top: 0.15rem; }
+
+/* =========================================
+   REPORTES (WEB-08)
+========================================= */
+.elemento-acciones { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+.cambio-estado { display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem; }
+.cambio-flecha { display: inline-flex; color: var(--text-muted); }
