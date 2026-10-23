@@ -4,7 +4,10 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "verificar:axe": "node scripts/accesibilidad-axe.mjs",
+        "verificar:manual": "node scripts/accesibilidad-manual.mjs",
+        "capturas": "node scripts/capturas.mjs"
     },
     "devDependencies": {
         "axe-core": "^4.14.0",
