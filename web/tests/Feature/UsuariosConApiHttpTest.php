@@ -179,7 +179,7 @@ class UsuariosConApiHttpTest extends TestCase
     public function test_404_del_api_muestra_la_pantalla_de_error(): void
     {
         $this->conAdministrador(['*/admin/usuarios/99' => Http::response($this->error('no_encontrado', 'El recurso no existe o no es visible para este usuario.'), 404)])
-            ->get('/usuarios/99')->assertStatus(404)->assertSee('No se pudo completar la acción')->assertSee('El recurso no existe o no es visible para este usuario.');
+            ->get('/usuarios/99')->assertStatus(404)->assertSee('Página no encontrada')->assertSee('El recurso no existe o no es visible para este usuario.');
     }
 
     public function test_401_del_api_cierra_la_sesion_y_regresa_al_login(): void

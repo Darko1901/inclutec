@@ -27,7 +27,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('titulo', 'Panel') · IncluTec</title>
+    <title>@yield('titulo', 'Panel') · IncluTec Admin</title>
     <link rel="icon" href="/img/icon.png">
     @vite(['resources/css/admin.css', 'resources/js/app.js'])
 </head>

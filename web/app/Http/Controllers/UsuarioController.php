@@ -174,7 +174,8 @@ class UsuarioController extends Controller
             default => throw $error,
         };
 
-        return back()->withErrors($campos)->withInput();
+        // La contraseña nunca se devuelve a la sesión.
+        return back()->withErrors($campos)->withInput(request()->except('contrasena'));
     }
 
     /** Vuelve a abrir la confirmación que se envió, para que el error se vea donde se escribió el motivo. */

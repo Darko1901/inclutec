@@ -561,7 +561,7 @@ class ApiMock implements ApiAdmin
         $carga = $this->leerToken(session(ApiHttp::SESION_TOKEN));
         $cuenta = $carga === null ? null : $this->buscarPorId($estado, (int) $carga['sub']);
         if ($cuenta === null) {
-            throw new ApiError(401, 'no_autenticado', 'Tu sesión expiró. Inicia sesión de nuevo.');
+            throw new ApiError(401, 'no_autenticado', 'Tu sesión expiró. Vuelve a iniciar sesión.');
         }
         if ($cuenta['usuario']['estado'] !== 'activo') {
             throw new ApiError(423, 'cuenta_suspendida', 'Tu cuenta está suspendida.');
