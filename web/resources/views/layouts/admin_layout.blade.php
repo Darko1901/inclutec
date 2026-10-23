@@ -81,7 +81,7 @@
                         <button type="button" class="menu-usuario-boton" x-ref="boton" @click="abierto = !abierto"
                                 aria-expanded="false" :aria-expanded="abierto.toString()" aria-controls="menu-usuario">
                             <span class="avatar-iniciales" aria-hidden="true">{{ $iniciales }}</span>
-                            <span>{{ $nombreAdmin }}</span>
+                            <span class="menu-usuario-nombre">{{ $nombreAdmin }}</span>
                             <span class="visually-hidden">Menú de usuario</span>
                             {!! Iconos::svg('chevron-abajo', 16) !!}
                         </button>
