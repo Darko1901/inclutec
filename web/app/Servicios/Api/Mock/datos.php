@@ -319,6 +319,23 @@ $catalogosAdmin = [
     'motivos-reporte' => $conActivo(array_map(fn (array $m) => $m[0], $catalogos['motivos_reporte']), array_map(fn (array $m) => ['aplica_a' => $m[1]], $catalogos['motivos_reporte'])),
 ];
 
+/*
+| Actividad de los candidatos de relleno (ids 107 a 152): 20 postulaciones más, a las vacantes de ConCentro
+| (4, 5 y 102), repartidas en los últimos 90 días. Así el dashboard no se ve vacío para los 37 candidatos
+| activos: 17 postulaciones en 30 días, 3 contrataciones y una evolución mensual creíble.
+*/
+$activosRelleno = array_values(array_map(fn (array $c) => $c['usuario']['id'], array_filter($relleno, fn (array $c) => $c['usuario']['rol'] === 'candidato' && $c['usuario']['estado'] === 'activo')));
+$postulacionesRelleno = [];
+foreach ([1, 2, 4, 5, 7, 9, 12, 15, 18, 21, 24, 27, 34, 40, 48, 55, 63, 70, 78, 85] as $k => $dias) {
+    $estadoFinal = ['postulada', 'en_revision', 'entrevista', 'no_seleccionada', 'aceptada', 'postulada'][$k % 6];
+    $pasos = ['postulada' => [['postulada', 0]], 'en_revision' => [['postulada', 0], ['en_revision', 1]], 'entrevista' => [['postulada', 0], ['en_revision', 1], ['entrevista', 3]],
+        'no_seleccionada' => [['postulada', 0], ['en_revision', 1], ['no_seleccionada', 3]], 'aceptada' => [['postulada', 0], ['en_revision', 1], ['entrevista', 3], ['aceptada', 5]]][$estadoFinal];
+    $postulacionesRelleno[] = [
+        'id' => 150 + $k, 'candidato_id' => $activosRelleno[$k], 'vacante_id' => [4, 5, 102][$k % 3], 'estado' => $estadoFinal, 'creado_en' => $hace($dias),
+        'historial' => array_map(fn (array $paso) => [$paso[0], $hace(max(0, $dias - $paso[1]))], $pasos),
+    ];
+}
+
 return [
 
     'usuarios' => [
@@ -456,6 +473,8 @@ return [
             'historial' => [['postulada', $hace(18)], ['en_revision', $hace(15)]]],
         ['id' => 112, 'candidato_id' => 4, 'vacante_id' => 1, 'estado' => 'postulada', 'creado_en' => $hace(9),
             'historial' => [['postulada', $hace(9)]]],
+
+        ...$postulacionesRelleno,
     ],
 
     'reportes' => [...$reportesBase, ...$reportesRelleno],
