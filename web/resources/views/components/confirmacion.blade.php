@@ -8,6 +8,7 @@
     'etiquetaMotivo' => 'Motivo',
     'campoMotivo' => 'motivo',
     'maximoMotivo' => 255,
+    'mensajeVacio' => 'Escribe el motivo para continuar.',
     'accion' => null,
     'metodo' => 'POST',
     'abierto' => false,
@@ -15,7 +16,7 @@
 {{-- Con `accion` envía un formulario (POST o el método indicado); sin ella avisa con el evento `confirmado` ({ id, motivo }). --}}
 <x-modal :id="$id" :titulo="$titulo" :abierto="$abierto">
     <form method="POST" action="{{ $accion }}" novalidate
-          x-data="confirmacion({ id: @js($id), pideMotivo: @js((bool) $pedirMotivo), envia: @js($accion !== null), motivo: @js((string) old($campoMotivo, '')), error: @js((string) $errors->first($campoMotivo)) })"
+          x-data="confirmacion({ id: @js($id), pideMotivo: @js((bool) $pedirMotivo), envia: @js($accion !== null), motivo: @js((string) old($campoMotivo, '')), error: @js((string) $errors->first($campoMotivo)), mensajeVacio: @js($mensajeVacio) })"
           @submit="enviar($event)">
         @if ($accion)
             @csrf

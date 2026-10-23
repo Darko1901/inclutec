@@ -297,6 +297,14 @@ class ReportesTest extends TestCase
         $this->assertStringNotContainsString('reporte-1-tomar-motivo', $this->get('/reportes/1')->getContent());
     }
 
+    public function test_la_confirmacion_de_resolver_avisa_de_la_resolucion_y_no_del_motivo(): void
+    {
+        $html = $this->get('/reportes/101')->getContent();
+
+        $this->assertStringContainsString('mensajeVacio', $html);
+        $this->assertStringContainsString('Escribe la resoluci\\u00f3n para cerrar el reporte.', $html);
+    }
+
     // --- Seguimiento ---
 
     public function test_tomar_en_revision_cambia_el_estado_y_agrega_al_historial(): void

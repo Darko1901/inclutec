@@ -7,7 +7,7 @@
     <x-confirmacion :id="$idModal" :titulo="str_replace(':folio', (string) $reporte['id'], $accion['titulo'])" :mensaje="$accion['mensaje']"
                     :textoConfirmar="$accion['confirmar']" :variante="$accion['variante']"
                     :pedirMotivo="$accion['etiquetaMotivo'] !== null" :etiquetaMotivo="$accion['etiquetaMotivo'] ?? 'Resolución'"
-                    campoMotivo="resolucion" :maximoMotivo="1000"
+                    campoMotivo="resolucion" :maximoMotivo="1000" mensajeVacio="Escribe la resolución para cerrar el reporte."
                     :accion="route('reportes.seguimiento', $reporte['id'])" metodo="PATCH"
                     :abierto="session('abrir_modal') === $idModal">
         <input type="hidden" name="estado" value="{{ $accion['estado'] }}">

@@ -60,14 +60,14 @@ Alpine.data('modal', (id, abierto = false) => ({
  * foco al campo con su mensaje de error. Sin `accion`, en lugar de enviar el formulario avisa con
  * el evento `confirmado` ({ id, motivo }).
  */
-Alpine.data('confirmacion', ({ id, pideMotivo, envia, motivo = '', error = '' }) => ({
+Alpine.data('confirmacion', ({ id, pideMotivo, envia, motivo = '', error = '', mensajeVacio = 'Escribe el motivo para continuar.' }) => ({
     motivo,
     error,
 
     enviar(evento) {
         if (pideMotivo && this.motivo.trim() === '') {
             evento.preventDefault();
-            this.error = 'Escribe el motivo para continuar.';
+            this.error = mensajeVacio;
             this.$nextTick(() => this.$refs.motivo.focus());
             return;
         }
