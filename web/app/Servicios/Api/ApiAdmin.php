@@ -182,11 +182,39 @@ interface ApiAdmin
      */
     public function moderarVacante(int $id, string $estado, ?string $motivo = null): array;
 
+    // --- Administración: reportes ---
+
+    /**
+     * GET /admin/reportes. Devuelve PaginaReportes (ReporteAdmin: folio, tipo, elemento reportado, motivo,
+     * quién reporta, estado y fecha). `orden` es `antiguos` (por omisión) o `recientes`.
+     *
+     * @return array{items: list<array<string, mixed>>, total: int, page: int, size: int}
+     */
+    public function reportes(?string $estado = null, ?string $tipo = null, ?int $motivoReporteId = null, string $orden = 'antiguos', int $page = 1, int $size = 25): array;
+
+    /**
+     * GET /admin/reportes/{id}. Devuelve ReporteAdminDetalle: el reporte, su descripción y resolución, el
+     * historial, el estado actual del elemento reportado y los reportes previos contra él. Lanza 404.
+     *
+     * @return array<string, mixed>
+     */
+    public function reporte(int $id): array;
+
+    /**
+     * PATCH /admin/reportes/{id} con un SeguimientoReporte: `estado` en_revision, resuelto o descartado;
+     * `resolucion` obligatoria al cerrar y `accion` ninguna o suspension. Devuelve el ReporteAdminDetalle.
+     * Lanza 409 `transicion_invalida` y 422 `validacion`. La suspensión del elemento se hace con
+     * `cambiarEstadoUsuario`, `cambiarEstadoEmpresa` o `moderarVacante`.
+     *
+     * @return array<string, mixed>
+     */
+    public function seguimientoReporte(int $id, string $estado, ?string $comentario = null, ?string $resolucion = null, ?string $accion = null): array;
+
     // --- Catálogos y archivos ---
 
     /**
      * GET /catalogos/{tipo}: arreglo de CatalogoItem ordenado por nombre. Tipos que usa el panel:
-     * `sectores`, `tamanos-empresa`, `entidades`, `municipios` (con `entidad_id` opcional), `categorias` y `modalidades`.
+     * `sectores`, `tamanos-empresa`, `entidades`, `municipios` (con `entidad_id` opcional), `categorias`, `modalidades` y `motivos-reporte`.
      *
      * @return list<array<string, mixed>>
      */

@@ -6,6 +6,7 @@ use App\Servicios\Api\Mock\Almacen;
 use App\Servicios\Api\Mock\CalculadoraEstadisticas;
 use App\Servicios\Api\Mock\ExportadorEstadisticas;
 use App\Servicios\Api\Mock\GestionEmpresas;
+use App\Servicios\Api\Mock\GestionReportes;
 use App\Servicios\Api\Mock\GestionUsuarios;
 use App\Servicios\Api\Mock\GestionVacantes;
 use Carbon\CarbonImmutable;
@@ -302,6 +303,35 @@ class ApiMock implements ApiAdmin
         });
     }
 
+    public function reportes(?string $estado = null, ?string $tipo = null, ?int $motivoReporteId = null, string $orden = 'antiguos', int $page = 1, int $size = 25): array
+    {
+        $this->simularLatencia();
+        $datos = Almacen::leer();
+        $this->exigirAdministrador($datos);
+
+        return GestionReportes::listar($datos, $estado, $tipo, $motivoReporteId, $orden, $page, $size);
+    }
+
+    public function reporte(int $id): array
+    {
+        $this->simularLatencia();
+        $datos = Almacen::leer();
+        $this->exigirAdministrador($datos);
+
+        return GestionReportes::detalle($datos, $id);
+    }
+
+    public function seguimientoReporte(int $id, string $estado, ?string $comentario = null, ?string $resolucion = null, ?string $accion = null): array
+    {
+        $this->simularLatencia();
+
+        return Almacen::modificar(function (array &$datos) use ($id, $estado, $comentario, $resolucion, $accion) {
+            $this->exigirAdministrador($datos);
+
+            return GestionReportes::seguimiento($datos, $id, $this->exigirSesion($datos)['id'], $estado, $comentario, $resolucion, $accion);
+        });
+    }
+
     public function catalogo(string $tipo, ?int $entidadId = null): array
     {
         $this->simularLatencia();
@@ -312,6 +342,7 @@ class ApiMock implements ApiAdmin
             'tamanos-empresa' => array_map(fn (int $id, array $t) => ['id' => $id, 'nombre' => $t[0], 'rango' => $t[1]], array_keys($c['tamanos']), $c['tamanos']),
             'categorias' => array_map(fn (int $id, string $nombre) => ['id' => $id, 'nombre' => $nombre], array_keys($c['categorias']), $c['categorias']),
             'modalidades' => array_map(fn (int $id, string $nombre) => ['id' => $id, 'nombre' => $nombre], array_keys($c['modalidades']), $c['modalidades']),
+            'motivos-reporte' => array_map(fn (int $id, array $m) => ['id' => $id, 'nombre' => $m[0], 'aplica_a' => $m[1]], array_keys($c['motivos_reporte']), $c['motivos_reporte']),
             'entidades' => array_map(fn (int $id, string $nombre) => ['id' => $id, 'nombre' => $nombre], array_keys($c['entidades']), $c['entidades']),
             'municipios' => array_map(
                 fn (int $id, array $m) => ['id' => $id, 'nombre' => $m[0], 'entidad_federativa_id' => $m[1]],

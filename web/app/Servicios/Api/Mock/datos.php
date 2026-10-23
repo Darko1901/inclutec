@@ -173,6 +173,68 @@ foreach ($titulosRelleno as $n => $titulo) {
     ];
 }
 
+/*
+| Reportes (WEB-08). Cada uno apunta a un solo elemento (`vacante_id`, `empresa_id` o `candidato_id`; el
+| candidato se identifica con su id de usuario). `historial` lleva [estado_anterior, estado_nuevo,
+| comentario, usuario_id, fecha]; el primer renglón es la creación, sin usuario. Los reportes 101 en
+| adelante y los 201 a 228 (todos resueltos, para tener más de una página) existen solo en el mock.
+| Los que ya traían una suspensión (vacante 203, empresa 105 y usuario 100) coinciden con esos elementos.
+*/
+$reporte = fn (int $id, string $tipo, int $objeto, int $reportante, int $motivo, string $descripcion, string $estado, int $dias, array $cambios = []): array => $cambios + [
+    'id' => $id, 'reportante_id' => $reportante, 'motivo_reporte_id' => $motivo,
+    'vacante_id' => $tipo === 'vacante' ? $objeto : null, 'empresa_id' => $tipo === 'empresa' ? $objeto : null, 'candidato_id' => $tipo === 'candidato' ? $objeto : null,
+    'descripcion' => $descripcion, 'estado' => $estado, 'resolucion' => null, 'accion' => null, 'atendido_por' => null, 'cerrado_en' => null,
+    'creado_en' => $hace($dias), 'historial' => [[null, 'abierto', null, null, $hace($dias)]],
+];
+
+$reportesBase = [
+    $reporte(1, 'vacante', 5, 4, 2, 'El salario publicado no coincide con lo que me dijeron por teléfono.', 'abierto', 3),
+    $reporte(102, 'vacante', 1, 4, 4, 'Me pidieron un pago para agendar la entrevista.', 'abierto', 2),
+    $reporte(103, 'vacante', 5, 101, 3, 'La vacante pide experiencia que no aparece en la descripción.', 'abierto', 1),
+    $reporte(105, 'empresa', 2, 101, 5, 'Un correo de la empresa tenía lenguaje ofensivo.', 'abierto', 6),
+    $reporte(106, 'candidato', 109, 2, 1, 'Durante la entrevista hizo comentarios discriminatorios.', 'abierto', 4),
+    $reporte(101, 'vacante', 2, 3, 2, 'La dirección de la vacante no existe.', 'en_revision', 10, [
+        'atendido_por' => 1,
+        'historial' => [[null, 'abierto', null, null, $hace(10)], ['abierto', 'en_revision', 'Se pidió información a la empresa.', 1, $hace(8)]],
+    ]),
+    $reporte(104, 'vacante', 203, 102, 4, 'Pidieron un depósito para continuar el proceso.', 'resuelto', 25, [
+        'resolucion' => 'Se confirmó la solicitud de pago y se suspendió la vacante.', 'accion' => 'suspension', 'atendido_por' => 1, 'cerrado_en' => $hace(23),
+        'historial' => [[null, 'abierto', null, null, $hace(25)], ['abierto', 'en_revision', null, 1, $hace(24)], ['en_revision', 'resuelto', null, 1, $hace(23)]],
+    ]),
+    $reporte(107, 'empresa', 105, 103, 3, 'Varias vacantes de la empresa parecen engañosas.', 'resuelto', 30, [
+        'resolucion' => 'Se revisaron las vacantes de la empresa y se suspendió su cuenta.', 'accion' => 'suspension', 'atendido_por' => 1, 'cerrado_en' => $hace(27),
+        'historial' => [[null, 'abierto', null, null, $hace(30)], ['abierto', 'en_revision', null, 1, $hace(29)], ['en_revision', 'resuelto', null, 1, $hace(27)]],
+    ]),
+    $reporte(108, 'candidato', 100, 4, 2, 'El perfil dice cosas que no son ciertas.', 'resuelto', 35, [
+        'resolucion' => 'Se verificaron los datos y se suspendió la cuenta.', 'accion' => 'suspension', 'atendido_por' => 1, 'cerrado_en' => $hace(32),
+        'historial' => [[null, 'abierto', null, null, $hace(35)], ['abierto', 'en_revision', null, 1, $hace(34)], ['en_revision', 'resuelto', null, 1, $hace(32)]],
+    ]),
+    $reporte(109, 'vacante', 4, 105, 6, 'No me respondieron después de postularme.', 'descartado', 18, [
+        'resolucion' => 'No incumple las reglas de la plataforma; se orientó a la persona.', 'accion' => 'ninguna', 'atendido_por' => 1, 'cerrado_en' => $hace(16),
+        'historial' => [[null, 'abierto', null, null, $hace(18)], ['abierto', 'descartado', null, 1, $hace(16)]],
+    ]),
+    $reporte(110, 'empresa', 3, 106, 6, 'No tengo claro cómo contactarlos.', 'descartado', 20, [
+        'resolucion' => 'Se explicó cómo contactar a la empresa desde su perfil.', 'accion' => 'ninguna', 'atendido_por' => 1, 'cerrado_en' => $hace(19),
+        'historial' => [[null, 'abierto', null, null, $hace(20)], ['abierto', 'descartado', null, 1, $hace(19)]],
+    ]),
+];
+
+$candidatosRelleno = array_values(array_map(fn (array $c) => $c['usuario']['id'], array_filter($relleno, fn (array $c) => $c['usuario']['rol'] === 'candidato')));
+$reportesRelleno = [];
+for ($n = 0; $n < 28; $n++) {
+    $tipo = ['vacante', 'empresa', 'candidato'][$n % 3];
+    $objeto = match ($tipo) {
+        'vacante' => 201 + ($n * 2) % 24,
+        'empresa' => [1, 2, 3, 4, 101, 102, 103, 104, 105, 106][$n % 10],
+        default => $candidatosRelleno[$n % count($candidatosRelleno)],
+    };
+    $reportesRelleno[] = $reporte(201 + $n, $tipo, $objeto, [4, 101, 102, 103, 104, 105, 106][$n % 7], $tipo === 'vacante' ? [2, 3, 4, 5, 6][$n % 5] : [1, 2, 5, 6][$n % 4],
+        'Reporte de prueba número '.($n + 1).'.', 'resuelto', 40 + $n, [
+            'resolucion' => 'Se revisó el caso y no hubo que tomar más acciones.', 'accion' => 'ninguna', 'atendido_por' => 1, 'cerrado_en' => $hace(38 + $n),
+            'historial' => [[null, 'abierto', null, null, $hace(40 + $n)], ['abierto', 'en_revision', null, 1, $hace(39 + $n)], ['en_revision', 'resuelto', null, 1, $hace(38 + $n)]],
+        ]);
+}
+
 return [
 
     'usuarios' => [
@@ -245,6 +307,11 @@ return [
             9 => ['comunicacion', 'Subtítulos en videollamadas y capacitaciones'],
             10 => ['cognitiva_psicosocial', 'Tareas explicadas por escrito y en pasos claros'], 11 => ['cognitiva_psicosocial', 'Área con poco ruido y pocas distracciones'],
             12 => ['general', 'Posibilidad de ajustar horarios de entrada y salida'], 13 => ['general', 'Posibilidad de trabajar desde casa'],
+        ],
+        // id => [nombre, aplica_a] (motivo_reporte de S001)
+        'motivos_reporte' => [
+            1 => ['Discriminación', 'todos'], 2 => ['Información falsa', 'todos'], 3 => ['Vacante engañosa o fraudulenta', 'vacante'],
+            4 => ['Solicitud de pago al candidato', 'vacante'], 5 => ['Contenido inapropiado', 'todos'], 6 => ['Otro', 'todos'],
         ],
         'entidades' => [9 => 'Ciudad de México', 11 => 'Guanajuato', 14 => 'Jalisco', 15 => 'México', 19 => 'Nuevo León', 22 => 'Querétaro'],
         // id => [nombre, entidad_federativa_id]
@@ -355,12 +422,6 @@ return [
             'historial' => [['postulada', $hace(9)]]],
     ],
 
-    'reportes' => [
-        ['id' => 1, 'reportante_id' => 4, 'vacante_id' => 5, 'candidato_id' => null, 'estado' => 'abierto', 'creado_en' => $hace(3)],
-        ['id' => 101, 'reportante_id' => 3, 'vacante_id' => 2, 'candidato_id' => null, 'estado' => 'en_revision', 'creado_en' => $hace(10)],
-        ['id' => 102, 'reportante_id' => 4, 'vacante_id' => 1, 'candidato_id' => null, 'estado' => 'abierto', 'creado_en' => $hace(2)],
-        ['id' => 103, 'reportante_id' => 101, 'vacante_id' => 5, 'candidato_id' => null, 'estado' => 'abierto', 'creado_en' => $hace(1)],
-        ['id' => 104, 'reportante_id' => 102, 'vacante_id' => 203, 'candidato_id' => null, 'estado' => 'resuelto', 'creado_en' => $hace(25)],
-    ],
+    'reportes' => [...$reportesBase, ...$reportesRelleno],
 
 ];
