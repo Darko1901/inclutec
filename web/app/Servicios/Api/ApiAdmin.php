@@ -210,6 +210,114 @@ interface ApiAdmin
      */
     public function seguimientoReporte(int $id, string $estado, ?string $comentario = null, ?string $resolucion = null, ?string $accion = null): array;
 
+    // --- Administración: categorías, habilidades y catálogos ---
+
+    /**
+     * GET /admin/categorias: arreglo de CategoriaAdmin (con las inactivas, cuántas habilidades y vacantes la
+     * usan). `q` busca por nombre.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function categorias(?string $q = null): array;
+
+    /**
+     * POST /admin/categorias con una CategoriaEntrada (nombre y descripción). Devuelve la CategoriaAdmin.
+     * Lanza 409 `nombre_duplicado` y 422 `validacion`.
+     *
+     * @param  array<string, mixed>  $datos
+     * @return array<string, mixed>
+     */
+    public function crearCategoria(array $datos): array;
+
+    /**
+     * PUT /admin/categorias/{id}. Lanza 404, 409 `nombre_duplicado` y 422.
+     *
+     * @param  array<string, mixed>  $datos
+     * @return array<string, mixed>
+     */
+    public function editarCategoria(int $id, array $datos): array;
+
+    /**
+     * PATCH /admin/categorias/{id} con {activo}. Desactivar siempre se puede. Devuelve la CategoriaAdmin.
+     *
+     * @return array<string, mixed>
+     */
+    public function activarCategoria(int $id, bool $activo): array;
+
+    /** DELETE /admin/categorias/{id} (204 sin cuerpo). Lanza 404 y 409 `en_uso`: solo se puede desactivar. */
+    public function eliminarCategoria(int $id): void;
+
+    /**
+     * GET /admin/habilidades. Devuelve PaginaHabilidadesAdmin (HabilidadAdmin: categoría, activo y cuántos
+     * candidatos y vacantes la usan). `q` busca por nombre y `categoriaId` filtra.
+     *
+     * @return array{items: list<array<string, mixed>>, total: int, page: int, size: int}
+     */
+    public function habilidades(?string $q = null, ?int $categoriaId = null, int $page = 1, int $size = 25): array;
+
+    /**
+     * POST /admin/habilidades con una HabilidadEntrada (nombre y categoria_id). Lanza 409 `nombre_duplicado`
+     * y 422.
+     *
+     * @param  array<string, mixed>  $datos
+     * @return array<string, mixed>
+     */
+    public function crearHabilidad(array $datos): array;
+
+    /**
+     * PUT /admin/habilidades/{id}. Lanza 404, 409 `nombre_duplicado` y 422.
+     *
+     * @param  array<string, mixed>  $datos
+     * @return array<string, mixed>
+     */
+    public function editarHabilidad(int $id, array $datos): array;
+
+    /**
+     * PATCH /admin/habilidades/{id} con {activo}.
+     *
+     * @return array<string, mixed>
+     */
+    public function activarHabilidad(int $id, bool $activo): array;
+
+    /** DELETE /admin/habilidades/{id}. Lanza 404 y 409 `en_uso`. */
+    public function eliminarHabilidad(int $id): void;
+
+    /**
+     * GET /admin/catalogos/{tipo}: arreglo de CatalogoAdmin (con los inactivos y `en_uso`). `tipo` es
+     * modalidades, jornadas, tipos-contrato, niveles-educativos, sectores, tamanos-empresa, ajustes o
+     * motivos-reporte. Lanza 404 si el tipo no existe.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function catalogoAdmin(string $tipo): array;
+
+    /**
+     * POST /admin/catalogos/{tipo} con un CatalogoEntrada (los campos obligatorios dependen del tipo).
+     * Lanza 404, 409 `nombre_duplicado` y 422.
+     *
+     * @param  array<string, mixed>  $datos
+     * @return array<string, mixed>
+     */
+    public function crearElementoCatalogo(string $tipo, array $datos): array;
+
+    /**
+     * PUT /admin/catalogos/{tipo}/{id}. Lanza 404, 409 `nombre_duplicado` y 422.
+     *
+     * @param  array<string, mixed>  $datos
+     * @return array<string, mixed>
+     */
+    public function editarElementoCatalogo(string $tipo, int $id, array $datos): array;
+
+    /**
+     * PATCH /admin/catalogos/{tipo}/{id} con {activo}.
+     *
+     * @return array<string, mixed>
+     */
+    public function activarElementoCatalogo(string $tipo, int $id, bool $activo): array;
+
+    /** DELETE /admin/catalogos/{tipo}/{id}. Lanza 404 y 409 `en_uso`: solo se puede desactivar. */
+    public function eliminarElementoCatalogo(string $tipo, int $id): void;
+
     // --- Catálogos y archivos ---
 
     /**

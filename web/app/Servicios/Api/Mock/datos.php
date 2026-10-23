@@ -235,6 +235,90 @@ for ($n = 0; $n < 28; $n++) {
         ]);
 }
 
+/*
+| Catálogos de S001 con la forma que leen las pantallas del mock: id => nombre, o id => [nombre, otro campo].
+*/
+$catalogos = [
+    'modalidades' => [1 => 'Presencial', 2 => 'Remoto', 3 => 'Híbrido'],
+    'categorias' => [
+        1 => 'Tecnologías de la información', 2 => 'Administración', 3 => 'Atención a clientes',
+        4 => 'Diseño y comunicación', 5 => 'Producción y logística',
+    ],
+    'habilidades' => [
+        1 => 'Python', 2 => 'JavaScript', 3 => 'SQL', 4 => 'Soporte técnico', 5 => 'Redes',
+        6 => 'Excel', 7 => 'Contabilidad', 8 => 'Facturación electrónica',
+        9 => 'Atención telefónica', 10 => 'Manejo de CRM', 11 => 'Comunicación escrita',
+        12 => 'Diseño gráfico', 13 => 'Redacción', 14 => 'Control de inventarios', 15 => 'Manejo de ERP',
+    ],
+    'ajustes' => [
+        1 => 'Acceso con rampa', 2 => 'Elevador', 3 => 'Baño accesible',
+        4 => 'Software compatible con lector de pantalla', 5 => 'Documentos en formato accesible',
+        6 => 'Intérprete de Lengua de Señas Mexicana', 7 => 'Comunicación por escrito', 8 => 'Alertas visuales',
+        9 => 'Subtitulado en reuniones', 10 => 'Instrucciones por escrito y paso a paso',
+        11 => 'Espacio de trabajo tranquilo', 12 => 'Horario flexible', 13 => 'Trabajo remoto',
+    ],
+    'sectores' => [
+        1 => 'Manufactura', 2 => 'Comercio', 3 => 'Servicios profesionales', 4 => 'Tecnologías de la información',
+        5 => 'Salud', 6 => 'Educación', 7 => 'Gobierno',
+    ],
+    'tamanos' => [
+        1 => ['Micro', '1 a 10 trabajadores'], 2 => ['Pequeña', '11 a 50 trabajadores'],
+        3 => ['Mediana', '51 a 250 trabajadores'], 4 => ['Grande', 'Más de 250 trabajadores'],
+    ],
+    'jornadas' => [1 => 'Tiempo completo', 2 => 'Medio tiempo', 3 => 'Por horas', 4 => 'Fines de semana'],
+    'tipos_contrato' => [1 => 'Indefinido', 2 => 'Temporal', 3 => 'Por proyecto', 4 => 'Prácticas profesionales'],
+    // id => [nombre, orden]
+    'niveles' => [1 => ['Primaria', 1], 2 => ['Secundaria', 2], 3 => ['Bachillerato', 3], 4 => ['Técnico superior universitario', 4], 5 => ['Licenciatura', 5], 6 => ['Posgrado', 6]],
+    // id => [categoría, descripción en lenguaje claro]
+    'ajustes_detalle' => [
+        1 => ['movilidad', 'Entrada y áreas de trabajo accesibles en silla de ruedas'], 2 => ['movilidad', 'Acceso a pisos superiores sin escaleras'],
+        3 => ['movilidad', 'Sanitario adaptado para personas usuarias de silla de ruedas'],
+        4 => ['visual', 'Herramientas de trabajo que funcionan con NVDA, JAWS o VoiceOver'], 5 => ['visual', 'Materiales en formatos legibles por lector de pantalla o en macrotipo'],
+        6 => ['auditiva', 'Intérprete de LSM en reuniones y capacitaciones'], 7 => ['auditiva', 'Instrucciones y avisos por mensaje o correo'], 8 => ['auditiva', 'Alarmas y avisos con señal luminosa'],
+        9 => ['comunicacion', 'Subtítulos en videollamadas y capacitaciones'],
+        10 => ['cognitiva_psicosocial', 'Tareas explicadas por escrito y en pasos claros'], 11 => ['cognitiva_psicosocial', 'Área con poco ruido y pocas distracciones'],
+        12 => ['general', 'Posibilidad de ajustar horarios de entrada y salida'], 13 => ['general', 'Posibilidad de trabajar desde casa'],
+    ],
+    // id => [nombre, aplica_a] (motivo_reporte de S001)
+    'motivos_reporte' => [
+        1 => ['Discriminación', 'todos'], 2 => ['Información falsa', 'todos'], 3 => ['Vacante engañosa o fraudulenta', 'vacante'],
+        4 => ['Solicitud de pago al candidato', 'vacante'], 5 => ['Contenido inapropiado', 'todos'], 6 => ['Otro', 'todos'],
+    ],
+    'entidades' => [9 => 'Ciudad de México', 11 => 'Guanajuato', 14 => 'Jalisco', 15 => 'México', 19 => 'Nuevo León', 22 => 'Querétaro'],
+    // id => [nombre, entidad_federativa_id]
+    'municipios' => [
+        1 => ['Corregidora', 22], 2 => ['El Marqués', 22], 3 => ['Querétaro', 22], 4 => ['San Juan del Río', 22],
+        5 => ['León', 11], 6 => ['Guadalajara', 14], 7 => ['Monterrey', 19], 8 => ['Cuauhtémoc', 9],
+    ],
+];
+
+/*
+| Catálogos administrables (WEB-06 y WEB-07): los mismos de arriba con `activo` y los campos de CatalogoAdmin.
+| Las entidades y los municipios no se editan desde el panel.
+*/
+$conActivo = fn (array $nombres, array $extra = []): array => array_map(
+    fn (int $id, string $nombre) => ['id' => $id, 'nombre' => $nombre, 'activo' => true] + ($extra[$id] ?? []),
+    array_keys($nombres),
+    $nombres,
+);
+$descripcionesCategoria = [
+    1 => 'Desarrollo, soporte y administración de sistemas', 2 => 'Gestión administrativa y contable', 3 => 'Servicio y atención presencial o remota',
+    4 => 'Diseño gráfico, contenidos y comunicación', 5 => 'Operación, almacén y cadena de suministro',
+];
+$categoriaDeHabilidad = [1 => 1, 2 => 1, 3 => 1, 4 => 1, 5 => 1, 6 => 2, 7 => 2, 8 => 2, 9 => 3, 10 => 3, 11 => 3, 12 => 4, 13 => 4, 14 => 5, 15 => 5];
+$catalogosAdmin = [
+    'categorias' => $conActivo($catalogos['categorias'], array_map(fn (string $d) => ['descripcion' => $d], $descripcionesCategoria)),
+    'habilidades' => $conActivo($catalogos['habilidades'], array_map(fn (int $c) => ['categoria_id' => $c], $categoriaDeHabilidad)),
+    'modalidades' => $conActivo($catalogos['modalidades']),
+    'jornadas' => $conActivo($catalogos['jornadas']),
+    'tipos-contrato' => $conActivo($catalogos['tipos_contrato']),
+    'sectores' => $conActivo($catalogos['sectores']),
+    'niveles-educativos' => $conActivo(array_map(fn (array $n) => $n[0], $catalogos['niveles']), array_map(fn (array $n) => ['orden' => $n[1]], $catalogos['niveles'])),
+    'tamanos-empresa' => $conActivo(array_map(fn (array $t) => $t[0], $catalogos['tamanos']), array_map(fn (array $t) => ['rango' => $t[1]], $catalogos['tamanos'])),
+    'ajustes' => $conActivo($catalogos['ajustes'], array_map(fn (array $d) => ['categoria' => $d[0], 'descripcion' => $d[1]], $catalogos['ajustes_detalle'])),
+    'motivos-reporte' => $conActivo(array_map(fn (array $m) => $m[0], $catalogos['motivos_reporte']), array_map(fn (array $m) => ['aplica_a' => $m[1]], $catalogos['motivos_reporte'])),
+];
+
 return [
 
     'usuarios' => [
@@ -266,60 +350,12 @@ return [
         ...$relleno,
     ],
 
-    // Catálogos de db/semillas/S001__catalogos.sql, con los ids de la semilla.
-    'catalogos' => [
-        'modalidades' => [1 => 'Presencial', 2 => 'Remoto', 3 => 'Híbrido'],
-        'categorias' => [
-            1 => 'Tecnologías de la información', 2 => 'Administración', 3 => 'Atención a clientes',
-            4 => 'Diseño y comunicación', 5 => 'Producción y logística',
-        ],
-        'habilidades' => [
-            1 => 'Python', 2 => 'JavaScript', 3 => 'SQL', 4 => 'Soporte técnico', 5 => 'Redes',
-            6 => 'Excel', 7 => 'Contabilidad', 8 => 'Facturación electrónica',
-            9 => 'Atención telefónica', 10 => 'Manejo de CRM', 11 => 'Comunicación escrita',
-            12 => 'Diseño gráfico', 13 => 'Redacción', 14 => 'Control de inventarios', 15 => 'Manejo de ERP',
-        ],
-        'ajustes' => [
-            1 => 'Acceso con rampa', 2 => 'Elevador', 3 => 'Baño accesible',
-            4 => 'Software compatible con lector de pantalla', 5 => 'Documentos en formato accesible',
-            6 => 'Intérprete de Lengua de Señas Mexicana', 7 => 'Comunicación por escrito', 8 => 'Alertas visuales',
-            9 => 'Subtitulado en reuniones', 10 => 'Instrucciones por escrito y paso a paso',
-            11 => 'Espacio de trabajo tranquilo', 12 => 'Horario flexible', 13 => 'Trabajo remoto',
-        ],
-        'sectores' => [
-            1 => 'Manufactura', 2 => 'Comercio', 3 => 'Servicios profesionales', 4 => 'Tecnologías de la información',
-            5 => 'Salud', 6 => 'Educación', 7 => 'Gobierno',
-        ],
-        'tamanos' => [
-            1 => ['Micro', '1 a 10 trabajadores'], 2 => ['Pequeña', '11 a 50 trabajadores'],
-            3 => ['Mediana', '51 a 250 trabajadores'], 4 => ['Grande', 'Más de 250 trabajadores'],
-        ],
-        'jornadas' => [1 => 'Tiempo completo', 2 => 'Medio tiempo', 3 => 'Por horas', 4 => 'Fines de semana'],
-        'tipos_contrato' => [1 => 'Indefinido', 2 => 'Temporal', 3 => 'Por proyecto', 4 => 'Prácticas profesionales'],
-        // id => [nombre, orden]
-        'niveles' => [1 => ['Primaria', 1], 2 => ['Secundaria', 2], 3 => ['Bachillerato', 3], 4 => ['Técnico superior universitario', 4], 5 => ['Licenciatura', 5], 6 => ['Posgrado', 6]],
-        // id => [categoría, descripción en lenguaje claro]
-        'ajustes_detalle' => [
-            1 => ['movilidad', 'Entrada y áreas de trabajo accesibles en silla de ruedas'], 2 => ['movilidad', 'Acceso a pisos superiores sin escaleras'],
-            3 => ['movilidad', 'Sanitario adaptado para personas usuarias de silla de ruedas'],
-            4 => ['visual', 'Herramientas de trabajo que funcionan con NVDA, JAWS o VoiceOver'], 5 => ['visual', 'Materiales en formatos legibles por lector de pantalla o en macrotipo'],
-            6 => ['auditiva', 'Intérprete de LSM en reuniones y capacitaciones'], 7 => ['auditiva', 'Instrucciones y avisos por mensaje o correo'], 8 => ['auditiva', 'Alarmas y avisos con señal luminosa'],
-            9 => ['comunicacion', 'Subtítulos en videollamadas y capacitaciones'],
-            10 => ['cognitiva_psicosocial', 'Tareas explicadas por escrito y en pasos claros'], 11 => ['cognitiva_psicosocial', 'Área con poco ruido y pocas distracciones'],
-            12 => ['general', 'Posibilidad de ajustar horarios de entrada y salida'], 13 => ['general', 'Posibilidad de trabajar desde casa'],
-        ],
-        // id => [nombre, aplica_a] (motivo_reporte de S001)
-        'motivos_reporte' => [
-            1 => ['Discriminación', 'todos'], 2 => ['Información falsa', 'todos'], 3 => ['Vacante engañosa o fraudulenta', 'vacante'],
-            4 => ['Solicitud de pago al candidato', 'vacante'], 5 => ['Contenido inapropiado', 'todos'], 6 => ['Otro', 'todos'],
-        ],
-        'entidades' => [9 => 'Ciudad de México', 11 => 'Guanajuato', 14 => 'Jalisco', 15 => 'México', 19 => 'Nuevo León', 22 => 'Querétaro'],
-        // id => [nombre, entidad_federativa_id]
-        'municipios' => [
-            1 => ['Corregidora', 22], 2 => ['El Marqués', 22], 3 => ['Querétaro', 22], 4 => ['San Juan del Río', 22],
-            5 => ['León', 11], 6 => ['Guadalajara', 14], 7 => ['Monterrey', 19], 8 => ['Cuauhtémoc', 9],
-        ],
-    ],
+    // Catálogos de db/semillas/S001__catalogos.sql, con los ids de la semilla. Los lee todo el mock; se
+    // mantienen al día desde `catalogos_admin` (ver Mock/GestionCatalogos.php).
+    'catalogos' => $catalogos,
+
+    // Los mismos catálogos con `activo` y los campos propios de cada uno: lo que administran WEB-06 y WEB-07.
+    'catalogos_admin' => $catalogosAdmin,
 
     // Campos de EmpresaPropia (EmpresaAdmin y el detalle se arman con ellos); los conteos los calcula
     // ApiMock. `creado_en` ordena la cola de validación. Las empresas 101 en adelante son solo del mock.

@@ -5,6 +5,7 @@ namespace App\Servicios\Api;
 use App\Servicios\Api\Mock\Almacen;
 use App\Servicios\Api\Mock\CalculadoraEstadisticas;
 use App\Servicios\Api\Mock\ExportadorEstadisticas;
+use App\Servicios\Api\Mock\GestionCatalogos;
 use App\Servicios\Api\Mock\GestionEmpresas;
 use App\Servicios\Api\Mock\GestionReportes;
 use App\Servicios\Api\Mock\GestionUsuarios;
@@ -332,10 +333,127 @@ class ApiMock implements ApiAdmin
         });
     }
 
+    public function categorias(?string $q = null): array
+    {
+        return $this->leerComoAdministrador(fn (array $datos) => GestionCatalogos::categorias($datos, $q));
+    }
+
+    public function crearCategoria(array $datos): array
+    {
+        return $this->modificarComoAdministrador(fn (array &$estado) => GestionCatalogos::crearCategoria($estado, $datos));
+    }
+
+    public function editarCategoria(int $id, array $datos): array
+    {
+        return $this->modificarComoAdministrador(fn (array &$estado) => GestionCatalogos::editarCategoria($estado, $id, $datos));
+    }
+
+    public function activarCategoria(int $id, bool $activo): array
+    {
+        return $this->modificarComoAdministrador(fn (array &$estado) => GestionCatalogos::activarCategoria($estado, $id, $activo));
+    }
+
+    public function eliminarCategoria(int $id): void
+    {
+        $this->modificarComoAdministrador(fn (array &$estado) => GestionCatalogos::eliminarCategoria($estado, $id));
+    }
+
+    public function habilidades(?string $q = null, ?int $categoriaId = null, int $page = 1, int $size = 25): array
+    {
+        return $this->leerComoAdministrador(fn (array $datos) => GestionCatalogos::habilidades($datos, $q, $categoriaId, $page, $size));
+    }
+
+    public function crearHabilidad(array $datos): array
+    {
+        return $this->modificarComoAdministrador(fn (array &$estado) => GestionCatalogos::crearHabilidad($estado, $datos));
+    }
+
+    public function editarHabilidad(int $id, array $datos): array
+    {
+        return $this->modificarComoAdministrador(fn (array &$estado) => GestionCatalogos::editarHabilidad($estado, $id, $datos));
+    }
+
+    public function activarHabilidad(int $id, bool $activo): array
+    {
+        return $this->modificarComoAdministrador(fn (array &$estado) => GestionCatalogos::activarHabilidad($estado, $id, $activo));
+    }
+
+    public function eliminarHabilidad(int $id): void
+    {
+        $this->modificarComoAdministrador(fn (array &$estado) => GestionCatalogos::eliminarHabilidad($estado, $id));
+    }
+
+    public function catalogoAdmin(string $tipo): array
+    {
+        return $this->leerComoAdministrador(fn (array $datos) => GestionCatalogos::catalogo($datos, $tipo));
+    }
+
+    public function crearElementoCatalogo(string $tipo, array $datos): array
+    {
+        return $this->modificarComoAdministrador(fn (array &$estado) => GestionCatalogos::crearElemento($estado, $tipo, $datos));
+    }
+
+    public function editarElementoCatalogo(string $tipo, int $id, array $datos): array
+    {
+        return $this->modificarComoAdministrador(fn (array &$estado) => GestionCatalogos::editarElemento($estado, $tipo, $id, $datos));
+    }
+
+    public function activarElementoCatalogo(string $tipo, int $id, bool $activo): array
+    {
+        return $this->modificarComoAdministrador(fn (array &$estado) => GestionCatalogos::activarElemento($estado, $tipo, $id, $activo));
+    }
+
+    public function eliminarElementoCatalogo(string $tipo, int $id): void
+    {
+        $this->modificarComoAdministrador(fn (array &$estado) => GestionCatalogos::eliminarElemento($estado, $tipo, $id));
+    }
+
+    /**
+     * Lee el estado del mock para el administrador (401 sin sesión, 403 si el rol no es administrador).
+     *
+     * @template T
+     *
+     * @param  callable(array<string, mixed>): T  $lectura
+     * @return T
+     */
+    private function leerComoAdministrador(callable $lectura): mixed
+    {
+        $this->simularLatencia();
+        $datos = Almacen::leer();
+        $this->exigirAdministrador($datos);
+
+        return $lectura($datos);
+    }
+
+    /**
+     * Cambia el estado del mock para el administrador y lo guarda; un ApiError lanzado antes de terminar no guarda nada.
+     *
+     * @template T
+     *
+     * @param  callable(array<string, mixed>&): T  $cambio
+     * @return T
+     */
+    private function modificarComoAdministrador(callable $cambio): mixed
+    {
+        $this->simularLatencia();
+
+        return Almacen::modificar(function (array &$estado) use ($cambio) {
+            $this->exigirAdministrador($estado);
+
+            return $cambio($estado);
+        });
+    }
+
     public function catalogo(string $tipo, ?int $entidadId = null): array
     {
         $this->simularLatencia();
-        $c = Almacen::leer()['catalogos'];
+        $estado = Almacen::leer();
+        // Solo los registros activos: lo desactivado deja de ofrecerse en registros nuevos.
+        $activos = GestionCatalogos::activos($estado, $tipo);
+        if ($activos !== null) {
+            return $activos;
+        }
+        $c = $estado['catalogos'];
 
         $items = match ($tipo) {
             'sectores' => array_map(fn (int $id, string $nombre) => ['id' => $id, 'nombre' => $nombre], array_keys($c['sectores']), $c['sectores']),
