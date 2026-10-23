@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Servicios\Api\ApiError;
 use App\Support\Estados;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 /**
  * Guía viva de los componentes del panel. Solo existe con APP_ENV=local. Sirve de referencia para
@@ -34,5 +36,25 @@ class ComponentesController extends Controller
             'modalidades' => ['1' => 'Presencial', '2' => 'Remoto', '3' => 'Híbrido'],
             'pagina' => (int) $request->query('page', 1),
         ]);
+    }
+
+    /**
+     * Las páginas de error del panel con datos de ejemplo, para revisarlas con axe sin apagar el API:
+     * `api` (servicio no disponible, con «Reintentar»), `permiso` (403) y `fuera` (404 con sesión).
+     */
+    public function error(string $tipo): Response
+    {
+        abort_unless(app()->environment('local'), 404);
+
+        return match ($tipo) {
+            'api' => response()->view('errors.api', [
+                'mensaje' => ApiError::MENSAJE_INTERNO.'.', 'titulo' => 'El servicio no está disponible', 'reintentar' => route('dashboard'),
+            ], 503),
+            'permiso' => response()->view('errors.api', [
+                'mensaje' => 'El rol del usuario no tiene acceso a este endpoint.', 'titulo' => 'No tienes permiso', 'reintentar' => null,
+            ], 403),
+            'fuera' => response()->view('errors.404', ['mensaje' => 'La empresa no existe.'], 404),
+            default => abort(404),
+        };
     }
 }

@@ -60,4 +60,5 @@ Route::middleware('admin')->group(function () {
 
     // Guía de componentes: solo existe con APP_ENV=local (el controlador responde 404 en otro entorno).
     Route::get('/componentes', [ComponentesController::class, 'index'])->name('componentes');
+    Route::get('/componentes/error/{tipo}', [ComponentesController::class, 'error'])->name('componentes.error');
 });
