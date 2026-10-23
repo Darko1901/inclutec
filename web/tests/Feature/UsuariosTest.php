@@ -357,7 +357,7 @@ class UsuariosTest extends TestCase
 
     public function test_editar_un_usuario_que_no_existe_muestra_la_pantalla_de_error_404(): void
     {
-        $this->get('/usuarios/9999/editar')->assertStatus(404)->assertSee('No se pudo completar la acción');
+        $this->get('/usuarios/9999/editar')->assertStatus(404)->assertSee('Página no encontrada');
         $this->put('/usuarios/9999', $this->datos())->assertStatus(404);
     }
 

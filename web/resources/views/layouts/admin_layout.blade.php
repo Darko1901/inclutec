@@ -27,7 +27,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('titulo', 'Panel') · IncluTec</title>
+    <title>@yield('titulo', 'Panel') · IncluTec Admin</title>
     <link rel="icon" href="/img/icon.png">
     @vite(['resources/css/admin.css', 'resources/js/app.js'])
 </head>
@@ -81,7 +81,7 @@
                         <button type="button" class="menu-usuario-boton" x-ref="boton" @click="abierto = !abierto"
                                 aria-expanded="false" :aria-expanded="abierto.toString()" aria-controls="menu-usuario">
                             <span class="avatar-iniciales" aria-hidden="true">{{ $iniciales }}</span>
-                            <span>{{ $nombreAdmin }}</span>
+                            <span class="menu-usuario-nombre">{{ $nombreAdmin }}</span>
                             <span class="visually-hidden">Menú de usuario</span>
                             {!! Iconos::svg('chevron-abajo', 16) !!}
                         </button>

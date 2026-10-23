@@ -51,7 +51,9 @@ class EmpresaController extends Controller
     public function constancia(int $id): Response
     {
         $ruta = $this->api->empresa($id)['empresa']['documento_url'];
-        abort_if($ruta === null, 404, 'Esta empresa todavía no ha subido su constancia de situación fiscal.');
+        if ($ruta === null) {
+            throw new ApiError(404, 'no_encontrado', 'Esta empresa todavía no ha subido su constancia de situación fiscal.');
+        }
 
         $archivo = $this->api->archivo($ruta);
 

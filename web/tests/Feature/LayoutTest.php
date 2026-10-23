@@ -43,7 +43,7 @@ class LayoutTest extends TestCase
     {
         $titulos = [];
         foreach (self::PANTALLAS as $ruta => $titulo) {
-            $this->get($ruta)->assertSee('<title>'.e($titulo).' · IncluTec</title>', false);
+            $this->get($ruta)->assertSee('<title>'.e($titulo).' · IncluTec Admin</title>', false);
             $titulos[] = $titulo;
         }
 

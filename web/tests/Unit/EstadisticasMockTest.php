@@ -64,9 +64,9 @@ class EstadisticasMockTest extends TestCase
 
         $esperado = [
             // periodo => [postulaciones, contrataciones, tasa de colocación]
-            '7 días' => [['2026-10-14', '2026-10-21'], 3, 1, 33.3],
-            '30 días' => [['2026-09-21', '2026-10-21'], 8, 2, 33.3],
-            '90 días' => [['2026-07-23', '2026-10-21'], 14, 4, 50.0],
+            '7 días' => [['2026-10-14', '2026-10-21'], 8, 2, 25.0],
+            '30 días' => [['2026-09-21', '2026-10-21'], 20, 4, 22.2],
+            '90 días' => [['2026-07-23', '2026-10-21'], 34, 7, 25.0],
         ];
         foreach ($esperado as $nombre => [[$desde, $hasta], $postulaciones, $contrataciones, $tasa]) {
             $i = $mock->estadisticas($desde, $hasta)['indicadores'];
@@ -241,10 +241,10 @@ class EstadisticasMockTest extends TestCase
         foreach (['Estadísticas', 'Periodo: del 14/10/2026 al 21/10/2026', 'Candidatos activos', 'Contrataciones del periodo', 'Tasa de colocación', 'Brecha de ajustes', 'Acceso con rampa'] as $esperado) {
             $this->assertStringContainsString($esperado, $texto);
         }
-        // Las cifras del periodo de 7 días: 3 postulaciones, 1 contratación y 33.3 %.
-        $this->assertMatchesRegularExpression('/Postulaciones del periodo\s+3\b/', $texto);
-        $this->assertMatchesRegularExpression('/Contrataciones del periodo\s+1\b/', $texto);
-        $this->assertStringContainsString('33.3', $texto);
+        // Las cifras del periodo de 7 días: 8 postulaciones, 2 contrataciones y 25 %.
+        $this->assertMatchesRegularExpression('/Postulaciones del periodo\s+8\b/', $texto);
+        $this->assertMatchesRegularExpression('/Contrataciones del periodo\s+2\b/', $texto);
+        $this->assertMatchesRegularExpression('/Tasa de colocación \(%\)\s+25\b/', $texto);
     }
 
     public function test_exportar_xlsx_devuelve_un_libro_con_una_hoja_por_tabla_y_las_mismas_cifras(): void
@@ -274,9 +274,9 @@ class EstadisticasMockTest extends TestCase
         $this->assertStringContainsString('Candidatos activos', $textos);
         $this->assertStringContainsString('2026-07-23 a 2026-10-21', $textos);
         // 90 días: 14 postulaciones y 4 contrataciones; la tasa es 50.
-        $this->assertMatchesRegularExpression('/<v>14<\/v>/', $hoja1);
-        $this->assertMatchesRegularExpression('/<v>4<\/v>/', $hoja1);
-        $this->assertMatchesRegularExpression('/<v>50<\/v>/', $hoja1);
+        $this->assertMatchesRegularExpression('/<v>34<\/v>/', $hoja1);
+        $this->assertMatchesRegularExpression('/<v>7<\/v>/', $hoja1);
+        $this->assertMatchesRegularExpression('/<v>25<\/v>/', $hoja1);
     }
 
     public function test_exportar_con_un_formato_distinto_responde_422(): void
