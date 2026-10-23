@@ -128,7 +128,7 @@ class InicioSesionTest extends TestCase
 
         $this->get('/usuarios')->assertRedirect('/login');
         $this->assertNull(session(ApiHttp::SESION_TOKEN));
-        $this->get('/login')->assertSee('Tu sesión expiró. Inicia sesión de nuevo');
+        $this->get('/login')->assertSee('Tu sesión expiró. Vuelve a iniciar sesión');
     }
 
     public function test_cerrar_sesion_borra_la_sesion(): void

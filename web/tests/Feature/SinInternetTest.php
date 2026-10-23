@@ -2,17 +2,20 @@
 
 namespace Tests\Feature;
 
+use Tests\Concerns\PaginasDelPanel;
 use Tests\TestCase;
 
 /** Ninguna página debe pedir recursos fuera de localhost (los enlaces al propio panel sí valen): ni fuentes, ni avatares, ni scripts. */
 class SinInternetTest extends TestCase
 {
+    use PaginasDelPanel;
+
     public function test_ninguna_pagina_referencia_recursos_externos(): void
     {
         $this->from('/login')->post('/login', ['correo' => 'admin@inclutec.mx', 'contrasena' => 'Inclutec2026']);
         $this->app['env'] = 'local';
 
-        $paginas = ['/dashboard', '/usuarios', '/empresas', '/vacantes', '/habilidades', '/catalogos', '/reportes', '/perfil', '/componentes', '/no-existe'];
+        $paginas = array_merge(array_keys(self::PAGINAS), ['/componentes', '/no-existe']);
         foreach ($paginas as $ruta) {
             $html = $this->get($ruta)->getContent();
 
@@ -20,11 +23,17 @@ class SinInternetTest extends TestCase
             $this->assertDoesNotMatchRegularExpression('#url\(\s*["\']?https?://(?!localhost|127\.0\.0\.1)#i', $html, $ruta);
             $this->assertStringNotContainsString('@import', $html, $ruta);
             $this->assertStringNotContainsString('fonts.googleapis', $html, $ruta);
+            // Tampoco scripts ni hojas de estilo que no salgan del propio sitio (CDN).
+            preg_match_all('#<(?:script|link)[^>]+(?:src|href)=["\']([^"\']+)["\']#i', $html, $recursos);
+            foreach ($recursos[1] as $recurso) {
+                $this->assertDoesNotMatchRegularExpression('#^(?:https?:)?//(?!localhost|127\.0\.0\.1)#', $recurso, "{$ruta}: {$recurso}");
+            }
         }
 
         $this->flushSession();
         $html = $this->get('/login')->getContent();
         $this->assertDoesNotMatchRegularExpression('#(?:src|href)=["\']https?://(?!localhost|127\.0\.0\.1)#i', $html);
+        $this->assertDoesNotMatchRegularExpression('#(?:src|href)=["\']https?://(?!localhost|127\.0\.0\.1)#i', $this->get('/no-existe')->getContent());
     }
 
     public function test_las_hojas_de_estilo_y_el_javascript_no_piden_nada_a_internet(): void

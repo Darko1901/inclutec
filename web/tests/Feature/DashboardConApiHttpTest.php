@@ -119,14 +119,14 @@ class DashboardConApiHttpTest extends TestCase
             ->get('/dashboard')->assertRedirect('/login');
 
         $this->assertNull(session(ApiHttp::SESION_TOKEN));
-        $this->get('/login')->assertSee('Tu sesión expiró. Inicia sesión de nuevo');
+        $this->get('/login')->assertSee('Tu sesión expiró. Vuelve a iniciar sesión');
     }
 
     public function test_403_del_api_muestra_la_pantalla_de_error_sin_cerrar_la_sesion(): void
     {
         $this->conAdministrador(['*/admin/estadisticas/resumen*' => Http::response($this->error('sin_permiso', 'El rol del usuario no tiene acceso a este endpoint.'), 403)])
             ->get('/dashboard')->assertStatus(403)
-            ->assertSee('No se pudo completar la acción')
+            ->assertSee('No tienes permiso')
             ->assertSee('El rol del usuario no tiene acceso a este endpoint.');
 
         $this->assertSame(self::TOKEN, session(ApiHttp::SESION_TOKEN));
@@ -179,6 +179,6 @@ class DashboardConApiHttpTest extends TestCase
     public function test_exportar_con_error_del_api_muestra_la_pantalla_de_error(): void
     {
         $this->conAdministrador(['*/admin/estadisticas/exportar*' => Http::response($this->error('sin_permiso', 'El rol del usuario no tiene acceso a este endpoint.'), 403)])
-            ->get('/dashboard/exportar?formato=pdf')->assertStatus(403)->assertSee('No se pudo completar la acción');
+            ->get('/dashboard/exportar?formato=pdf')->assertStatus(403)->assertSee('No tienes permiso');
     }
 }

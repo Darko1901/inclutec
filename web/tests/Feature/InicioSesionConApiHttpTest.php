@@ -118,7 +118,7 @@ class InicioSesionConApiHttpTest extends TestCase
         $this->withSession([ApiHttp::SESION_TOKEN => self::TOKEN])->get('/dashboard')->assertRedirect('/login');
 
         $this->assertNull(session(ApiHttp::SESION_TOKEN));
-        $this->get('/login')->assertSee('Tu sesión expiró. Inicia sesión de nuevo');
+        $this->get('/login')->assertSee('Tu sesión expiró. Vuelve a iniciar sesión');
     }
 
     public function test_un_5xx_del_api_en_una_ruta_del_panel_muestra_la_pantalla_de_error_sin_cerrar_la_sesion(): void

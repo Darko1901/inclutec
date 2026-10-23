@@ -291,6 +291,6 @@ class DashboardTest extends TestCase
         $this->withSession([ApiHttp::SESION_TOKEN => $vencido])->get('/dashboard')->assertRedirect('/login');
 
         $this->assertNull(session(ApiHttp::SESION_TOKEN));
-        $this->get('/login')->assertSee('Tu sesión expiró. Inicia sesión de nuevo');
+        $this->get('/login')->assertSee('Tu sesión expiró. Vuelve a iniciar sesión');
     }
 }
