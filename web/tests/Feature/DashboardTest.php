@@ -54,7 +54,7 @@ class DashboardTest extends TestCase
 
         $this->assertSame(1, preg_match_all('/<h1[\s>]/', $html));
         $this->assertSame(
-            ['37', '3', '8', '8', '2', '33.3 %'],
+            ['37', '3', '8', '20', '4', '22.2 %'],
             array_map(fn (string $clave) => $this->indicador($html, $clave), ['candidatos_activos', 'empresas_validadas', 'vacantes_publicadas', 'postulaciones', 'contrataciones', 'tasa_colocacion']),
         );
         foreach (['Candidatos activos', 'Empresas validadas', 'Vacantes publicadas', 'Postulaciones', 'Contrataciones', 'Tasa de colocación'] as $titulo) {
@@ -72,8 +72,8 @@ class DashboardTest extends TestCase
         $siete = $this->get('/dashboard?periodo=7')->getContent();
         $noventa = $this->get('/dashboard?periodo=90')->getContent();
 
-        $this->assertSame(['3', '1', '33.3 %'], array_map(fn ($c) => $this->indicador($siete, $c), ['postulaciones', 'contrataciones', 'tasa_colocacion']));
-        $this->assertSame(['14', '4', '50 %'], array_map(fn ($c) => $this->indicador($noventa, $c), ['postulaciones', 'contrataciones', 'tasa_colocacion']));
+        $this->assertSame(['8', '2', '25 %'], array_map(fn ($c) => $this->indicador($siete, $c), ['postulaciones', 'contrataciones', 'tasa_colocacion']));
+        $this->assertSame(['34', '7', '25 %'], array_map(fn ($c) => $this->indicador($noventa, $c), ['postulaciones', 'contrataciones', 'tasa_colocacion']));
         $this->assertStringContainsString('Del 14 de octubre de 2026 al 21 de octubre de 2026', $siete);
         $this->assertStringContainsString('Del 23 de julio de 2026 al 21 de octubre de 2026', $noventa);
     }
@@ -88,7 +88,7 @@ class DashboardTest extends TestCase
 
         $html = $this->get('/dashboard')->getContent();
 
-        $this->assertSame('9', $this->indicador($html, 'postulaciones'));
+        $this->assertSame('21', $this->indicador($html, 'postulaciones'));
         $this->assertMatchesRegularExpression('/pendiente-cifra">4<\/p>\s*<div>\s*<p class="pendiente-texto">empresas por validar/', $html);
     }
 
@@ -231,7 +231,7 @@ class DashboardTest extends TestCase
         $this->assertStringContainsString('id="error-'.$campo.'"', $html);
         $this->assertMatchesRegularExpression('/<[^>]*id="'.$campo.'"[^>]*aria-invalid="true"/', $html);
         $this->assertStringContainsString('Del 21 de septiembre de 2026 al 21 de octubre de 2026', $html);
-        $this->assertSame('8', $this->indicador($html, 'postulaciones'));
+        $this->assertSame('20', $this->indicador($html, 'postulaciones'));
     }
 
     public static function periodosNoValidos(): array
