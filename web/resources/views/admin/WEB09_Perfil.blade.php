@@ -3,7 +3,7 @@
 @section('content')
 <x-encabezado-pagina titulo="Cambiar contraseña" descripcion="Elige una contraseña nueva para tu cuenta de administrador." />
 
-<div class="card" style="max-width: 560px;">
+<div class="card formulario-usuario">
     <x-resumen-errores />
 
     <form method="POST" action="{{ route('perfil.actualizar') }}" novalidate>
