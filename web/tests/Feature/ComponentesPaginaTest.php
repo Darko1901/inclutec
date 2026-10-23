@@ -35,9 +35,9 @@ class ComponentesPaginaTest extends TestCase
 
         $html = $this->get('/componentes?page=2')->assertOk()->getContent();
 
-        // Botones, estados (los 32), tabla (con datos y vacía), paginación, filtros, campos, resumen, modal y confirmación.
+        // Botones, estados (los 36), tabla (con datos y vacía), paginación, filtros, campos, resumen, modal y confirmación.
         $this->assertStringContainsString('Componentes del panel', $html);
-        $this->assertSame(35, substr_count($html, 'data-estado='), '32 estados del mapa más 3 insignias de la tabla de ejemplo');
+        $this->assertSame(39, substr_count($html, 'data-estado='), '36 estados del mapa más 3 insignias de la tabla de ejemplo');
         $this->assertStringContainsString('btn btn-danger', $html);
         $this->assertStringContainsString('btn-texto', $html);
         $this->assertStringContainsString('class="tabla-vacia"', $html);

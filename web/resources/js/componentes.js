@@ -92,3 +92,21 @@ Alpine.data('resultados', (texto) => ({
         setTimeout(() => (this.anuncio = texto), 400);
     },
 }));
+
+/**
+ * Ventana de edición de un registro de catálogo. Los botones «Editar» de la tabla avisan con el evento
+ * `editar-elemento` (detail = datos de la fila); aquí se llenan los campos y se apunta el formulario a su
+ * ruta (`plantilla` lleva __ID__ donde va el id). Si el servidor devolvió errores, `inicial` trae lo escrito.
+ */
+Alpine.data('catalogoEdicion', ({ plantilla, vacio, inicial }) => ({
+    item: { ...vacio, ...inicial },
+
+    get accion() {
+        return plantilla.replace('__ID__', this.item.id ?? '');
+    },
+
+    abrir(datos) {
+        this.item = { ...vacio, ...datos };
+        this.$dispatch('abrir-modal', 'catalogo-editar');
+    },
+}));

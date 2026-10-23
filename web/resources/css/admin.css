@@ -844,3 +844,37 @@ body.dark .aviso-sin-condiciones { background: rgba(180, 83, 9, 0.25); color: #F
 .elemento-acciones { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
 .cambio-estado { display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem; }
 .cambio-flecha { display: inline-flex; color: var(--text-muted); }
+
+/* =========================================
+   CATÁLOGOS, CATEGORÍAS Y HABILIDADES (WEB-06 y WEB-07)
+========================================= */
+.catalogo-acciones { display: flex; justify-content: flex-end; margin-bottom: 1rem; }
+.formulario-en-linea { display: inline-flex; }
+.tabla-catalogo .acciones-fila { flex-direction: row; flex-wrap: wrap; }
+.tabla-catalogo td:last-child { min-width: 12rem; }
+.tabla-catalogo .boton-eliminar { color: var(--danger); }
+body.dark .tabla-catalogo .boton-eliminar { color: #FCA5A5; }
+.catalogo-grupo { margin-bottom: 1.5rem; }
+.catalogo-grupo-titulo { font-size: 1rem; margin-bottom: 0.6rem; }
+.catalogo-titulo { font-size: 1.25rem; margin-bottom: 0.5rem; }
+.catalogo-nota { margin-bottom: 1rem; }
+.aviso-en-uso {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1rem; margin-bottom: 1rem; padding: 1rem 1.25rem;
+    background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D; border-radius: 8px; font-weight: 500;
+}
+.aviso-en-uso p { flex: 1 1 18rem; }
+.aviso-en-uso:focus { outline: 3px solid #111827; outline-offset: 3px; }
+body.dark .aviso-en-uso { background: rgba(180, 83, 9, 0.25); color: #FDE68A !important; border-color: #B45309; }
+body.dark .aviso-en-uso p { color: #FDE68A !important; }
+body.dark .aviso-en-uso:focus { outline-color: #FDE047; }
+
+.catalogos-diseno { display: grid; grid-template-columns: minmax(14rem, 18rem) 1fr; gap: 1.5rem; align-items: start; }
+.catalogos-lista { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 0.5rem; }
+.catalogos-lista ul { list-style: none; display: flex; flex-direction: column; gap: 0.15rem; }
+.catalogos-enlace { display: flex; align-items: center; min-height: 44px; padding: 0.5rem 0.75rem; border-radius: 8px; color: var(--text-color); font-weight: 500; text-decoration: none; }
+.catalogos-enlace:hover { background: var(--hover-bg, rgba(17, 24, 39, 0.06)); text-decoration: none; }
+.catalogos-enlace[aria-current="page"] { background: #EFF6FF; color: var(--primary); font-weight: 700; box-shadow: inset 4px 0 0 var(--primary); }
+body.dark .catalogos-enlace { color: var(--text-main); }
+body.dark .catalogos-enlace[aria-current="page"] { background: rgba(30, 64, 175, 0.2); color: #93C5FD; box-shadow: inset 4px 0 0 #93C5FD; }
+.catalogos-contenido { min-width: 0; }
+@media (max-width: 900px) { .catalogos-diseno { grid-template-columns: 1fr; } }
