@@ -95,6 +95,16 @@ class Estados
                 'resuelto' => $e('Resuelto', 'check-circulo', 'exito'),
                 'descartado' => $e('Descartado', 'menos-circulo', 'neutro'),
             ],
+            // `activo` de categorías, habilidades y catálogos (WEB-06 y WEB-07): el diseño dice «activa/inactiva» en
+            // WEB-06 y el mismo patrón en WEB-07. No es un estado de la tabla 3.4: el API manda un booleano.
+            'categoria' => [
+                'activo' => $e('Activa', 'check-circulo', 'exito'),
+                'inactivo' => $e('Inactiva', 'pausa', 'neutro'),
+            ],
+            'catalogo' => [
+                'activo' => $e('Activo', 'check-circulo', 'exito'),
+                'inactivo' => $e('Inactivo', 'pausa', 'neutro'),
+            ],
             // vacante_ajuste.tipo; `no_declarada` es el valor del contrato para una necesidad que la vacante no declara.
             'ajuste' => [
                 'existente' => $e('El lugar cuenta con', 'check-circulo', 'exito'),

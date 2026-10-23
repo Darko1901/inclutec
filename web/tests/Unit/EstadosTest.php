@@ -20,6 +20,9 @@ class EstadosTest extends TestCase
         'reporte' => ['abierto' => 'Abierto', 'en_revision' => 'En revisión', 'resuelto' => 'Resuelto', 'descartado' => 'Descartado'],
         'usuario' => ['activo' => 'Activo', 'suspendido' => 'Suspendido', 'eliminado' => 'Eliminado'],
         'ajuste' => ['existente' => 'El lugar cuenta con', 'bajo_solicitud' => 'Podemos ofrecer bajo solicitud'],
+        // No están en la tabla 3.4: WEB-06 dice «activa/inactiva» y WEB-07 usa el mismo patrón (el API manda `activo`).
+        'categoria' => ['activo' => 'Activa', 'inactivo' => 'Inactiva'],
+        'catalogo' => ['activo' => 'Activo', 'inactivo' => 'Inactivo'],
     ];
 
     /** Dónde guarda el contrato los valores de cada entidad. */
@@ -93,7 +96,7 @@ class EstadosTest extends TestCase
                 $this->assertStringContainsString('<path', Iconos::svg($estado['icono']));
             }
         }
-        $this->assertSame(32, $total);
+        $this->assertSame(36, $total);
     }
 
     public function test_los_estados_de_bd_que_no_existen_en_la_tabla_no_estan_en_el_mapa(): void

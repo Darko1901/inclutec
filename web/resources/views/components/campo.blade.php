@@ -12,13 +12,14 @@
     'filas' => 4,
     'placeholder' => null,
     'id' => null,
+    'sinAntiguos' => false,
 ])
 @php
     use App\Support\Iconos;
 
     $id = $id ?? str_replace(['.', '[', ']'], '-', $nombre);
     // Las contraseñas nunca se vuelven a mostrar.
-    $actual = $tipo === 'password' ? '' : (string) old($nombre, $valor ?? '');
+    $actual = $tipo === 'password' ? '' : (string) ($sinAntiguos ? ($valor ?? '') : old($nombre, $valor ?? ''));
     $mensaje = $error ?? $errors->first($nombre);
     $describe = trim(($ayuda ? "ayuda-{$id} " : '').($maximo ? "contador-{$id} " : '').($mensaje ? "error-{$id}" : ''));
     $atributosControl = $attributes->except('class')->merge([
