@@ -58,6 +58,20 @@ describe('destinoNotificacion (tabla de notificaciones del contrato)', () => {
     expect(destinoNotificacion(rol, referencia)).toEqual({ pantalla, params });
   });
 
+  it('al candidato le pasa el tipo de la notificación para resaltar la parte que cambió (CAN-06)', () => {
+    expect(destinoNotificacion('candidato', ref('postulacion'), 'recordatorio_entrevista')).toEqual(
+      {
+        pantalla: 'DetallePostulacion',
+        params: { id: 7, desde: 'recordatorio_entrevista' },
+      },
+    );
+    // El reclutador no lo necesita: REC-05 y REC-06 se identifican por el id.
+    expect(destinoNotificacion('reclutador', ref('postulacion'), 'nueva_postulacion')).toEqual({
+      pantalla: 'DetallePostulado',
+      params: { id: 7 },
+    });
+  });
+
   it('un reporte resuelto no abre otra pantalla (se queda en MOV-04)', () => {
     expect(destinoNotificacion('candidato', ref('reporte'))).toBeNull();
     expect(destinoNotificacion('reclutador', ref('reporte'))).toBeNull();

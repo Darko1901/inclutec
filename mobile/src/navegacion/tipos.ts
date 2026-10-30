@@ -12,7 +12,8 @@ export type CandidatoTabsParamList = {
 export type ReclutadorTabsParamList = {
   MisVacantes: { vacante_id?: number } | undefined;
   // `publicar_vacante_id` abre «Publicar horarios» con esa vacante (desde REC-05).
-  Agenda: { entrevista_id?: number; publicar_vacante_id?: number } | undefined;
+  // `entrevista_id` y `horario_id` llegan desde una notificación: REC-06 resalta ese horario.
+  Agenda: { entrevista_id?: number; horario_id?: number; publicar_vacante_id?: number } | undefined;
   Notificaciones: undefined;
   Organizacion: { empresa_id?: number } | undefined;
 };
@@ -30,7 +31,8 @@ export type RootStackParamList = {
   DetalleVacante: { id: number };
   // `pestana` llega desde CAN-03 al tocar una sección pendiente del perfil.
   MiCV: { pestana?: 'experiencia' | 'formacion' | 'habilidades' } | undefined;
-  DetallePostulacion: { id: number };
+  // `desde` es el tipo de la notificación que abrió la pantalla: CAN-06 resalta la parte que cambió.
+  DetallePostulacion: { id: number; desde?: string };
   // Ficha de una empresa (CAN-07b): se abre desde el directorio, CAN-02 y CAN-06.
   FichaEmpresa: { id: number };
   // Reclutador: barra inferior y pantallas de detalle (REC-03, REC-04, REC-05)

@@ -1,14 +1,18 @@
 import { Ionicons } from '@expo/vector-icons';
+import type { Ref } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import type { EventoHistorial } from '../../../api';
-import { ESTADOS, Texto } from '../../../componentes';
+import { ESTADOS, ResaltadoNotificacion, Texto } from '../../../componentes';
 import { colores, espaciado } from '../../../tema';
 import { formatearFechaHora, formatearFechaHoraHablada } from '../../../utilidades/fechas';
 
 interface Props {
   /** Del más antiguo al más reciente, como lo manda el API. */
   historial: EventoHistorial[];
+  /** Resalta el último paso («Desde tu notificación»); `refMarca` recibe el foco del lector. */
+  destacarUltimo?: boolean;
+  refMarca?: Ref<View>;
 }
 
 const ocultar = { accessibilityElementsHidden: true, importantForAccessibility: 'no' } as const;
@@ -31,57 +35,63 @@ export function etiquetaEvento(evento: EventoHistorial, actual: boolean): string
  * Línea de tiempo del historial. Para el lector de pantalla es una lista; cada paso se lee de una
  * vez con su fecha, su hora y el mensaje del reclutador, y el estado actual lo dice con palabras.
  */
-export function LineaTiempo({ historial }: Props) {
+export function LineaTiempo({ historial, destacarUltimo = false, refMarca }: Props) {
   return (
     <View accessibilityRole="list" style={estilos.lista} testID="linea-tiempo">
       {historial.map((evento, indice) => {
         const actual = indice === historial.length - 1;
         const definicion = ESTADOS.postulacion[evento.estado_nuevo];
         return (
-          <View
+          <ResaltadoNotificacion
             key={`${evento.estado_nuevo}-${evento.creado_en}`}
-            accessible
-            accessibilityRole="text"
-            accessibilityLabel={etiquetaEvento(evento, actual)}
-            style={estilos.paso}
-            testID={`paso-${indice}`}
+            activo={actual && destacarUltimo}
+            refMarca={refMarca}
+            testID="resaltado-historial"
           >
-            <View style={estilos.guia} {...ocultarTodo}>
-              <View style={[estilos.punto, actual && estilos.puntoActual]}>
-                <Ionicons
-                  name={definicion.icono}
-                  size={18}
-                  color={actual ? colores.sobrePrimario : colores.primario}
-                  {...ocultar}
-                />
+            <View
+              accessible
+              accessibilityRole="text"
+              accessibilityLabel={etiquetaEvento(evento, actual)}
+              style={estilos.paso}
+              testID={`paso-${indice}`}
+            >
+              <View style={estilos.guia} {...ocultarTodo}>
+                <View style={[estilos.punto, actual && estilos.puntoActual]}>
+                  <Ionicons
+                    name={definicion.icono}
+                    size={18}
+                    color={actual ? colores.sobrePrimario : colores.primario}
+                    {...ocultar}
+                  />
+                </View>
+                {!actual ? <View style={estilos.linea} /> : null}
               </View>
-              {!actual ? <View style={estilos.linea} /> : null}
-            </View>
-            <View style={estilos.contenido} {...ocultarTodo}>
-              <View style={estilos.titulo}>
-                <Texto variante="cuerpoFuerte">{definicion.texto}</Texto>
-                {actual ? (
-                  <View style={estilos.insignia}>
-                    <Ionicons name="checkmark" size={14} color={colores.infoTexto} {...ocultar} />
-                    <Texto variante="pequeno" style={estilos.textoInsignia}>
-                      Estado actual
+              <View style={estilos.contenido} {...ocultarTodo}>
+                <View style={estilos.titulo}>
+                  <Texto variante="cuerpoFuerte">{definicion.texto}</Texto>
+                  {actual ? (
+                    <View style={estilos.insignia}>
+                      <Ionicons name="checkmark" size={14} color={colores.infoTexto} {...ocultar} />
+                      <Texto variante="pequeno" style={estilos.textoInsignia}>
+                        Estado actual
+                      </Texto>
+                    </View>
+                  ) : null}
+                </View>
+                <Texto variante="pequeno" color="textoSecundarioSobreGris">
+                  {formatearFechaHora(evento.creado_en)}
+                </Texto>
+                {evento.mensaje ? (
+                  <View style={estilos.mensaje}>
+                    <Texto variante="pequeno" color="textoSecundarioSobreGris">
+                      Mensaje del reclutador
                     </Texto>
+                    <Texto>{evento.mensaje}</Texto>
                   </View>
                 ) : null}
               </View>
-              <Texto variante="pequeno" color="textoSecundarioSobreGris">
-                {formatearFechaHora(evento.creado_en)}
-              </Texto>
-              {evento.mensaje ? (
-                <View style={estilos.mensaje}>
-                  <Texto variante="pequeno" color="textoSecundarioSobreGris">
-                    Mensaje del reclutador
-                  </Texto>
-                  <Texto>{evento.mensaje}</Texto>
-                </View>
-              ) : null}
             </View>
-          </View>
+          </ResaltadoNotificacion>
         );
       })}
     </View>
