@@ -38,22 +38,22 @@ import { fallo } from './simulador';
 type Catalogo = 'categorias' | 'modalidades' | 'jornadas' | 'tipos-contrato';
 type CategoriaAjuste = AjusteRef['categoria'];
 
-export function itemDe(tipo: string, id: number) {
+function itemDe(tipo: string, id: number) {
   const item = CATALOGOS[tipo]?.find((registro) => registro.id === id);
   if (!item) throw new Error(`El mock no tiene ${tipo} con id ${id}.`);
   return item;
 }
 
-export function refDe(tipo: Catalogo, id: number) {
+function refDe(tipo: Catalogo, id: number) {
   return { id, nombre: itemDe(tipo, id).nombre };
 }
 
-export function nivelDe(id: number) {
+function nivelDe(id: number) {
   const { nombre, orden } = itemDe('niveles-educativos', id);
   return { id, nombre, orden: orden ?? 0 };
 }
 
-export function municipioDe(id: number) {
+function municipioDe(id: number) {
   const municipio = itemDe('municipios', id);
   const entidad = itemDe('entidades', municipio.entidad_federativa_id ?? 0);
   return {
@@ -81,7 +81,7 @@ export function candidatoDe(usuario: UsuarioMock): CandidatoMock {
   return candidato;
 }
 
-export function postulacionDe(candidatoId: number, vacanteId: number) {
+function postulacionDe(candidatoId: number, vacanteId: number) {
   return obtenerEstado().postulaciones.find(
     (p) => p.candidato_id === candidatoId && p.vacante_id === vacanteId,
   );
@@ -268,7 +268,7 @@ const PUNTOS: Record<SeccionPendiente, number> = {
   habilidades: 15,
 };
 
-export interface AnalisisPerfil {
+interface AnalisisPerfil {
   completitud: number;
   secciones_pendientes: SeccionPendiente[];
   perfil_minimo: boolean;
@@ -416,7 +416,7 @@ export function resumenDePostulacion(postulacion: PostulacionMock): PostulacionR
   };
 }
 
-export function publicadasDeEmpresa(empresaId: number): VacanteMock[] {
+function publicadasDeEmpresa(empresaId: number): VacanteMock[] {
   return obtenerEstado().vacantes.filter(
     (v) => v.empresa_id === empresaId && v.estado === 'publicada',
   );

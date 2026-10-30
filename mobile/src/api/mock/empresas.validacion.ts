@@ -7,14 +7,14 @@ import { fallo } from './simulador';
 
 // Validaciones de los cuerpos de /empresas/me con las reglas y los límites del contrato.
 
-export const MAX_LOGO_BYTES = 2 * 1024 * 1024;
-export const MAX_CONSTANCIA_BYTES = 5 * 1024 * 1024;
+const MAX_LOGO_BYTES = 2 * 1024 * 1024;
+const MAX_CONSTANCIA_BYTES = 5 * 1024 * 1024;
 
 const esTexto = (valor: unknown): valor is string => typeof valor === 'string';
 const textoOpcional = (valor: unknown, maximo: number) =>
   valor === null || valor === undefined || (esTexto(valor) && valor.length <= maximo);
 
-export function validarEmpresa(datos: EmpresaEntrada): Campos {
+function validarEmpresa(datos: EmpresaEntrada): Campos {
   const campos: Campos = {};
   const nombre = datos?.nombre_comercial;
   if (!esTexto(nombre) || nombre.trim() === '') {

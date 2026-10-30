@@ -11,10 +11,10 @@ interface Props {
   alLeerAviso: () => void;
 }
 
-export const TEXTO_AVISO = 'Acepto el aviso de privacidad';
-export const TEXTO_CONSENTIMIENTO =
+const TEXTO_AVISO = 'Acepto el aviso de privacidad';
+const TEXTO_CONSENTIMIENTO =
   'Autorizo el tratamiento de mis necesidades de ajuste para recomendarme vacantes';
-export const AYUDA_CONSENTIMIENTO =
+const AYUDA_CONSENTIMIENTO =
   'Se usan solo para mostrarte vacantes que cubran lo que necesitas y calcular tu compatibilidad. ' +
   'Es opcional y puedes cambiarlo después en Mi perfil.';
 

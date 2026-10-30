@@ -31,7 +31,7 @@ const textoOpcional = (valor: unknown, maximo: number) =>
   valor === null || valor === undefined || (esTexto(valor) && valor.length <= maximo);
 
 /** «AAAA-MM-DD» que existe en el calendario. */
-export function esFechaValida(valor: unknown): valor is string {
+function esFechaValida(valor: unknown): valor is string {
   if (!esTexto(valor) || !/^\d{4}-\d{2}-\d{2}$/.test(valor)) return false;
   const fecha = new Date(`${valor}T00:00:00Z`);
   return !Number.isNaN(fecha.getTime()) && fecha.toISOString().slice(0, 10) === valor;

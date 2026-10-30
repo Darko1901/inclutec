@@ -5,7 +5,7 @@ import { AccessibilityInfo, StyleSheet, View } from 'react-native';
 import { colores, espaciado, radio } from '../tema';
 import { Texto } from './Texto';
 
-export type VarianteAviso = 'info' | 'exito' | 'advertencia' | 'error';
+type VarianteAviso = 'info' | 'exito' | 'advertencia' | 'error';
 
 interface AvisoProps {
   variante?: VarianteAviso;

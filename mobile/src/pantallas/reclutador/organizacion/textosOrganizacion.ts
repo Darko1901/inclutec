@@ -2,7 +2,7 @@ import type { EmpresaPropia, EstadoEmpresa } from '../../../api';
 
 export const MAX_CONSTANCIA_MB = 5;
 
-export interface TextoBanner {
+interface TextoBanner {
   titulo: string;
   /** Lo que dice el banner; incluye el motivo cuando la empresa lo tiene. */
   mensaje: string;

@@ -4,7 +4,7 @@ import type { BottomTabNavigationOptions } from '@react-navigation/bottom-tabs';
 import { colores } from '../tema';
 
 /** «Notificaciones, 1 sin leer»: lo que anuncia el lector de pantalla en la pestaña. */
-export function etiquetaNotificaciones(noLeidas: number): string {
+function etiquetaNotificaciones(noLeidas: number): string {
   return noLeidas > 0 ? `Notificaciones, ${noLeidas} sin leer` : 'Notificaciones';
 }
 

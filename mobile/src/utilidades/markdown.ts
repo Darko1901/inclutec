@@ -1,6 +1,6 @@
 // Lector mínimo de Markdown para mostrar textos legales: títulos (#, ##), viñetas (-),
 // párrafos y negritas (**texto**). No pretende cubrir todo el lenguaje.
-export interface ParteTexto {
+interface ParteTexto {
   texto: string;
   negrita: boolean;
 }

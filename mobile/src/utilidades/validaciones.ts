@@ -82,10 +82,6 @@ export function mensajeTelefono(telefono: string): string | null {
   return null;
 }
 
-export function mensajeCodigo(codigo: string): string | null {
-  return esCodigoValido(codigo) ? null : 'Escribe los 6 dígitos del código.';
-}
-
 export function mensajeRfc(rfc: string): string | null {
   if (rfc.length === 0) return 'Escribe el RFC de la empresa.';
   if (!esRfcValido(rfc))

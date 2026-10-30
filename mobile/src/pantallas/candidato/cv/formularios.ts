@@ -24,7 +24,7 @@ const completa = (fecha: MesAnio) => aFechaApi(fecha) !== null;
 
 // ———— Experiencia ————
 
-export interface FormExperiencia {
+interface FormExperiencia {
   puesto: string;
   empresa: string;
   inicio: MesAnio;
@@ -78,7 +78,7 @@ export function entradaDeExperiencia(formulario: FormExperiencia): ExperienciaEn
 
 // ———— Formación ————
 
-export interface FormFormacion {
+interface FormFormacion {
   nivelId: number | null;
   institucion: string;
   carrera: string;

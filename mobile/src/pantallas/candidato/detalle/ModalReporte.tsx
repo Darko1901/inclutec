@@ -27,7 +27,7 @@ const NO_DISPONIBLE = {
 } as const;
 
 /** Lo que se reporta: una vacante o una empresa (CAN-02 y CAN-07) o un candidato (REC-05). */
-export interface ObjetoReporte {
+interface ObjetoReporte {
   tipo: 'vacante' | 'empresa' | 'candidato';
   id: number;
   /** Título de la vacante, nombre comercial de la empresa o nombre del candidato. */

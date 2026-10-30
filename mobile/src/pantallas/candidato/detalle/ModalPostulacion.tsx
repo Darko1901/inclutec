@@ -32,7 +32,7 @@ interface Props {
 }
 
 /** Respuesta inicial de «¿Compartir tus necesidades?» según la preferencia del perfil. */
-export function respuestaInicial(compartir: CompartirAjustes): boolean | null {
+function respuestaInicial(compartir: CompartirAjustes): boolean | null {
   return compartir === 'siempre' ? true : compartir === 'nunca' ? false : null;
 }
 

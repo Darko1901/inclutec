@@ -62,8 +62,6 @@ export type ConsultaPostulaciones = NonNullable<
 >;
 export type Entrevista = Esquemas['Entrevista'];
 export type Horario = Esquemas['Horario'];
-export type ReservaEntrevista = Esquemas['ReservaEntrevista'];
-export type CancelacionCandidato = Esquemas['CancelacionCandidato'];
 export type EmpresaResumen = Esquemas['EmpresaResumen'];
 export type PaginaEmpresas = Esquemas['PaginaEmpresas'];
 export type EmpresaPublica = Esquemas['EmpresaPublica'];
@@ -74,7 +72,6 @@ export type VacanteReclutador = Esquemas['VacanteReclutador'];
 export type PaginaVacantesReclutador = Esquemas['PaginaVacantesReclutador'];
 export type VacanteEntrada = Esquemas['VacanteEntrada'];
 export type VacanteGuardada = Esquemas['VacanteGuardada'];
-export type CambioEstadoVacante = Esquemas['CambioEstadoVacante'];
 export type ConsultaMisVacantes = NonNullable<
   operations['get_empresas_me_vacantes']['parameters']['query']
 >;

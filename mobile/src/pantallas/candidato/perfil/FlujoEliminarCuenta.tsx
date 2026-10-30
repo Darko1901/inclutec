@@ -5,7 +5,7 @@ import { CampoTexto, ModalConfirmacion, ModalFormulario, Texto } from '../../../
 import { useSesion } from '../../../sesion';
 import { LONGITUD_MAX_CONTRASENA } from '../../../utilidades/validaciones';
 
-export const AVISO_CUENTA_ELIMINADA =
+const AVISO_CUENTA_ELIMINADA =
   'Tu cuenta se eliminó. Borramos tu CV, tu foto y tus necesidades de ajuste, y retiramos tus postulaciones activas.';
 
 interface Props {

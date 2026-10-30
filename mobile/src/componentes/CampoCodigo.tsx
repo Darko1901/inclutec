@@ -12,7 +12,7 @@ import {
 } from '../tema';
 import { Texto } from './Texto';
 
-export const ETIQUETA_CODIGO = 'Código de 6 dígitos';
+const ETIQUETA_CODIGO = 'Código de 6 dígitos';
 const LONGITUD = 6;
 
 interface CampoCodigoProps {

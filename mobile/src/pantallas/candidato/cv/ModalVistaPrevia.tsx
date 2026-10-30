@@ -3,7 +3,7 @@ import { Cargando, EstadoError, ModalFormulario, Texto } from '../../../componen
 import { useCarga } from '../../../utilidades/useCarga';
 import { CvCandidato } from '../../compartidas/CvCandidato';
 
-export const AVISO_CONTACTO =
+const AVISO_CONTACTO =
   'Tu correo y teléfono se muestran a la empresa cuando te invite a entrevista.';
 
 const cargar = () => candidatos.vistaPrevia();

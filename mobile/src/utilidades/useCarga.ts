@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { ApiError } from '../api';
 
-export type EstadoCarga<T> =
+type EstadoCarga<T> =
   { fase: 'cargando' } | { fase: 'error'; error: ApiError } | { fase: 'listo'; datos: T };
 
 /**

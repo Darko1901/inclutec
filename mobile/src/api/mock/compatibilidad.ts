@@ -4,9 +4,9 @@ import type { CandidatoMock, EstadoFormacion, VacanteMock } from './negocio.dato
 // Motor de compatibilidad con las reglas de la sección 2 del contrato (y de
 // db/pruebas/P002__compatibilidad.sql). Es una función pura: no lee el estado del mock.
 
-export type CumpleFormacion = 'si' | 'cursando' | 'no';
+type CumpleFormacion = 'si' | 'cursando' | 'no';
 
-export interface EntradaCandidato {
+interface EntradaCandidato {
   habilidad_ids: number[];
   /** Vacío si el candidato no registró necesidades o no dio su consentimiento. */
   necesidad_ids: number[];
@@ -14,7 +14,7 @@ export interface EntradaCandidato {
   formaciones: { nivel_educativo_id: number; estado: EstadoFormacion }[];
 }
 
-export interface EntradaVacante {
+interface EntradaVacante {
   modalidad_id: number;
   nivel_educativo_id: number | null;
   habilidades: { habilidad_id: number; obligatoria: boolean }[];
@@ -22,7 +22,7 @@ export interface EntradaVacante {
   ajuste_ids: number[];
 }
 
-export interface ResultadoCompatibilidad {
+interface ResultadoCompatibilidad {
   /** Componentes de 0 a 1, redondeados a 3 decimales como en la tabla `compatibilidad`. */
   h: number;
   a: number;

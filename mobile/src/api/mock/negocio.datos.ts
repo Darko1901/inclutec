@@ -37,7 +37,7 @@ export interface FormacionMock {
   fecha_fin: string | null;
 }
 
-export interface HabilidadMock {
+interface HabilidadMock {
   habilidad_id: number;
   nivel: NivelHabilidad;
 }
@@ -149,7 +149,7 @@ export interface EntrevistaMock {
   creado_en: string;
 }
 
-export interface ObservacionMock {
+interface ObservacionMock {
   id: number;
   postulacion_id: number;
   autor_id: number;
@@ -157,7 +157,7 @@ export interface ObservacionMock {
   creado_en: string;
 }
 
-export interface ReporteMock {
+interface ReporteMock {
   id: number;
   reportante_id: number;
   motivo_reporte_id: number;
@@ -170,7 +170,7 @@ export interface ReporteMock {
 }
 
 /** Fila de la tabla `compatibilidad` (S002) que el motor debe reproducir. */
-export interface CompatibilidadGuardada {
+interface CompatibilidadGuardada {
   candidato_id: number;
   vacante_id: number;
   puntaje_candidato: number;
