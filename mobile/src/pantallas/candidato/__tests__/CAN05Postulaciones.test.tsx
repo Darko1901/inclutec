@@ -121,7 +121,7 @@ describe('CAN-05 · Mis postulaciones', () => {
 
     await fireEvent.press(screen.getByRole('radio', { name: 'Postulada' }));
     expect(await screen.findByText('No tienes postulaciones en «Postulada»')).toBeOnTheScreen();
-    await fireEvent.press(screen.getByRole('button', { name: 'Ver todos los estados' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Quitar filtros' }));
     await screen.findByTestId('postulacion-1');
   });
 

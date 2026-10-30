@@ -18,6 +18,7 @@ import {
   Texto,
 } from '../../../componentes';
 import { formatearDiaCorto, iniciarEnMexico } from '../../../utilidades/fechas';
+import { duracionHablada } from '../../../utilidades/formatos';
 import {
   DURACIONES,
   fechasConRepeticion,
@@ -50,7 +51,7 @@ const VACANTES_PUBLICADAS: EstadoVacante = 'publicada';
 
 const OPCIONES_DURACION = DURACIONES.map((minutos) => ({
   valor: minutos,
-  titulo: `${minutos} minutos`,
+  titulo: duracionHablada(Number(minutos)),
 }));
 const OPCIONES_DIAS_REPETIR = Array.from({ length: MAX_DIAS_REPETIR }, (_, i) => ({
   id: i + 1,

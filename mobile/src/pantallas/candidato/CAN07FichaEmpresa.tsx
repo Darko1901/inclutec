@@ -79,7 +79,7 @@ export default function CAN07FichaEmpresa({ route, navigation }: Props) {
     try {
       await Linking.openURL(url);
     } catch {
-      setMensaje({ variante: 'error', texto: 'No pudimos abrir el sitio web. Intenta más tarde.' });
+      setMensaje({ variante: 'error', texto: 'No pudimos abrir el sitio web. Intenta de nuevo.' });
     }
   }
 

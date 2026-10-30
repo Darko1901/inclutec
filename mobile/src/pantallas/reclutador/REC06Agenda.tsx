@@ -33,7 +33,7 @@ import {
   sumarDias,
 } from '../../utilidades/fechas';
 import { useCarga } from '../../utilidades/useCarga';
-import { abrirLiga, copiarLiga } from '../compartidas/ligas';
+import { abrirLiga, copiarLiga, TEXTO_LIGA_COPIADA } from '../compartidas/ligas';
 import { ModalCancelarEntrevista } from './agenda/ModalCancelarEntrevista';
 import { ModalPublicarHorarios } from './agenda/ModalPublicarHorarios';
 import {
@@ -315,7 +315,7 @@ export default function REC06Agenda({ route, navigation: tab }: Props) {
                     }
                     onCopiarLiga={(liga) =>
                       void copiarLiga(liga).then((error) =>
-                        error ? avisar('error', error) : avisar('exito', 'Liga copiada.'),
+                        error ? avisar('error', error) : avisar('exito', TEXTO_LIGA_COPIADA),
                       )
                     }
                   />

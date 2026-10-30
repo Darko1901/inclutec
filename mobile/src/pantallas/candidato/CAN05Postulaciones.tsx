@@ -123,7 +123,7 @@ export default function CAN05Postulaciones() {
         titulo={`No tienes postulaciones en «${textoEstado(estado)}»`}
         mensaje="Prueba con otro estado."
         icono="filter-outline"
-        accion={{ titulo: 'Ver todos los estados', onPress: () => setEstado(null) }}
+        accion={{ titulo: 'Quitar filtros', onPress: () => setEstado(null) }}
       />
     ) : sinNinguna ? (
       <EstadoVacio

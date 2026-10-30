@@ -1,7 +1,13 @@
 import { StyleSheet, View } from 'react-native';
 
 import { useCatalogo } from '../../../api';
-import { Casilla, CampoTexto, Selector, SelectorUbicacion } from '../../../componentes';
+import {
+  CampoTexto,
+  Casilla,
+  ErrorCatalogo,
+  Selector,
+  SelectorUbicacion,
+} from '../../../componentes';
 import { espaciado } from '../../../tema';
 import { MAX_DESCRIPCION, MAX_TITULO, TITULOS_PASO } from './formulario';
 import { TituloPaso } from './TituloPaso';
@@ -24,6 +30,7 @@ export function PasoDatos({ formulario: f, cambiar, errores, limpiar, entidadIni
   return (
     <View style={estilos.paso}>
       <TituloPaso texto={TITULOS_PASO[1]} />
+      <ErrorCatalogo catalogos={[categorias, jornadas, contratos]} />
       <CampoTexto
         etiqueta="Título de la vacante"
         value={f.titulo}

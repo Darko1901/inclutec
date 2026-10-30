@@ -4,6 +4,7 @@ import { ApiError, candidatos, useCatalogo, type Formacion } from '../../../api'
 import {
   Aviso,
   CampoTexto,
+  ErrorCatalogo,
   ModalFormulario,
   Selector,
   SelectorMesAnio,
@@ -73,7 +74,7 @@ export function ModalFormacion({ item, onCerrar, onGuardado }: PropiedadesModalC
       testID="modal-formacion"
     >
       {errorGeneral ? <Aviso variante="error" mensaje={errorGeneral} /> : null}
-      {niveles.error ? <Aviso variante="error" mensaje={niveles.error.detail} /> : null}
+      <ErrorCatalogo catalogos={[niveles]} />
       <Selector
         etiqueta="Nivel educativo"
         opciones={niveles.datos.map(({ id, nombre }) => ({ id, nombre }))}

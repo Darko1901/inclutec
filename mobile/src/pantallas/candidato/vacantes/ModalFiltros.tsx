@@ -4,18 +4,19 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { useCatalogo } from '../../../api';
 import {
   Boton,
-  Casilla,
   CampoTexto,
+  Casilla,
   EncabezadoModal,
+  ErrorCatalogo,
+  type OpcionSelector,
   Selector,
   Texto,
   VentanaModal,
-  type OpcionSelector,
 } from '../../../componentes';
 import { colores, espaciado } from '../../../tema';
+import { formatearPorcentaje, porcentajeHablado } from '../../../utilidades/formatos';
 import { CATEGORIAS_AJUSTE } from './categoriasAjuste';
 import { OPCIONES_COMPATIBILIDAD, SIN_FILTROS, type Filtros } from './filtros';
-import { porcentajeAccesible } from './textos';
 
 interface Props {
   visible: boolean;
@@ -67,8 +68,8 @@ function Contenido({ filtros, onAplicar, onCerrar }: Omit<Props, 'visible'>) {
     CUALQUIERA,
     ...OPCIONES_COMPATIBILIDAD.map((valor) => ({
       id: valor,
-      nombre: `${valor} % o más`,
-      etiquetaAccesible: `${porcentajeAccesible(valor)} o más`,
+      nombre: `${formatearPorcentaje(valor)} o más`,
+      etiquetaAccesible: `${porcentajeHablado(valor)} o más`,
     })),
   ];
 
@@ -108,6 +109,9 @@ function Contenido({ filtros, onAplicar, onCerrar }: Omit<Props, 'visible'>) {
         pistaVolver="Cierra los filtros sin aplicar los cambios"
       />
       <ScrollView contentContainerStyle={estilos.contenido} keyboardShouldPersistTaps="handled">
+        <ErrorCatalogo
+          catalogos={[modalidades, categorias, jornadas, entidades, municipios, ajustes]}
+        />
         <Selector
           etiqueta="Modalidad"
           opciones={conCualquiera(modalidades.datos)}

@@ -4,7 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import type { Compatibilidad } from '../../../api';
 import { Texto } from '../../../componentes';
 import { colores, espaciado, radio } from '../../../tema';
-import { porcentajeAccesible } from '../vacantes/textos';
+import { formatearPorcentaje, porcentajeHablado } from '../../../utilidades/formatos';
 import { lineasCompatibilidad, type NivelLinea } from './textosDetalle';
 
 const NIVELES: Record<NivelLinea, { icono: keyof typeof Ionicons.glyphMap; color: string }> = {
@@ -21,9 +21,9 @@ export function TarjetaCompatibilidad({ desglose }: { desglose: Compatibilidad }
       <Texto
         variante="subtitulo"
         accessibilityRole="header"
-        accessibilityLabel={`Compatibilidad ${porcentajeAccesible(desglose.puntaje)}`}
+        accessibilityLabel={`Compatibilidad ${porcentajeHablado(desglose.puntaje)}`}
       >
-        {`Compatibilidad ${desglose.puntaje} %`}
+        {`Compatibilidad ${formatearPorcentaje(desglose.puntaje)}`}
       </Texto>
       {lineasCompatibilidad(desglose).map((linea) => {
         const nivel = NIVELES[linea.nivel];

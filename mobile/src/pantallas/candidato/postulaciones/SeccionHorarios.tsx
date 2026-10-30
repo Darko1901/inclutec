@@ -5,12 +5,8 @@ import type { Horario } from '../../../api';
 import { Boton, Cargando, EstadoError, Tarjeta, Texto } from '../../../componentes';
 import { colores, espaciado } from '../../../tema';
 import { formatearHora } from '../../../utilidades/fechas';
-import {
-  agruparPorDia,
-  duracionCorta,
-  etiquetaAgendar,
-  TEXTO_SIN_HORARIOS,
-} from './textosEntrevista';
+import { duracionCorta } from '../../../utilidades/formatos';
+import { agruparPorDia, etiquetaAgendar, TEXTO_SIN_HORARIOS } from './textosEntrevista';
 
 export type CargaHorarios =
   { fase: 'cargando' } | { fase: 'error'; detail: string } | { fase: 'listo'; horarios: Horario[] };

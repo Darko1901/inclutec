@@ -15,6 +15,7 @@ import {
   Boton,
   CampoTexto,
   Casilla,
+  ErrorCatalogo,
   GrupoRadio,
   ModalConfirmacion,
   SeccionDesplegable,
@@ -173,17 +174,7 @@ function ConConsentimiento({
   return (
     <>
       {errorGeneral ? <Aviso variante="error" mensaje={errorGeneral} /> : null}
-      {ajustes.error ? (
-        <>
-          <Aviso variante="error" mensaje={ajustes.error.detail} />
-          <Boton
-            titulo="Reintentar"
-            variante="secundario"
-            icono="refresh"
-            onPress={ajustes.recargar}
-          />
-        </>
-      ) : null}
+      <ErrorCatalogo catalogos={[ajustes]} />
 
       {CATEGORIAS_AJUSTE.map(({ id, nombre }) => {
         const delGrupo = ajustes.datos.filter((ajuste) => ajuste.categoria === id);

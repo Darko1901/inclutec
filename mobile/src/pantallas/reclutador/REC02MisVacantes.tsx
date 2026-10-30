@@ -219,7 +219,7 @@ export default function REC02MisVacantes(_: Props) {
         titulo={`No tienes vacantes en «${textoEstadoVacante(estado)}»`}
         mensaje="Prueba con otro estado."
         icono="filter-outline"
-        accion={{ titulo: 'Ver todas', onPress: () => setEstado(null) }}
+        accion={{ titulo: 'Quitar filtros', onPress: () => setEstado(null) }}
       />
     ) : (
       <EstadoVacio

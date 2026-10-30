@@ -9,6 +9,7 @@ export { Casilla } from './Casilla';
 export { Cargando } from './Cargando';
 export { ChipEstado, ESTADOS } from './ChipEstado';
 export { EncabezadoModal } from './EncabezadoModal';
+export { ErrorCatalogo } from './ErrorCatalogo';
 export { EstadoError } from './EstadoError';
 export { EstadoVacio } from './EstadoVacio';
 export { FiltroEstado } from './FiltroEstado';

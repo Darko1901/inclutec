@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import type { VacanteResumen } from '../../../api';
 import { Tarjeta, Texto } from '../../../componentes';
 import { colores, espaciado } from '../../../tema';
+import { formatearPorcentaje } from '../../../utilidades/formatos';
 import { ICONO_CATEGORIA } from './categoriasAjuste';
 import { MAX_AJUSTES_EN_TARJETA, resumenAccesible } from './textos';
 
@@ -57,7 +58,7 @@ export function TarjetaVacante({ vacante, onPress }: Props) {
         <View style={estilos.compatibilidad} {...ocultar}>
           <Ionicons name="analytics-outline" size={18} color={colores.primario} {...ocultar} />
           <Texto variante="cuerpoFuerte" color="primario" {...ocultar}>
-            {`Compatibilidad ${vacante.compatibilidad} %`}
+            {`Compatibilidad ${formatearPorcentaje(vacante.compatibilidad)}`}
           </Texto>
         </View>
       ) : null}

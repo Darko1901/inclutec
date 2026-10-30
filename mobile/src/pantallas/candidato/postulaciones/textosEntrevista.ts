@@ -7,6 +7,7 @@ import {
   formatearFechaLarga,
   formatearHoraHablada,
 } from '../../../utilidades/fechas';
+import { duracionHablada } from '../../../utilidades/formatos';
 
 export const TEXTO_HORARIO_OCUPADO = 'Ese horario acaba de ser tomado, elige otro.';
 export const TEXTO_SIN_HORARIOS =
@@ -14,10 +15,6 @@ export const TEXTO_SIN_HORARIOS =
 export const ACLARACION_CANCELAR = 'Puedes cancelar hasta 24 h antes.';
 export const EXPLICACION_CANCELACION_TARDIA =
   'Ya no puedes cancelar desde la app porque faltan menos de 24 h para la entrevista. Si no puedes asistir, avísale a la empresa.';
-
-/** «45 min»: se ve así; el lector de pantalla dice «45 minutos». */
-export const duracionCorta = (minutos: number) => `${minutos} min`;
-export const duracionHablada = (minutos: number) => `${minutos} minutos`;
 
 interface GrupoHorarios {
   clave: string;

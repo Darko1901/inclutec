@@ -1,7 +1,6 @@
-import { setStringAsync } from 'expo-clipboard';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Linking, Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {
@@ -30,6 +29,7 @@ import type { RootStackParamList } from '../../navegacion';
 import { AREA_TACTIL_MINIMA, colores, espaciado } from '../../tema';
 import { formatearFechaCorta, formatearFechaLarga } from '../../utilidades/fechas';
 import { elementoDestacado, type Destacado } from './postulaciones/destacado';
+import { abrirLiga, copiarLiga, TEXTO_LIGA_COPIADA } from '../compartidas/ligas';
 import { LineaTiempo } from './postulaciones/LineaTiempo';
 import { SeccionHorarios, type CargaHorarios } from './postulaciones/SeccionHorarios';
 import { TarjetaEntrevista } from './postulaciones/TarjetaEntrevista';
@@ -150,21 +150,14 @@ export default function CAN06DetallePostulacion({ route, navigation }: Props) {
     setMensaje({ variante, texto });
   }
 
-  async function abrirLiga(liga: string) {
-    try {
-      await Linking.openURL(liga);
-    } catch {
-      avisar('error', 'No pudimos abrir la liga. Cópiala y ábrela en tu navegador.');
-    }
+  async function abrirLaLiga(liga: string) {
+    const error = await abrirLiga(liga);
+    if (error) avisar('error', error);
   }
 
-  async function copiarLiga(liga: string) {
-    try {
-      await setStringAsync(liga);
-      avisar('exito', 'Liga copiada.');
-    } catch {
-      avisar('error', 'No pudimos copiar la liga. Intenta de nuevo.');
-    }
+  async function copiarLaLiga(liga: string) {
+    const error = await copiarLiga(liga);
+    avisar(error ? 'error' : 'exito', error ?? TEXTO_LIGA_COPIADA);
   }
 
   async function agendar(horario: Horario) {
@@ -335,8 +328,8 @@ export default function CAN06DetallePostulacion({ route, navigation }: Props) {
               entrevista={entrevista}
               refTitulo={registrar('entrevista')}
               refCancelar={registrar('cancelar')}
-              onAbrirLiga={() => void abrirLiga(entrevista.liga)}
-              onCopiarLiga={() => void copiarLiga(entrevista.liga)}
+              onAbrirLiga={() => void abrirLaLiga(entrevista.liga)}
+              onCopiarLiga={() => void copiarLaLiga(entrevista.liga)}
               onCancelar={() => pedirConfirmacion({ tipo: 'cancelar' }, 'cancelar')}
             />
           </ResaltadoNotificacion>

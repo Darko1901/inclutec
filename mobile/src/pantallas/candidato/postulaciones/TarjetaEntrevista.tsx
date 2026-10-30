@@ -10,12 +10,8 @@ import {
   formatearHora,
   formatearHoraHablada,
 } from '../../../utilidades/fechas';
-import {
-  ACLARACION_CANCELAR,
-  duracionCorta,
-  duracionHablada,
-  EXPLICACION_CANCELACION_TARDIA,
-} from './textosEntrevista';
+import { capitalizar, duracionCorta, duracionHablada } from '../../../utilidades/formatos';
+import { ACLARACION_CANCELAR, EXPLICACION_CANCELACION_TARDIA } from './textosEntrevista';
 
 interface Props {
   entrevista: Entrevista;
@@ -141,10 +137,6 @@ export function TarjetaEntrevista({
       ) : null}
     </Tarjeta>
   );
-}
-
-function capitalizar(texto: string): string {
-  return texto.charAt(0).toUpperCase() + texto.slice(1);
 }
 
 const estilos = StyleSheet.create({

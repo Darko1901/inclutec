@@ -1,15 +1,11 @@
-import { View } from 'react-native';
-
-import { ApiError, useCatalogo } from '../../../api';
+import { useCatalogo } from '../../../api';
 import {
-  Aviso,
-  Boton,
   CampoTexto,
+  ErrorCatalogo,
   Selector,
   Texto,
   type OpcionSelector,
 } from '../../../componentes';
-import { espaciado } from '../../../tema';
 import type { DatosRegistro, CampoRegistro, ErroresRegistro, TipoCuenta } from './formulario';
 
 interface Props {
@@ -30,15 +26,6 @@ const aOpciones = (
     detalle: item.rango ?? undefined,
   }));
 
-function ErrorCatalogo({ error, alReintentar }: { error: ApiError; alReintentar: () => void }) {
-  return (
-    <View style={{ gap: espaciado.sm }}>
-      <Aviso variante="error" mensaje={error.detail} />
-      <Boton titulo="Reintentar" variante="secundario" icono="refresh" onPress={alReintentar} />
-    </View>
-  );
-}
-
 /** Paso 2: datos de la persona (y de la empresa, si es reclutador). */
 export function PasoDatos({ tipo, datos, errores, alCambiar, alTocar }: Props) {
   const entidades = useCatalogo('entidades');
@@ -50,7 +37,6 @@ export function PasoDatos({ tipo, datos, errores, alCambiar, alTocar }: Props) {
   const sectores = useCatalogo('sectores', undefined, tipo === 'reclutador');
   const tamanos = useCatalogo('tamanos-empresa', undefined, tipo === 'reclutador');
   const esReclutador = tipo === 'reclutador';
-  const errorDeCatalogo = entidades.error ?? municipios.error ?? sectores.error ?? tamanos.error;
 
   const campo = (
     id: CampoRegistro,
@@ -128,17 +114,7 @@ export function PasoDatos({ tipo, datos, errores, alCambiar, alTocar }: Props) {
 
   return (
     <>
-      {errorDeCatalogo ? (
-        <ErrorCatalogo
-          error={errorDeCatalogo}
-          alReintentar={() => {
-            if (entidades.error) entidades.recargar();
-            if (municipios.error) municipios.recargar();
-            if (sectores.error) sectores.recargar();
-            if (tamanos.error) tamanos.recargar();
-          }}
-        />
-      ) : null}
+      <ErrorCatalogo catalogos={[entidades, municipios, sectores, tamanos]} />
 
       {esReclutador ? (
         <Texto variante="subtitulo" accessibilityRole="header">
