@@ -42,7 +42,7 @@ describe('postulados de una vacante (REC-04)', () => {
       candidato: { id: 3, nombre: 'Mariana', apellidos: 'López García', foto_url: null },
       compatibilidad: 83,
       estado: 'entrevista',
-      creado_en: '2026-09-30T17:20:00Z',
+      creado_en: obtenerEstado().postulaciones.find((p) => p.id === 1)!.creado_en,
       ajustes_por_confirmar: false,
     });
     // Los empates se resuelven con quien se postuló antes: Karla (100 %) antes que Carlos (100 %).
@@ -355,7 +355,7 @@ describe('observaciones internas', () => {
         id: 1,
         texto: 'Perfil sólido en soporte; confirmar disponibilidad de horario.',
         autor: { id: 2, nombre: 'Laura', apellidos: 'Hernández Ruiz' },
-        creado_en: '2026-10-01T15:12:00Z',
+        creado_en: obtenerEstado().observaciones.find((o) => o.id === 1)!.creado_en,
       },
     ]);
 

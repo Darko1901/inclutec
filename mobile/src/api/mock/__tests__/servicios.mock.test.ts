@@ -1,6 +1,7 @@
 import { ApiError } from '../../errores';
 import { configurarSesionApi } from '../../sesionApi';
 import { CatalogosMock } from '../catalogos.mock';
+import { obtenerEstado } from '../datos';
 import { NotificacionesMock } from '../notificaciones.mock';
 import { crearToken } from '../tokens';
 
@@ -27,7 +28,7 @@ describe('notificaciones mock', () => {
           mensaje: 'Tu postulación a Técnico de soporte de TI pasó a Entrevista.',
           referencia: { tipo: 'postulacion', id: 1 },
           leida: false,
-          creado_en: '2026-10-02T16:30:00Z',
+          creado_en: obtenerEstado().notificaciones.find((n) => n.id === 1)!.creado_en,
         },
       ],
       total: 1,

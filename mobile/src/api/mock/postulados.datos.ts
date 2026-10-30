@@ -1,3 +1,4 @@
+import { relativaAHoy } from './fechasS002';
 import type { NivelHabilidad } from '../tipos';
 import type {
   CandidatoMock,
@@ -61,12 +62,13 @@ const MENSAJES: Partial<Record<EstadoPostulacion, string>> = {
 
 function construir(p: Perfil, ahora: number): CandidatoExtra {
   const ruta = RUTA[p.estado];
-  // Cada paso del historial ocurre unas horas después del anterior.
+  // Cada paso del historial ocurre unas horas después del anterior (sin pasar de «ahora»).
+  const separacionHoras = Math.min(3, p.horas / ruta.length);
   const historial: EventoHistorialMock[] = ruta.map((nuevo, indice) => ({
     estado_anterior: indice === 0 ? null : ruta[indice - 1],
     estado_nuevo: nuevo,
     mensaje: indice === 0 ? null : (MENSAJES[nuevo] ?? null),
-    creado_en: aIso(new Date(ahora - (p.horas - indice * 3) * HORA_MS)),
+    creado_en: aIso(new Date(ahora - (p.horas - indice * separacionHoras) * HORA_MS)),
   }));
   const necesidades = p.necesidades ?? [];
   const nivel: NivelHabilidad = 'intermedio';
@@ -92,7 +94,8 @@ function construir(p: Perfil, ahora: number): CandidatoExtra {
       foto_url: null,
       disponible_reubicacion: false,
       compartir_ajustes: 'preguntar',
-      consentimiento_sensibles_en: necesidades.length > 0 ? '2026-09-20T17:00:00Z' : null,
+      consentimiento_sensibles_en:
+        necesidades.length > 0 ? relativaAHoy('2026-09-20T17:00:00Z', ahora) : null,
       nota_ajustes: necesidades.length > 0 ? (p.nota ?? null) : null,
       modalidad_ids: p.modalidades,
       categoria_ids: [1],

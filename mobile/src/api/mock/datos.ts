@@ -1,3 +1,4 @@
+import { relativaAHoy } from './fechasS002';
 import { obtenerToken } from '../sesionApi';
 import type {
   Notificacion,
@@ -273,7 +274,7 @@ function crearEstadoInicial(): EstadoMock {
       mensaje: 'Tu postulación a Técnico de soporte de TI pasó a Entrevista.',
       referencia: { tipo: 'postulacion', id: 1 },
       leida: false,
-      creado_en: '2026-10-02T16:30:00Z',
+      creado_en: relativaAHoy('2026-10-02T16:30:00Z'),
     },
     {
       usuario_id: 2,
@@ -283,7 +284,7 @@ function crearEstadoInicial(): EstadoMock {
       mensaje: 'Se agendó una entrevista para Técnico de soporte de TI.',
       referencia: { tipo: 'entrevista', id: 1 },
       leida: false,
-      creado_en: '2026-10-02T17:00:00Z',
+      creado_en: relativaAHoy('2026-10-02T17:00:00Z'),
     },
     {
       usuario_id: 5,
@@ -293,7 +294,7 @@ function crearEstadoInicial(): EstadoMock {
       mensaje: 'Jorge Ramírez Soto se postuló a Analista de datos de operaciones.',
       referencia: { tipo: 'postulacion', id: 2 },
       leida: false,
-      creado_en: '2026-10-05T17:30:00Z',
+      creado_en: relativaAHoy('2026-10-05T17:30:00Z'),
     },
     {
       usuario_id: 3,

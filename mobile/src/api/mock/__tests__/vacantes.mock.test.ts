@@ -414,7 +414,8 @@ describe('candidatos mock · GET /candidatos/me', () => {
         { id: 3, nombre: 'Híbrido' },
       ],
       compartir_ajustes: 'preguntar',
-      consentimiento_sensibles_en: '2026-09-28T17:00:00Z',
+      consentimiento_sensibles_en: obtenerEstado().candidatos.find((c) => c.usuario_id === 3)!
+        .consentimiento_sensibles_en,
       necesidades: [
         { id: 1, nombre: 'Acceso con rampa', categoria: 'movilidad' },
         { id: 3, nombre: 'Baño accesible', categoria: 'movilidad' },
