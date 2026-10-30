@@ -46,8 +46,10 @@ export function Avatar({
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
     >
+      {/* Decorativas y dentro de un círculo fijo: no crecen con la letra del sistema (no se leen). */}
       <Texto
         variante="subtitulo"
+        allowFontScaling={false}
         style={{ color: colores.primario, fontSize: tamano / 2.6, lineHeight: tamano / 2 }}
       >
         {`${inicial(nombre)}${inicial(apellidos)}`}

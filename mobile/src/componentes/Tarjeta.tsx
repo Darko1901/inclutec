@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import type { ReactNode } from 'react';
 
-import { colores, espaciado, radio } from '../tema';
+import { AREA_TACTIL_MINIMA, colores, espaciado, radio } from '../tema';
 
 interface TarjetaProps {
   children: ReactNode;
@@ -35,7 +35,12 @@ export function Tarjeta({
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       accessibilityHint={accessibilityHint}
-      style={({ pressed }) => [estilos.tarjeta, pressed && estilos.presionada, style]}
+      style={({ pressed }) => [
+        estilos.tarjeta,
+        estilos.tocable,
+        pressed && estilos.presionada,
+        style,
+      ]}
     >
       {children}
     </Pressable>
@@ -51,5 +56,6 @@ const estilos = StyleSheet.create({
     padding: espaciado.lg,
     gap: espaciado.sm,
   },
+  tocable: { minHeight: AREA_TACTIL_MINIMA },
   presionada: { backgroundColor: colores.fondoSuave },
 });

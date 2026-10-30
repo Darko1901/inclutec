@@ -47,6 +47,7 @@ export function LogoEmpresa({ logoUrl, nombre, tamano = 48, testID }: LogoEmpres
       ) : (
         <Texto
           variante="subtitulo"
+          allowFontScaling={false}
           style={{ color: colores.primario, fontSize: tamano / 2.4, lineHeight: tamano / 1.8 }}
         >
           {inicialesDeEmpresa(nombre)}
