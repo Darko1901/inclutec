@@ -1,6 +1,6 @@
 import { setStringAsync } from 'expo-clipboard';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Linking, Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -21,12 +21,15 @@ import {
   ESTADOS,
   LogoEmpresa,
   ModalConfirmacion,
+  ResaltadoNotificacion,
   Texto,
+  useMarcaDeNotificacion,
   useRetornoFoco,
 } from '../../componentes';
 import type { RootStackParamList } from '../../navegacion';
 import { AREA_TACTIL_MINIMA, colores, espaciado } from '../../tema';
 import { formatearFechaCorta, formatearFechaLarga } from '../../utilidades/fechas';
+import { elementoDestacado, type Destacado } from './postulaciones/destacado';
 import { LineaTiempo } from './postulaciones/LineaTiempo';
 import { SeccionHorarios, type CargaHorarios } from './postulaciones/SeccionHorarios';
 import { TarjetaEntrevista } from './postulaciones/TarjetaEntrevista';
@@ -45,7 +48,7 @@ type Confirmacion =
 
 /** CAN-06: línea de tiempo de la postulación, horarios para agendar, entrevista y retiro. */
 export default function CAN06DetallePostulacion({ route, navigation }: Props) {
-  const { id } = route.params;
+  const { id, desde } = route.params;
   const [carga, setCarga] = useState<Carga>({ fase: 'cargando' });
   const [intento, setIntento] = useState(0);
   const [cargaHorarios, setCargaHorarios] = useState<CargaHorarios>({ fase: 'cargando' });
@@ -55,6 +58,10 @@ export default function CAN06DetallePostulacion({ route, navigation }: Props) {
   const [refrescando, setRefrescando] = useState(false);
   const [mensaje, setMensaje] = useState<Mensaje | null>(null);
   const { registrar, recordar, devolver } = useRetornoFoco();
+  const scroll = useRef<ScrollView>(null);
+  const { refMarca, enfocar, desplazar } = useMarcaDeNotificacion();
+  // Parte que se resalta al llegar desde una notificación; se fija al cargar y no se mueve después.
+  const [destacado, setDestacado] = useState<Destacado | null>(null);
 
   const detalle = carga.fase === 'listo' ? carga.detalle : null;
   const vacanteId = detalle?.vacante.id ?? null;
@@ -66,7 +73,9 @@ export default function CAN06DetallePostulacion({ route, navigation }: Props) {
     postulaciones
       .detalle(id)
       .then((resultado) => {
-        if (vigente) setCarga({ fase: 'listo', detalle: resultado });
+        if (!vigente) return;
+        setCarga({ fase: 'listo', detalle: resultado });
+        if (desde) setDestacado(elementoDestacado(desde, resultado));
       })
       .catch((fallo: unknown) => {
         if (vigente) setCarga({ fase: 'error', error: ApiError.desde(fallo) });
@@ -74,7 +83,14 @@ export default function CAN06DetallePostulacion({ route, navigation }: Props) {
     return () => {
       vigente = false;
     };
-  }, [id, intento]);
+  }, [id, intento, desde]);
+
+  // Con la parte resaltada ya dibujada: se desplaza hasta ella y se lleva ahí el foco del lector.
+  useEffect(() => {
+    if (destacado === null) return;
+    desplazar(scroll.current);
+    enfocar();
+  }, [destacado, desplazar, enfocar]);
 
   // Los horarios solo se piden cuando hace falta elegir uno.
   useEffect(() => {
@@ -247,6 +263,7 @@ export default function CAN06DetallePostulacion({ route, navigation }: Props) {
         </View>
       ) : null}
       <ScrollView
+        ref={scroll}
         contentContainerStyle={estilos.contenido}
         testID="detalle-postulacion"
         refreshControl={
@@ -301,30 +318,46 @@ export default function CAN06DetallePostulacion({ route, navigation }: Props) {
           <Texto variante="subtitulo" accessibilityRole="header">
             Historial
           </Texto>
-          <LineaTiempo historial={carga.detalle.historial} />
+          <LineaTiempo
+            historial={carga.detalle.historial}
+            destacarUltimo={destacado === 'historial'}
+            refMarca={refMarca}
+          />
         </View>
 
         {entrevista ? (
-          <TarjetaEntrevista
-            entrevista={entrevista}
-            refTitulo={registrar('entrevista')}
-            refCancelar={registrar('cancelar')}
-            onAbrirLiga={() => void abrirLiga(entrevista.liga)}
-            onCopiarLiga={() => void copiarLiga(entrevista.liga)}
-            onCancelar={() => pedirConfirmacion({ tipo: 'cancelar' }, 'cancelar')}
-          />
+          <ResaltadoNotificacion
+            activo={destacado === 'entrevista'}
+            refMarca={refMarca}
+            testID="resaltado-entrevista"
+          >
+            <TarjetaEntrevista
+              entrevista={entrevista}
+              refTitulo={registrar('entrevista')}
+              refCancelar={registrar('cancelar')}
+              onAbrirLiga={() => void abrirLiga(entrevista.liga)}
+              onCopiarLiga={() => void copiarLiga(entrevista.liga)}
+              onCancelar={() => pedirConfirmacion({ tipo: 'cancelar' }, 'cancelar')}
+            />
+          </ResaltadoNotificacion>
         ) : null}
 
         {necesitaHorarios ? (
-          <SeccionHorarios
-            carga={cargaHorarios}
-            onAgendar={(horario) =>
-              pedirConfirmacion({ tipo: 'agendar', horario }, `agendar-${horario.id}`)
-            }
-            onReintentar={recargarHorarios}
-            referenciaBoton={(horarioId) => registrar(`agendar-${horarioId}`)}
-            referenciaTitulo={registrar('horarios')}
-          />
+          <ResaltadoNotificacion
+            activo={destacado === 'horarios'}
+            refMarca={refMarca}
+            testID="resaltado-horarios"
+          >
+            <SeccionHorarios
+              carga={cargaHorarios}
+              onAgendar={(horario) =>
+                pedirConfirmacion({ tipo: 'agendar', horario }, `agendar-${horario.id}`)
+              }
+              onReintentar={recargarHorarios}
+              referenciaBoton={(horarioId) => registrar(`agendar-${horarioId}`)}
+              referenciaTitulo={registrar('horarios')}
+            />
+          </ResaltadoNotificacion>
         ) : null}
 
         {carga.detalle.puede_retirar ? (

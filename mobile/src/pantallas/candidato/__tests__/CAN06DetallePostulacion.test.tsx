@@ -11,6 +11,7 @@ import {
   type EventoHistorial,
 } from '../../../api';
 import { obtenerEstado } from '../../../api/mock/datos';
+import { cancelarEntrevista } from '../../../api/mock/entrevistas.logica';
 import { SesionProvider, useSesion } from '../../../sesion';
 import CAN06DetallePostulacion from '../CAN06DetallePostulacion';
 import { etiquetaEvento } from '../postulaciones/LineaTiempo';
@@ -36,10 +37,15 @@ function Entrar({ correo, children }: { correo: string; children: ReactNode }) {
   return estado === 'activa' ? <>{children}</> : null;
 }
 
-async function abrir(id: number, correo = 'mariana.lopez@correo.mx', esperarDetalle = true) {
+async function abrir(
+  id: number,
+  correo = 'mariana.lopez@correo.mx',
+  esperarDetalle = true,
+  desde?: string,
+) {
   const props = {
     navigation: navegacion,
-    route: { key: 'k', name: 'DetallePostulacion', params: { id } },
+    route: { key: 'k', name: 'DetallePostulacion', params: { id, desde } },
   } as unknown as ComponentProps<typeof CAN06DetallePostulacion>;
   await render(
     <SesionProvider>
@@ -353,6 +359,56 @@ describe('CAN-06 · Detalle de postulación y entrevista', () => {
           hidden: true,
         }),
       ).toBeOnTheScreen();
+    });
+  });
+
+  describe('al llegar desde una notificación', () => {
+    const marca = () => screen.getByTestId('marca-notificacion');
+
+    it('un cambio de estado resalta el último paso del historial y lleva ahí el foco', async () => {
+      await abrir(1, 'mariana.lopez@correo.mx', true, 'cambio_estado');
+
+      const resaltado = await screen.findByTestId('resaltado-historial');
+      expect(within(resaltado).getByTestId('marca-notificacion')).toBeOnTheScreen();
+      expect(
+        within(resaltado).getByText('Desde tu notificación', { hidden: true }),
+      ).toBeOnTheScreen();
+      // La marca va dentro del paso «Estado actual», no en otro.
+      expect(within(resaltado).getByTestId('paso-2')).toBeOnTheScreen();
+      expect(marca().props.accessibilityLabel).toBe('Desde tu notificación');
+      await waitFor(() => expect(AccessibilityInfo.setAccessibilityFocus).toHaveBeenCalledWith(42));
+      expect(screen.getAllByTestId('marca-notificacion')).toHaveLength(1);
+    });
+
+    it('un recordatorio de entrevista resalta la tarjeta de la entrevista', async () => {
+      await abrir(1, 'mariana.lopez@correo.mx', true, 'recordatorio_entrevista');
+
+      const resaltado = await screen.findByTestId('resaltado-entrevista');
+      expect(within(resaltado).getByTestId('tarjeta-entrevista')).toBeOnTheScreen();
+      expect(screen.queryByTestId('resaltado-historial')).toBeNull();
+      await waitFor(() => expect(AccessibilityInfo.setAccessibilityFocus).toHaveBeenCalledWith(42));
+    });
+
+    it('una entrevista cancelada resalta «Elige un horario»', async () => {
+      cancelarEntrevista(
+        obtenerEstado().entrevistas.find((e) => e.postulacion_id === 1)!,
+        null,
+      );
+      await abrir(1, 'mariana.lopez@correo.mx', true, 'entrevista_cancelada');
+
+      const resaltado = await screen.findByTestId('resaltado-horarios');
+      expect(within(resaltado).getByTestId('marca-notificacion')).toBeOnTheScreen();
+      expect(
+        within(resaltado).getByText('Desde tu notificación', { hidden: true }),
+      ).toBeOnTheScreen();
+    });
+
+    it('sin notificación no resalta nada ni mueve el foco', async () => {
+      await abrir(1);
+
+      expect(screen.queryByTestId('marca-notificacion')).toBeNull();
+      await new Promise((resolver) => setTimeout(resolver, 700));
+      expect(AccessibilityInfo.setAccessibilityFocus).not.toHaveBeenCalled();
     });
   });
 

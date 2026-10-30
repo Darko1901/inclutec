@@ -17,8 +17,10 @@ import {
   EstadoError,
   EstadoVacio,
   ModalConfirmacion,
+  ResaltadoNotificacion,
   Selector,
   Texto,
+  useMarcaDeNotificacion,
   useRetornoFoco,
 } from '../../componentes';
 import type { ReclutadorTabsParamList } from '../../navegacion';
@@ -43,12 +45,14 @@ import {
 
 type Props = BottomTabScreenProps<ReclutadorTabsParamList, 'Agenda'>;
 
+const TEXTO_HORARIO_NO_ENCONTRADO =
+  'No encontramos ese horario en tu agenda de estos días. Pudo cancelarse o estar más adelante: usa «Ver más días».';
 const DIAS_INICIALES = 30;
 const PASO_DIAS = 30;
 const TODAS = 0;
 
 interface Mensaje {
-  variante: 'exito' | 'error';
+  variante: 'exito' | 'info' | 'error';
   texto: string;
   n: number;
 }
@@ -98,6 +102,10 @@ export default function REC06Agenda({ route, navigation: tab }: Props) {
   const [cancelar, setCancelar] = useState<HorarioAgenda | null>(null);
   const [trabajando, setTrabajando] = useState(false);
   const { registrar, recordar, devolver } = useRetornoFoco();
+  const listaRef = useRef<FlatList<DiaAgenda>>(null);
+  const { refMarca, enfocar } = useMarcaDeNotificacion();
+  // Horario al que llevó una notificación (se resalta mientras la pestaña tenga el foco).
+  const [resaltadoId, setResaltadoId] = useState<number | null>(null);
 
   const hasta = sumarDias(hoy, dias);
   const cargarAgenda = useCallback(
@@ -108,7 +116,7 @@ export default function REC06Agenda({ route, navigation: tab }: Props) {
       }),
     [hasta, vacanteId],
   );
-  const { estado, recargar, recargarSilencioso } = useCarga(cargarAgenda);
+  const { estado, recargar, recargarSilencioso, establecer } = useCarga(cargarAgenda);
   const cargarVacantes = useCallback(() => empresas.misVacantes({ size: 100 }), []);
   const vacantes = useCarga(cargarVacantes);
 
@@ -127,6 +135,8 @@ export default function REC06Agenda({ route, navigation: tab }: Props) {
       else void recargarSilencioso();
     }, [recargarSilencioso]),
   );
+  // Al salir de la pestaña ya no se resalta nada: la marca solo vale para esta llegada.
+  useFocusEffect(useCallback(() => () => setResaltadoId(null), []));
 
   // Desde REC-05: «Publicar horarios» abre el formulario con esa vacante.
   const solicitada = route.params?.publicar_vacante_id;
@@ -140,6 +150,39 @@ export default function REC06Agenda({ route, navigation: tab }: Props) {
 
   const avisar = (variante: Mensaje['variante'], texto: string) =>
     setMensaje((previo) => ({ variante, texto, n: (previo?.n ?? 0) + 1 }));
+
+  // Llega desde una notificación (entrevista_id o horario_id): se pide la agenda completa (sin
+  // filtro de vacante), se busca ese horario y se resalta; los parámetros se limpian para que no
+  // se repita al volver a la pestaña. Si ya no está (se canceló o queda más adelante), se avisa.
+  const entrevistaSolicitada = route.params?.entrevista_id;
+  const horarioSolicitado = route.params?.horario_id;
+  useEffect(() => {
+    if (entrevistaSolicitada === undefined && horarioSolicitado === undefined) return;
+    tab.setParams({ entrevista_id: undefined, horario_id: undefined });
+    entrevistas
+      .miAgenda({ hasta })
+      .then((datos) => {
+        const buscar = (h: HorarioAgenda) =>
+          h.id === horarioSolicitado ||
+          (entrevistaSolicitada !== undefined && h.entrevista?.id === entrevistaSolicitada);
+        const encontrado = datos.flatMap((dia) => dia.horarios).find(buscar);
+        setVacanteId(TODAS);
+        establecer(datos);
+        if (encontrado) setResaltadoId(encontrado.id);
+        else avisar('info', TEXTO_HORARIO_NO_ENCONTRADO);
+      })
+      .catch((fallo: unknown) => avisar('error', ApiError.desde(fallo).detail));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- solo cuando cambian los parámetros
+  }, [entrevistaSolicitada, horarioSolicitado]);
+
+  // Con el horario resaltado ya dibujado: se desplaza hasta su día y se lleva ahí el foco del lector.
+  useEffect(() => {
+    if (resaltadoId === null || estado.fase !== 'listo') return;
+    const indice = estado.datos.findIndex((dia) => dia.horarios.some((h) => h.id === resaltadoId));
+    if (indice >= 0) listaRef.current?.scrollToIndex({ index: indice, animated: true });
+    enfocar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- solo al resaltar un horario nuevo
+  }, [resaltadoId]);
 
   function pedirAccion(accion: AccionHorario, horario: HorarioAgenda) {
     recordar(`accion-${horario.id}`);
@@ -221,6 +264,7 @@ export default function REC06Agenda({ route, navigation: tab }: Props) {
   );
 
   const lista: DiaAgenda[] = estado.fase === 'listo' ? estado.datos : [];
+
   const vacio =
     estado.fase === 'cargando' ? (
       <Cargando mensaje="Cargando tu agenda…" />
@@ -238,6 +282,7 @@ export default function REC06Agenda({ route, navigation: tab }: Props) {
   return (
     <SafeAreaView style={estilos.pantalla} edges={['top', 'left', 'right']}>
       <FlatList
+        ref={listaRef}
         testID="lista-agenda"
         data={lista}
         keyExtractor={(dia) => dia.fecha}
@@ -253,22 +298,28 @@ export default function REC06Agenda({ route, navigation: tab }: Props) {
                 {etiquetaDia(primero.inicio)}
               </Texto>
               {dia.horarios.map((horario) => (
-                <TarjetaHorario
+                <ResaltadoNotificacion
                   key={horario.id}
-                  horario={horario}
-                  ahora={ahora}
-                  refAccion={registrar(`accion-${horario.id}`)}
-                  onAccion={pedirAccion}
-                  onAbrirCandidato={(id) => navigation.navigate('DetallePostulado', { id })}
-                  onAbrirLiga={(liga) =>
-                    void abrirLiga(liga).then((error) => error && avisar('error', error))
-                  }
-                  onCopiarLiga={(liga) =>
-                    void copiarLiga(liga).then((error) =>
-                      error ? avisar('error', error) : avisar('exito', 'Liga copiada.'),
-                    )
-                  }
-                />
+                  activo={horario.id === resaltadoId}
+                  refMarca={refMarca}
+                  testID={`resaltado-${horario.id}`}
+                >
+                  <TarjetaHorario
+                    horario={horario}
+                    ahora={ahora}
+                    refAccion={registrar(`accion-${horario.id}`)}
+                    onAccion={pedirAccion}
+                    onAbrirCandidato={(id) => navigation.navigate('DetallePostulado', { id })}
+                    onAbrirLiga={(liga) =>
+                      void abrirLiga(liga).then((error) => error && avisar('error', error))
+                    }
+                    onCopiarLiga={(liga) =>
+                      void copiarLiga(liga).then((error) =>
+                        error ? avisar('error', error) : avisar('exito', 'Liga copiada.'),
+                      )
+                    }
+                  />
+                </ResaltadoNotificacion>
               ))}
             </View>
           );
@@ -291,6 +342,10 @@ export default function REC06Agenda({ route, navigation: tab }: Props) {
         }
         refreshControl={
           <RefreshControl refreshing={refrescando} onRefresh={() => void refrescar()} />
+        }
+        onScrollToIndexFailed={({ index, averageItemLength }) =>
+          // Los días que aún no se miden: se acerca por el alto promedio y se vuelve a intentar.
+          listaRef.current?.scrollToOffset({ offset: averageItemLength * index, animated: true })
         }
         contentContainerStyle={estilos.contenido}
       />

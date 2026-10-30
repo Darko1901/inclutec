@@ -121,7 +121,9 @@ export default function MOV04Notificaciones() {
           refrescar();
         });
     }
-    const destino = usuario ? destinoNotificacion(usuario.rol, notificacion.referencia) : null;
+    const destino = usuario
+      ? destinoNotificacion(usuario.rol, notificacion.referencia, notificacion.tipo)
+      : null;
     if (destino) navigation.navigate(destino.pantalla, destino.params);
   }
 

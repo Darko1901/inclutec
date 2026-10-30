@@ -1,5 +1,6 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react-native';
 import type { ComponentProps } from 'react';
+import { AccessibilityInfo } from 'react-native';
 
 import { entrevistas, horarios } from '../../../api';
 import { obtenerEstado } from '../../../api/mock/datos';
@@ -15,6 +16,15 @@ jest.mock('@react-navigation/native', () => ({
   useFocusEffect: (efecto: () => void | (() => void)) =>
     jest.requireActual('react').useEffect(efecto, [efecto]),
 }));
+
+// En las pruebas no hay vistas nativas: findNodeHandle devuelve siempre el mismo número.
+jest.mock('react-native', () => {
+  const actual = jest.requireActual('react-native');
+  return new Proxy(actual, {
+    get: (objetivo, propiedad, receptor) =>
+      propiedad === 'findNodeHandle' ? () => 42 : Reflect.get(objetivo, propiedad, receptor),
+  });
+});
 
 // El Modal de pruebas solo muestra su contenido.
 jest.mock('react-native/Libraries/Modal/Modal', () => {
@@ -150,6 +160,57 @@ describe('REC-06 · Agenda de entrevistas', () => {
       const lista = within(screen.getByTestId('lista-agenda'));
       expect(lista.queryByTestId('publicar-horarios')).toBeNull();
       expect(screen.getByTestId('publicar-horarios')).toBeOnTheScreen();
+    });
+  });
+
+  describe('al llegar desde una notificación', () => {
+    beforeEach(() => {
+      jest.spyOn(AccessibilityInfo, 'setAccessibilityFocus').mockImplementation(() => undefined);
+    });
+
+    it('con entrevista_id resalta ese horario con borde y texto y lleva ahí el foco', async () => {
+      await abrir({ entrevista_id: 1 });
+
+      const resaltado = await screen.findByTestId('resaltado-1');
+      expect(within(resaltado).getByTestId('horario-1')).toBeOnTheScreen();
+      expect(
+        within(resaltado).getByText('Desde tu notificación', { hidden: true }),
+      ).toBeOnTheScreen();
+      expect(within(resaltado).getByTestId('marca-notificacion').props.accessibilityLabel).toBe(
+        'Desde tu notificación',
+      );
+      expect(screen.getAllByTestId('marca-notificacion')).toHaveLength(1);
+      await waitFor(() => expect(AccessibilityInfo.setAccessibilityFocus).toHaveBeenCalledWith(42));
+      // Los parámetros se limpian: al volver a la pestaña no se repite.
+      expect(establecerParametros).toHaveBeenCalledWith({
+        entrevista_id: undefined,
+        horario_id: undefined,
+      });
+    });
+
+    it('con horario_id resalta ese horario, aunque esté libre', async () => {
+      await abrir({ horario_id: 2 });
+
+      const resaltado = await screen.findByTestId('resaltado-2');
+      expect(within(resaltado).getByTestId('horario-2')).toBeOnTheScreen();
+      expect(screen.queryByTestId('resaltado-1')).toBeNull();
+    });
+
+    it('si la entrevista ya no está en la agenda lo avisa en lugar de resaltar otra cosa', async () => {
+      await abrir({ entrevista_id: 999 });
+
+      expect(await screen.findByTestId('aviso-agenda')).toHaveTextContent(
+        /No encontramos ese horario/,
+      );
+      expect(screen.queryByTestId('marca-notificacion')).toBeNull();
+      expect(AccessibilityInfo.setAccessibilityFocus).not.toHaveBeenCalled();
+    });
+
+    it('sin parámetros no resalta nada', async () => {
+      await abrir();
+      await screen.findByTestId('horario-1');
+
+      expect(screen.queryByTestId('marca-notificacion')).toBeNull();
     });
   });
 
