@@ -5,6 +5,7 @@ import {
   Aviso,
   Boton,
   Casilla,
+  ErrorCatalogo,
   Interruptor,
   SeccionDesplegable,
   Selector,
@@ -35,7 +36,6 @@ export function SeccionPreferencias({
   const modalidades = useCatalogo('modalidades');
   const categorias = useCatalogo('categorias');
   const jornadas = useCatalogo('jornadas');
-  const errorCatalogo = modalidades.error ?? categorias.error ?? jornadas.error;
 
   async function guardar() {
     setErrorGeneral(null);
@@ -70,21 +70,7 @@ export function SeccionPreferencias({
       testID="seccion-preferencias"
     >
       {errorGeneral ? <Aviso variante="error" mensaje={errorGeneral} /> : null}
-      {errorCatalogo ? (
-        <>
-          <Aviso variante="error" mensaje={errorCatalogo.detail} />
-          <Boton
-            titulo="Reintentar"
-            variante="secundario"
-            icono="refresh"
-            onPress={() => {
-              modalidades.recargar();
-              categorias.recargar();
-              jornadas.recargar();
-            }}
-          />
-        </>
-      ) : null}
+      <ErrorCatalogo catalogos={[modalidades, categorias, jornadas]} />
 
       <Texto variante="etiqueta" accessibilityRole="header">
         Modalidades de interés

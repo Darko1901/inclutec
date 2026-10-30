@@ -19,6 +19,7 @@ import {
   useRetornoFoco,
 } from '../../componentes';
 import { espaciado } from '../../tema';
+import { porcentajeHablado } from '../../utilidades/formatos';
 import { useCarga } from '../../utilidades/useCarga';
 import { EncabezadoPerfil, type AvisoFoto } from './perfil/EncabezadoPerfil';
 import { elegirFoto, type OrigenFoto } from './perfil/foto';
@@ -27,7 +28,7 @@ import { SeccionCuenta } from './perfil/SeccionCuenta';
 import { SeccionDatos } from './perfil/SeccionDatos';
 import { SeccionNecesidades } from './perfil/SeccionNecesidades';
 import { SeccionPreferencias } from './perfil/SeccionPreferencias';
-import { porcentajeAccesible, type AvisoSeccion } from './perfil/textosPerfil';
+import { type AvisoSeccion } from './perfil/textosPerfil';
 
 type Seccion = 'datos' | 'preferencias' | 'necesidades';
 
@@ -87,7 +88,7 @@ export default function CAN03Perfil() {
     }
     if (perfil) establecer(perfil);
     const completo = perfil
-      ? `${mensaje} Tu perfil está al ${porcentajeAccesible(perfil.completitud)}.`
+      ? `${mensaje} Tu perfil está al ${porcentajeHablado(perfil.completitud)}.`
       : mensaje;
     setAvisos((previos) => ({
       ...previos,
@@ -151,7 +152,7 @@ export default function CAN03Perfil() {
         establecer(nuevo);
         avisarFoto(
           'exito',
-          `Foto actualizada. Tu perfil está al ${porcentajeAccesible(nuevo.completitud)}.`,
+          `Foto actualizada. Tu perfil está al ${porcentajeHablado(nuevo.completitud)}.`,
         );
       }
     } catch (fallo) {
@@ -169,7 +170,7 @@ export default function CAN03Perfil() {
       establecer(nuevo);
       avisarFoto(
         'exito',
-        `Foto quitada. Tu perfil está al ${porcentajeAccesible(nuevo.completitud)}.`,
+        `Foto quitada. Tu perfil está al ${porcentajeHablado(nuevo.completitud)}.`,
       );
     } catch (fallo) {
       avisarFoto('error', ApiError.desde(fallo).detail);

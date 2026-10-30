@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { AccessibilityInfo, StyleSheet, View } from 'react-native';
 
 import { useCatalogo, type CatalogoItem } from '../../../api';
-import { Aviso, Boton, CampoTexto, Casilla, Cargando, Texto } from '../../../componentes';
+import { Aviso, CampoTexto, Cargando, Casilla, ErrorCatalogo, Texto } from '../../../componentes';
 import { colores, espaciado, radio } from '../../../tema';
 import { CATEGORIAS_AJUSTE, ICONO_CATEGORIA } from '../../candidato/vacantes/categoriasAjuste';
 import { MAX_NOTAS, TITULOS_PASO } from './formulario';
@@ -60,17 +60,7 @@ export function PasoAccesibilidad({ formulario: f, cambiar, errores, limpiar }: 
         puedes ofrecer. Esta sección es obligatoria para publicar.
       </Texto>
 
-      {ajustes.error ? (
-        <>
-          <Aviso variante="error" mensaje={ajustes.error.detail} />
-          <Boton
-            titulo="Reintentar"
-            variante="secundario"
-            icono="refresh"
-            onPress={ajustes.recargar}
-          />
-        </>
-      ) : null}
+      <ErrorCatalogo catalogos={[ajustes]} />
       {errores.ajustes ? (
         <Aviso variante="error" mensaje={errores.ajustes} testID="error-ajustes" />
       ) : null}

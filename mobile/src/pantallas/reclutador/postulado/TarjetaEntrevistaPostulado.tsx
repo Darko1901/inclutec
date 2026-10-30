@@ -9,6 +9,7 @@ import {
   formatearHora,
   formatearHoraHablada,
 } from '../../../utilidades/fechas';
+import { capitalizar, duracionCorta, duracionHablada } from '../../../utilidades/formatos';
 
 interface Props {
   entrevista: Entrevista;
@@ -17,7 +18,6 @@ interface Props {
 }
 
 const ocultar = { accessibilityElementsHidden: true, importantForAccessibility: 'no' } as const;
-const capitalizar = (texto: string) => texto.charAt(0).toUpperCase() + texto.slice(1);
 
 /** Entrevista del postulado: fecha, hora y duración, y la liga mientras siga agendada. */
 export function TarjetaEntrevistaPostulado({ entrevista, onAbrirLiga, onCopiarLiga }: Props) {
@@ -29,7 +29,7 @@ export function TarjetaEntrevistaPostulado({ entrevista, onAbrirLiga, onCopiarLi
       <ChipEstado tipo="entrevista" estado={entrevista.estado} />
       <View
         accessible
-        accessibilityLabel={`${formatearFechaLarga(entrevista.inicio)}, a las ${formatearHoraHablada(entrevista.inicio)}, ${entrevista.duracion_min} minutos`}
+        accessibilityLabel={`${formatearFechaLarga(entrevista.inicio)}, a las ${formatearHoraHablada(entrevista.inicio)}, ${duracionHablada(entrevista.duracion_min)}`}
         style={estilos.datos}
         testID="datos-entrevista"
       >
@@ -43,7 +43,7 @@ export function TarjetaEntrevistaPostulado({ entrevista, onAbrirLiga, onCopiarLi
           <Ionicons name="time-outline" size={20} color={colores.texto} {...ocultar} />
           <Texto
             style={estilos.flexible}
-          >{`${formatearHora(entrevista.inicio)} · ${entrevista.duracion_min} min`}</Texto>
+          >{`${formatearHora(entrevista.inicio)} · ${duracionCorta(entrevista.duracion_min)}`}</Texto>
         </View>
       </View>
       {entrevista.estado === 'agendada' ? (

@@ -3,6 +3,7 @@ import { View } from 'react-native';
 
 import { useCatalogo } from '../api';
 import { espaciado } from '../tema';
+import { ErrorCatalogo } from './ErrorCatalogo';
 import { Selector } from './Selector';
 
 interface SelectorUbicacionProps {
@@ -33,6 +34,7 @@ export function SelectorUbicacion({
 
   return (
     <View style={{ gap: espaciado.lg }}>
+      <ErrorCatalogo catalogos={[entidades, municipios]} testID={`${testIDBase}-error-catalogo`} />
       <Selector
         etiqueta="Entidad"
         opciones={entidades.datos.map(({ id, nombre }) => ({ id, nombre }))}

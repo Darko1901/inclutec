@@ -4,12 +4,8 @@ import { Linking, StyleSheet, View, type StyleProp, type ViewStyle } from 'react
 import type { PerfilCandidato, SeccionPerfil } from '../../../api';
 import { Aviso, Avatar, BarraProgreso, Boton, Texto } from '../../../componentes';
 import { espaciado } from '../../../tema';
-import {
-  ACCION_PENDIENTE,
-  porcentajeAccesible,
-  textoCompletitud,
-  textoFaltantes,
-} from './textosPerfil';
+import { porcentajeHablado } from '../../../utilidades/formatos';
+import { ACCION_PENDIENTE, textoCompletitud, textoFaltantes } from './textosPerfil';
 
 export interface AvisoFoto {
   variante: 'exito' | 'error' | 'advertencia';
@@ -69,7 +65,7 @@ export function EncabezadoPerfil({
         <BarraProgreso
           etiqueta="Completitud del perfil"
           valor={perfil.completitud}
-          valorAccesible={porcentajeAccesible(perfil.completitud)}
+          valorAccesible={porcentajeHablado(perfil.completitud)}
           testID="barra-completitud"
         />
         <Texto

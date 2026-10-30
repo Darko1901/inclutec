@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { useCatalogo } from '../../../api';
-import { CampoTexto, Cargando, Texto } from '../../../componentes';
+import { CampoTexto, Cargando, ErrorCatalogo, Texto } from '../../../componentes';
 import { AREA_TACTIL_MINIMA, colores, espaciado, radio } from '../../../tema';
 import { MAX_DIRECCION, TITULOS_PASO } from './formulario';
 import { TituloPaso } from './TituloPaso';
@@ -29,6 +29,7 @@ export function PasoModalidad({ formulario: f, cambiar, errores, limpiar }: Prop
   return (
     <View style={estilos.paso}>
       <TituloPaso texto={TITULOS_PASO[3]} />
+      <ErrorCatalogo catalogos={[modalidades]} />
       {modalidades.cargando ? (
         <Cargando mensaje="Cargando modalidades…" />
       ) : (

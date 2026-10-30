@@ -108,7 +108,7 @@ describe('REC-02 · Mis vacantes', () => {
 
       await fireEvent.press(screen.getByRole('radio', { name: 'Pausada' }));
       expect(await screen.findByText('No tienes vacantes en «Pausada»')).toBeOnTheScreen();
-      await fireEvent.press(screen.getByRole('button', { name: 'Ver todas' }));
+      await fireEvent.press(screen.getByRole('button', { name: 'Quitar filtros' }));
       expect(await screen.findByTestId('vacante-1')).toBeOnTheScreen();
     });
 

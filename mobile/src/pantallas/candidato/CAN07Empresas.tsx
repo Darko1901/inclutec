@@ -14,6 +14,7 @@ import {
   Boton,
   CampoTexto,
   Cargando,
+  ErrorCatalogo,
   EstadoError,
   EstadoVacio,
   Selector,
@@ -93,6 +94,7 @@ export default function CAN07Empresas() {
         autoCapitalize="none"
         testID="buscador-empresas"
       />
+      <ErrorCatalogo catalogos={[sectores]} />
       <Selector
         etiqueta="Sector"
         opciones={[

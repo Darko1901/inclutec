@@ -8,7 +8,15 @@ import {
   type EmpresaEntrada,
   type EmpresaPropia,
 } from '../../../api';
-import { Aviso, Boton, CampoTexto, Selector, SelectorUbicacion, Texto } from '../../../componentes';
+import {
+  Aviso,
+  Boton,
+  CampoTexto,
+  ErrorCatalogo,
+  Selector,
+  SelectorUbicacion,
+  Texto,
+} from '../../../componentes';
 import { espaciado } from '../../../tema';
 import { esRfcValido } from '../../../utilidades/validaciones';
 import { CampoBloqueado } from './CampoBloqueado';
@@ -133,6 +141,7 @@ export function FormularioOrganizacion({ empresa, onGuardada }: Props) {
       </Texto>
       {aviso ? <Aviso key={aviso.n} variante="exito" mensaje={aviso.mensaje} /> : null}
       {errorGeneral ? <Aviso variante="error" mensaje={errorGeneral} /> : null}
+      <ErrorCatalogo catalogos={[sectores, tamanos]} />
 
       <CampoTexto
         etiqueta="Nombre comercial"

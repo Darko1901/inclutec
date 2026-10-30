@@ -24,7 +24,7 @@ import { useCarga } from '../../utilidades/useCarga';
 import { ModalReporte } from '../candidato/detalle/ModalReporte';
 import { LineaTiempo } from '../candidato/postulaciones/LineaTiempo';
 import { CvCandidato } from '../compartidas/CvCandidato';
-import { abrirLiga, copiarLiga } from '../compartidas/ligas';
+import { abrirLiga, copiarLiga, TEXTO_LIGA_COPIADA } from '../compartidas/ligas';
 import { DesgloseCompatibilidad } from './postulado/DesgloseCompatibilidad';
 import { MenuPostulado } from './postulado/MenuPostulado';
 import { ModalCambiarEstado } from './postulado/ModalCambiarEstado';
@@ -257,7 +257,7 @@ export default function REC05DetallePostulado({ route, navigation }: Props) {
             }
             onCopiarLiga={() =>
               void copiarLiga(detalle.entrevista!.liga).then((error) =>
-                error ? avisar('error', error) : avisar('exito', 'Liga copiada.'),
+                error ? avisar('error', error) : avisar('exito', TEXTO_LIGA_COPIADA),
               )
             }
           />

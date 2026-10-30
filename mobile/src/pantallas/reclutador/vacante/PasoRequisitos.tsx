@@ -5,6 +5,7 @@ import { useCatalogo } from '../../../api';
 import {
   BuscadorHabilidades,
   CampoTexto,
+  ErrorCatalogo,
   EstadoVacio,
   GrupoRadio,
   Selector,
@@ -108,6 +109,7 @@ export function PasoRequisitos({ formulario: f, cambiar, errores, limpiar }: Pro
         </Texto>
       ) : null}
 
+      <ErrorCatalogo catalogos={[niveles]} />
       <Selector
         etiqueta="Formación mínima"
         opciones={[

@@ -7,6 +7,7 @@ import {
   Boton,
   CampoTexto,
   EncabezadoModal,
+  ErrorCatalogo,
   Selector,
   Texto,
   VentanaModal,
@@ -95,6 +96,7 @@ function Contenido({ objeto, onCerrar, onEnviado }: Omit<Props, 'visible'>) {
           {`Cuéntanos qué pasa con «${objeto.nombre}». Nuestro equipo revisará tu reporte.`}
         </Texto>
         {errorGeneral ? <Aviso variante="error" mensaje={errorGeneral} /> : null}
+        <ErrorCatalogo catalogos={[motivos]} />
         <Selector
           etiqueta="Motivo"
           placeholder="Elige un motivo"

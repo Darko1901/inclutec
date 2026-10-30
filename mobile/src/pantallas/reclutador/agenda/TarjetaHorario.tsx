@@ -6,6 +6,7 @@ import type { DiaAgenda } from '../../../api';
 import { Boton, ChipEstado, Tarjeta, Texto } from '../../../componentes';
 import { colores, espaciado, radio } from '../../../tema';
 import { formatearHora, formatearHoraHablada } from '../../../utilidades/fechas';
+import { duracionCorta, duracionHablada } from '../../../utilidades/formatos';
 
 export type HorarioAgenda = DiaAgenda['horarios'][number];
 
@@ -27,7 +28,7 @@ const ocultar = { accessibilityElementsHidden: true, importantForAccessibility: 
 /** Qué lee el lector de pantalla del bloque de datos de un horario. */
 function resumenAccesibleHorario(horario: HorarioAgenda): string {
   const partes = [
-    `${formatearHoraHablada(horario.inicio)}, ${horario.duracion_min} minutos`,
+    `${formatearHoraHablada(horario.inicio)}, ${duracionHablada(horario.duracion_min)}`,
     horario.vacante.titulo,
   ];
   if (horario.entrevista) {
@@ -66,7 +67,7 @@ export function TarjetaHorario({
         <View style={estilos.fila} {...ocultar}>
           <Ionicons name="time-outline" size={22} color={colores.texto} {...ocultar} />
           <Texto variante="subtitulo" {...ocultar}>
-            {`${formatearHora(horario.inicio)} · ${horario.duracion_min} min`}
+            {`${formatearHora(horario.inicio)} · ${duracionCorta(horario.duracion_min)}`}
           </Texto>
         </View>
         <Texto {...ocultar}>{horario.vacante.titulo}</Texto>

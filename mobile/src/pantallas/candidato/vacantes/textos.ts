@@ -1,10 +1,6 @@
 import type { VacanteResumen } from '../../../api';
 import { formatearFecha, formatearRelativo } from '../../../utilidades/fechas';
-
-/** «88 por ciento»: así lo lee el lector de pantalla; en pantalla se ve «88 %». */
-export function porcentajeAccesible(valor: number): string {
-  return `${valor} por ciento`;
-}
+import { porcentajeHablado } from '../../../utilidades/formatos';
 
 const minuscula = (texto: string) => texto.charAt(0).toLowerCase() + texto.slice(1);
 
@@ -20,7 +16,7 @@ export function resumenAccesible(vacante: VacanteResumen): string {
   if (vacante.empresa.validada) partes.push('empresa validada');
   partes.push(minuscula(vacante.modalidad.nombre), vacante.municipio.nombre);
   if (vacante.compatibilidad !== null) {
-    partes.push(`compatibilidad ${porcentajeAccesible(vacante.compatibilidad)}`);
+    partes.push(`compatibilidad ${porcentajeHablado(vacante.compatibilidad)}`);
   }
   const ajustes = vacante.ajustes.slice(0, MAX_AJUSTES_EN_TARJETA).map((a) => minuscula(a.nombre));
   partes.push(...(ajustes.length > 0 ? ajustes : ['sin ajustes de accesibilidad declarados']));

@@ -2,6 +2,7 @@ import type { Ref } from 'react';
 import type { View } from 'react-native';
 
 import type { PerfilCandidato, PerfilCandidatoEntrada, SeccionPerfil } from '../../../api';
+import { formatearPorcentaje } from '../../../utilidades/formatos';
 
 /** Cómo se nombra cada sección pendiente en «Falta: …». */
 const NOMBRE_PENDIENTE: Record<SeccionPerfil, string> = {
@@ -25,9 +26,6 @@ export const ACCION_PENDIENTE: Record<SeccionPerfil, string> = {
   habilidades: 'Agregar habilidades',
 };
 
-/** «90 por ciento»: así se dicen los porcentajes en voz alta. */
-export const porcentajeAccesible = (valor: number) => `${valor} por ciento`;
-
 function unir(nombres: string[]): string {
   if (nombres.length <= 1) return nombres.join('');
   return `${nombres.slice(0, -1).join(', ')} y ${nombres[nombres.length - 1]}`;
@@ -45,7 +43,7 @@ export function textoCompletitud(
   perfil: Pick<PerfilCandidato, 'completitud' | 'secciones_pendientes'>,
 ) {
   const faltantes = textoFaltantes(perfil.secciones_pendientes);
-  const base = `Tu perfil está al ${perfil.completitud} %`;
+  const base = `Tu perfil está al ${formatearPorcentaje(perfil.completitud)}`;
   return faltantes ? `${base} · ${faltantes}` : base;
 }
 
