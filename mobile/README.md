@@ -1,8 +1,15 @@
 # App móvil de IncluTec
 
-App de **candidatos** y **reclutadores** hecha con React Native + Expo (TypeScript estricto) y React Navigation. Es una sola app: la navegación cambia según el rol. El administrador usa el panel web (`web/`).
+App de **candidatos** y **reclutadores** hecha con React Native + Expo (TypeScript estricto) y React Navigation. Es una sola app: la navegación cambia según el rol de quien inicia sesión. El administrador usa el panel web (`web/`); si entra a la app se le avisa y se cierra su sesión.
 
-Hasta que el API exista (sprint 4), la app corre con **datos simulados** que responden igual que el contrato (`docs/api/contrato.md`).
+- **Candidato:** busca vacantes, ve qué tan compatibles son con su perfil, se postula, lleva su CV y sus necesidades de ajuste (nunca diagnósticos), agenda entrevistas y recibe notificaciones.
+- **Reclutador:** administra la organización y sus vacantes, revisa postulados ordenados por compatibilidad, cambia su estado, publica horarios de entrevista y lleva la agenda.
+
+Hasta que el API exista (sprint 4), la app corre con **datos simulados** que responden igual que el contrato (`docs/api/contrato.md`). Qué hace cada pantalla: `docs/diseno/requerimientos.md` y `docs/diseno/pantallas.md`.
+
+## Índice
+
+1. [Requisitos](#requisitos) · 2. [Instalación](#instalación) · 3. [Correr en Expo Go](#correr-en-expo-go) · 4. [Datos simulados o API real](#datos-simulados-o-api-real) · 5. [Cuentas de prueba y datos extra del mock](#cuentas-de-prueba-y-datos-extra-del-mock) · 6. [Mapa de pantallas](#mapa-de-pantallas) · 7. [Recorrido para la demostración](#recorrido-para-la-demostración) · 8. [Arquitectura](#arquitectura) · 9. [Accesibilidad](#accesibilidad) · 10. [Lista de verificación con VoiceOver y TalkBack](#lista-de-verificación-con-voiceover-y-talkback) · 11. [Qué falta probar en dispositivo](#qué-falta-probar-en-dispositivo) · 12. [Calidad](#calidad) · 13. [Dependencias y auditoría](#dependencias-y-auditoría) · 14. [Decisiones importantes](#decisiones-importantes)
 
 ## Requisitos
 
@@ -36,7 +43,20 @@ Si no conecta:
 
 También funciona en emulador: `npm run android` / `npm run ios` (este último solo en macOS).
 
-## Variables de entorno
+**Límites de Expo Go:** las notificaciones push remotas no existen en Expo Go (Android desde el SDK 53), así que el registro del dispositivo (`POST /dispositivos`) se omite; funciona en una _development build_. Las demás funciones (galería, cámara, documentos, portapapeles, liga de entrevista) sí corren.
+
+## Datos simulados o API real
+
+Las pantallas y los componentes **nunca** importan datos de prueba; solo usan los servicios de `src/api`. Cada servicio tiene una interfaz y dos implementaciones, y `src/api/servicios.ts` elige una según `EXPO_PUBLIC_USE_MOCK`:
+
+| Implementación | Qué hace                                                                                                                                                                                                                                            |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Mock**       | `src/api/mock/`: responde con las mismas rutas lógicas, códigos HTTP, `codigo` de error y JSON del contrato, con una latencia de 300 a 700 ms. Los datos son los de `db/semillas/S002__datos_prueba.sql` más datos extra solo del mock.             |
+| **HTTP**       | `src/api/*.ts`: usa el cliente Axios de `cliente.ts`, que agrega `Authorization: Bearer`, convierte toda respuesta de error en `ApiError { status, codigo, detail, campos }` y, ante un `401 no_autenticado`, avisa a la sesión para que se cierre. |
+
+Los errores de red y los 5xx se convierten en `error_interno` con el mensaje «El servicio no está disponible; intenta más tarde». ESLint impide importar `api/mock/` desde `pantallas/`, `componentes/`, `navegacion/` y `sesion/`.
+
+### Variables de entorno
 
 Se leen del archivo `.env` (no se sube a git; la plantilla es `.env.example`). Después de cambiarlas, reinicia con `npx expo start -c`.
 
@@ -45,7 +65,13 @@ Se leen del archivo `.env` (no se sube a git; la plantilla es `.env.example`). D
 | `EXPO_PUBLIC_USE_MOCK` | `true`                         | `true` usa los datos simulados; `false` llama al API real.                                                                                             |
 | `EXPO_PUBLIC_API_URL`  | `http://localhost:8000/api/v1` | URL base del API. En un teléfono físico `localhost` es el propio teléfono: usa la IP de tu computadora, por ejemplo `http://192.168.1.20:8000/api/v1`. |
 
-## Cuentas de prueba
+Para pasar al API real: `EXPO_PUBLIC_USE_MOCK=false`, la URL de tu computadora y `npx expo start -c`. Las fotos y los logotipos se sirven fuera de `/api/v1` (`http://…:8000/archivos/…`); `urlArchivo()` arma la dirección completa.
+
+### Tipos del API
+
+`src/api/esquema.d.ts` se **genera** con `openapi-typescript` a partir de `docs/api/openapi.yaml`; no se edita a mano. Cuando cambie el contrato, corre `npm run tipos` y revisa los errores de TypeScript que aparezcan. `src/api/tipos.ts` solo les pone nombre (`Usuario`, `Sesion`, …).
+
+## Cuentas de prueba y datos extra del mock
 
 Son las de `db/semillas/S002__datos_prueba.sql`. La contraseña de todas es **Inclutec2026**.
 
@@ -53,7 +79,7 @@ Son las de `db/semillas/S002__datos_prueba.sql`. La contraseña de todas es **In
 | ----------------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
 | mariana.lopez@correo.mx             | Candidata                                 | Llega a Vacantes; la pestaña Notificaciones dice «1 sin leer».                                                                              |
 | jorge.ramirez@correo.mx             | Candidato                                 | Llega a Vacantes; sin notificaciones.                                                                                                       |
-| rh@tecnoqro.mx                      | Reclutadora (Laura, TecnoQro)             | Llega a Mis vacantes; Notificaciones dice «1 sin leer».                                                                                     |
+| rh@tecnoqro.mx                      | Reclutadora (Laura, TecnoQro)             | Llega a Mis vacantes; Notificaciones dice «1 sin leer» (la entrevista de Mariana).                                                          |
 | rh@logibajio.mx                     | Reclutador (Roberto, LogiBajío)           | Llega a Mis vacantes; Notificaciones dice «1 sin leer» (la postulación de Jorge).                                                           |
 | talento@concentro.mx                | Reclutadora (Patricia, ConCentro)         | Llega a Mis vacantes; sin notificaciones.                                                                                                   |
 | contacto@estudiotrazo.mx            | Reclutador (Daniel, Estudio Trazo)        | Llega a Organización; su empresa está **pendiente** de validar (solo puede crear borradores).                                               |
@@ -63,13 +89,16 @@ Son las de `db/semillas/S002__datos_prueba.sql`. La contraseña de todas es **In
 | **rechazada@constructorarivera.mx** | Reclutador (Ernesto, Constructora Rivera) | Llega a Mis vacantes; su empresa está **rechazada** (con motivo): sirve para ver el banner rojo y subir la constancia (pasa a «pendiente»). |
 | **suspendida@academiaalameda.mx**   | Reclutadora (Gabriela, Academia Alameda)  | Llega a Mis vacantes; su empresa está **suspendida** (con motivo) y no puede subir constancia (409).                                        |
 
-Las cuentas `suspendida@correo.mx`, `notificaciones@correo.mx`, `rechazada@constructorarivera.mx` y `suspendida@academiaalameda.mx` **existen solo en el mock** (no están en la base de datos de prueba). Sus ids son **100 a 103** (los de S002 van del 1 al 7) para que nunca choquen con la base de datos; las dos de reclutador tienen además las empresas 100 (Constructora Rivera, rechazada) y 101 (Academia Alameda, suspendida). Los candidatos de relleno de REC-04 tienen ids de 110 a 145. Las cuentas que se registren en la app reciben ids desde el 104 (saltando las que ya existen). Jorge no tiene notificaciones: sirve para ver el estado vacío. Las notificaciones extra del mock tienen id 90 en adelante (la de Roberto, id 3, sí es de S002).
+Las cuentas en **negritas** existen solo en el mock. Sus ids son **100 a 103** (los de S002 van del 1 al 7) para que nunca choquen con la base de datos; las dos de reclutador tienen además las empresas 100 (Constructora Rivera, rechazada) y 101 (Academia Alameda, suspendida). Los candidatos de relleno de REC-04 tienen ids de 110 a 145. Las cuentas que se registren en la app reciben ids desde el 104 (saltando las que ya existen). Las notificaciones extra del mock tienen id 90 en adelante. Las cuentas solo del mock tienen el perfil vacío (sin habilidades ni formación), así que sirven para probar que «Postularme» se bloquea cuando el perfil está incompleto; igual pasa con cualquier cuenta que se registre en la app.
 
-Las dos cuentas solo del mock tienen el perfil vacío (sin habilidades ni formación), así que sirven para probar que «Postularme» se bloquea cuando el perfil está incompleto. Igual pasa con cualquier cuenta que se registre en la app.
+### Los datos son relativos a hoy y viven en memoria
 
-### Datos de prueba de vacantes
+- Todas las fechas se calculan al abrir la app: la entrevista de Mariana es **dentro de 3 días**, los horarios libres van de unas horas a 5 días y las postulaciones, notificaciones y reportes de S002 quedan «hace unos días» (`src/api/mock/fechasS002.ts` las mueve todas juntas conservando su distancia; ninguna queda en el futuro). Así el video se puede grabar cualquier día sin preparar nada.
+- Los cambios (registros, notificaciones leídas, contraseñas, perfil, CV, vacantes, estados, horarios) se guardan **en memoria**: al cerrar la app por completo vuelven los datos originales. La sesión sí se conserva (el token está en `expo-secure-store`).
 
-Los datos simulados de negocio son los de S002: 4 empresas (TecnoQro, LogiBajío y ConCentro validadas; Estudio Trazo pendiente), 8 vacantes (6 publicadas y 2 borradores), la postulación de Mariana a la vacante 1 (en «Entrevista»), la de Jorge a la 3 y el reporte 1 de la vacante 5. La compatibilidad no se lee de una tabla: la calcula el motor de `src/api/mock/compatibilidad.ts` con las reglas del contrato, y su prueba comprueba que reproduce las 12 filas guardadas en S002.
+### Vacantes
+
+Los datos de negocio son los de S002: 4 empresas (TecnoQro, LogiBajío y ConCentro validadas; Estudio Trazo pendiente), 8 vacantes (6 publicadas y 2 borradores) y el reporte 1 de la vacante 5. La compatibilidad no se lee de una tabla: la calcula el motor de `src/api/mock/compatibilidad.ts`, y su prueba comprueba que reproduce las 12 filas guardadas en S002.
 
 | Vacante | Empresa   | Modalidad  | Para probar                                                               |
 | ------- | --------- | ---------- | ------------------------------------------------------------------------- |
@@ -81,9 +110,9 @@ Los datos simulados de negocio son los de S002: 4 empresas (TecnoQro, LogiBajío
 | 6       | TecnoQro  | Remoto     | Con intérprete de LSM bajo solicitud                                      |
 | 7 y 8   | —         | —          | Borradores: nunca aparecen en la lista del candidato                      |
 
-### Datos de prueba de postulaciones, entrevistas y empresas
+### Postulaciones, entrevistas y empresas
 
-Además de los de S002, el mock agrega (ids desde 100) lo necesario para probar CAN-05 a CAN-07. Todas las fechas son relativas a la hora en que abres la app.
+Además de los de S002, el mock agrega (ids desde 100) lo necesario para probar CAN-05 a CAN-07:
 
 | Dato                                              | Cuenta  | Para probar                                                                                                                                                                                                                              |
 | ------------------------------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -107,73 +136,82 @@ Para REC-04 a REC-06 el mock agrega **28 postulados a la vacante 1 de TecnoQro**
 | 118         | Luis Herrera     | «Retirada»: solo sale con el filtro «Retirada»; no cuenta en «28 postulados».                                                      |
 | 130 a 145   | Relleno          | Casi todos «Postulada» con compatibilidades repartidas: hacen falta dos páginas (20 + 8) y sirven para los filtros.                |
 
-Los horarios de Laura (ids 1, 2, 100 a 104 y 110) y los de la vacante 6 (105 y 106) alimentan la agenda; el horario 110 empezó hace una hora para ver las acciones de resultado.
-
-Las vacantes 2 y 5 se dejaron libres a propósito (Mariana puede postularse a ellas). Un retiro **sin** entrevista agendada no genera notificación porque el contrato no define ninguna; con entrevista, el reclutador recibe «Entrevista cancelada».
+Los horarios de Laura (ids 1, 2, 100 a 104 y 110) y los de la vacante 6 (105 y 106) alimentan la agenda. Las vacantes 2 y 5 se dejaron libres a propósito (Mariana puede postularse a ellas). Un retiro **sin** entrevista agendada no genera notificación porque el contrato no define ninguna; con entrevista, el reclutador recibe «Entrevista cancelada».
 
 El directorio de empresas solo muestra las validadas (ConCentro, LogiBajío y TecnoQro); **Estudio Trazo** (pendiente) no aparece ni tiene ficha. Cada empresa trae el sector, tamaño, descripción y prácticas de inclusión de S002; el sitio web de TecnoQro es el del ejemplo del contrato, el de LogiBajío se agregó solo en el mock y ConCentro no tiene (para ver la ficha sin enlace).
 
-Otras pruebas con el mock:
+### Otras pruebas con el mock
 
 - **429:** escribe una contraseña incorrecta 5 veces con el mismo correo; el siguiente intento, aunque sea correcto, responde «Demasiados intentos fallidos. Intenta de nuevo en 15 minutos.» (el bloqueo dura mientras la app esté abierta).
-- **Código de recuperación de contraseña:** en el mock el código válido es siempre **`123456`** (vence a los 15 minutos; después de 5 intentos incorrectos responde 410; el reenvío solo se permite 60 s después del envío anterior). No llega ningún correo.
-- **Registro:** en el mock, `mariana.lopez@correo.mx` (o cualquier correo de la tabla de arriba) responde «correo ya registrado» y el RFC `TQU150312AB1` responde «RFC ya registrado». Cualquier otro dato válido crea la cuenta (el candidato llega a Perfil y el reclutador a Organización; su empresa queda «pendiente»).
-- **Notificaciones push:** el registro del dispositivo (`POST /dispositivos`) se omite en Expo Go, porque ahí las push remotas ya no existen (Android desde el SDK 53). Funciona en una _development build_.
+- **Código de recuperación de contraseña:** el código válido es siempre **`123456`** (vence a los 15 minutos; después de 5 intentos incorrectos responde 410; el reenvío solo se permite 60 s después del envío anterior). No llega ningún correo.
+- **Registro:** `mariana.lopez@correo.mx` (o cualquier correo de la tabla de arriba) responde «correo ya registrado» y el RFC `TQU150312AB1` responde «RFC ya registrado». Cualquier otro dato válido crea la cuenta (el candidato llega a Perfil y el reclutador a Organización; su empresa queda «pendiente»).
 - **Habilidades solo del mock:** el catálogo de S001 tiene 15; el mock agrega las de id 16 a 33 (Nómina, Ventas, Almacenamiento…) para poder llegar al límite de 30 de CAN-04.
-- Los cambios (registros, notificaciones leídas, contraseñas nuevas, perfil y CV) se guardan **en memoria**: al cerrar la app por completo vuelven los datos originales. La sesión sí se conserva (el token está en `expo-secure-store`).
 
-## Comandos
+## Mapa de pantallas
 
-| Comando            | Qué hace                                                          |
-| ------------------ | ----------------------------------------------------------------- |
-| `npm start`        | Servidor de Expo.                                                 |
-| `npm run lint`     | ESLint (con reglas de Expo y Prettier).                           |
-| `npx tsc --noEmit` | Revisión de tipos.                                                |
-| `npm test`         | Pruebas con Jest y Testing Library.                               |
-| `npm run format`   | Da formato con Prettier.                                          |
-| `npm run tipos`    | Regenera `src/api/esquema.d.ts` desde `../docs/api/openapi.yaml`. |
+Todas están terminadas y conectadas a los servicios. Los nombres de ruta son los de `src/navegacion/tipos.ts`.
 
-## Dependencias y auditoría
+| Código | Pantalla                                                                       | Ruta (navegador)                   | Quién la ve            |
+| ------ | ------------------------------------------------------------------------------ | ---------------------------------- | ---------------------- |
+| MOV-00 | Splash: valida la sesión guardada (máximo 3 s)                                 | `Splash`                           | Todos                  |
+| MOV-01 | Inicio de sesión                                                               | `InicioSesion`                     | Sin sesión             |
+| MOV-02 | Registro en 3 pasos (candidato o reclutador) y aviso de privacidad completo    | `Registro`, `AvisoPrivacidad`      | Sin sesión             |
+| MOV-03 | Recuperar contraseña (correo, código de 6 dígitos y nueva contraseña)          | `RecuperarContrasena`              | Sin sesión             |
+| MOV-04 | Notificaciones: lista paginada, marcar leídas y preferencias de aviso          | Pestaña `Notificaciones`           | Candidato y reclutador |
+| CAN-01 | Vacantes: recomendadas, búsqueda, filtros y «cubre mis necesidades»            | Pestaña `Vacantes`                 | Candidato              |
+| CAN-02 | Detalle de vacante: desglose de compatibilidad, postulación y reporte          | `DetalleVacante`                   | Candidato              |
+| CAN-03 | Mi perfil: completitud, foto, datos, preferencias, necesidades y cuenta        | Pestaña `Perfil`                   | Candidato              |
+| CAN-04 | Mi CV: experiencia, formación, habilidades y vista previa                      | `MiCV`                             | Candidato              |
+| CAN-05 | Mis postulaciones: Activas y Finalizadas, filtro por estado                    | Pestaña `Postulaciones`            | Candidato              |
+| CAN-06 | Detalle de postulación: historial, agendar, cancelar entrevista y retirar      | `DetallePostulacion`               | Candidato              |
+| CAN-07 | Empresas: directorio y ficha con prácticas de inclusión y reporte              | Pestaña `Empresas`, `FichaEmpresa` | Candidato              |
+| REC-01 | Organización: banner de validación, logo, datos, constancia y cuenta           | Pestaña `Organizacion`             | Reclutador             |
+| REC-02 | Mis vacantes: filtro por estado, menú de acciones, duplicar                    | Pestaña `MisVacantes`              | Reclutador             |
+| REC-03 | Crear o editar vacante en 4 pasos, publicar y recálculo de compatibilidad      | `EditarVacante`                    | Reclutador             |
+| REC-04 | Postulados: orden por compatibilidad, filtros y paginación                     | `Postulados`                       | Reclutador             |
+| REC-05 | Detalle del postulado: desglose, CV, contacto, estado, observaciones y reporte | `DetallePostulado`                 | Reclutador             |
+| REC-06 | Agenda de entrevistas: publicar, eliminar, resultado y cancelar                | Pestaña `Agenda`                   | Reclutador             |
 
-`npm audit` en `mobile/` reporta **60 hallazgos (47 altos y 13 moderados, ninguno crítico)**. Ninguno es del código de la app: todos salen de cuatro paquetes que llegan de forma indirecta, y el resto del conteo son paquetes que solo los arrastran.
+Barras inferiores: candidato (Vacantes, Postulaciones, Empresas, Notificaciones, Perfil) y reclutador (Mis vacantes, Agenda, Notificaciones, Organización); la pestaña de notificaciones anuncia «Notificaciones, n sin leer».
 
-| Paquete con el aviso | Aviso                                                        | Severidad | Instalado     | Versión corregida                                      | Quién lo trae                                                |
-| -------------------- | ------------------------------------------------------------ | --------- | ------------- | ------------------------------------------------------ | ------------------------------------------------------------ |
-| `braces`             | GHSA-vfj7-8cjw-p6xm (pila agotada con patrones muy anidados) | Alta      | 3.0.3         | ninguna publicada (3.0.3 es la última)                 | `micromatch` → Jest, Metro, `jest-haste-map`                 |
-| `node-forge`         | GHSA-86w9-cpqp-85rv (verificación de firmas RSA PKCS#1)      | Alta      | 1.4.0         | ninguna publicada (1.4.0 es la última)                 | `@expo/code-signing-certificates` → `@expo/cli`              |
-| `sprintf-js`         | GHSA-hp3w-g68c-fv3c (precisión sin límite)                   | Moderada  | 1.0.3         | ninguna publicada (1.1.3 es la última y también falla) | `argparse` → `js-yaml` 3 → `babel-plugin-istanbul` (Jest)    |
-| `uuid`               | GHSA-w5hq-g745-h8pq (límites del búfer en v3, v5 y v6)       | Moderada  | 3.4.0 y 7.0.3 | 11.1.1, 12.0.1 o 13.0.1 (otra versión mayor)           | `@expo/ngrok` (3.x) y `xcode` → `@expo/config-plugins` (7.x) |
+**Notificaciones.** Al tocar una se abre la pantalla de su referencia pasándole el id (`src/pantallas/compartidas/notificaciones/destino.ts`, tabla de notificaciones del contrato): postulación → CAN-06 (candidato) o REC-05 (reclutador), entrevista → REC-06, empresa → REC-01, vacante → REC-02 o CAN-02. REC-06 y CAN-06 **resaltan lo que cambió** con un borde y el texto «Desde tu notificación», se desplazan hasta ahí y llevan el foco del lector de pantalla:
 
-**Por qué no afectan la app instalada.** Son herramientas de desarrollo (servidor de Metro, CLI de Expo, Jest, plugins de configuración) que corren en la computadora de quien programa; no se empaquetan en la app. Se comprobó con el mapa de fuentes de `npx expo export --platform ios`: ninguno de estos paquetes está en el bundle (solo entra un `require.js` mínimo de `@expo/cli`, sin `node-forge`).
+- REC-06 acepta `entrevista_id` u `horario_id`; si el horario ya no está en la agenda (se canceló o queda más allá de los días mostrados) avisa «No encontramos ese horario…» en lugar de resaltar otra cosa.
+- CAN-06 recibe el tipo de la notificación (`desde`): un recordatorio de entrevista resalta «Tu entrevista»; una entrevista cancelada, «Elige un horario»; cualquier otro aviso (por ejemplo, «Tu postulación avanzó»), el último paso del historial.
 
-**Overrides: no hay ninguno, a propósito.** Un `overrides` solo sirve si existe una versión corregida dentro de la misma versión mayor que pide el dependiente. Para `braces`, `node-forge` y `sprintf-js` no existe ninguna versión corregida; para `uuid` la corrección está en la mayor 11 o superior, y sus dependientes piden la 3 y la 7. Forzar otra mayor puede romper `@expo/ngrok` y `xcode` sin tener cómo probarlo.
+## Recorrido para la demostración
 
-**`npm audit fix` (sin `--force`)** solo reordena el `package-lock.json` (sube `@expo/cli` al primer nivel) y no elimina ningún hallazgo, así que no se aplica. Los hallazgos se corregirán cuando los paquetes de arriba publiquen una versión corregida y Expo o Jest la adopten; con el SDK 58 siguen los mismos cuatro avisos (se comprobó en un proyecto de prueba aparte), así que subir de SDK no es la solución hoy. Conviene correr `npm audit` en cada subida de SDK.
+Dura unos 10 minutos con las cuentas del mock (todas con `Inclutec2026`). **Antes de grabar, cierra Expo Go por completo y ábrelo otra vez**: así los datos vuelven a su estado inicial y las fechas se recalculan a hoy. Activa el modo «No molestar» y deja la letra del sistema en su tamaño normal.
 
-**`@expo/ngrok`** se conserva porque este README documenta `npx expo start --tunnel`; es lo que trae `uuid` 3.4.0. Si alguien deja de usar el túnel, se puede quitar de `devDependencies`.
+### Parte 1 · Candidata (`mariana.lopez@correo.mx`)
 
-**Regla: nunca uses `npm audit fix --force`.** Propone bajar `expo` a 44 y `react-native` a 0.72 (o saltar de mayor en Jest) y destruye el proyecto. Si ya lo corriste, restaura con `git checkout package.json package-lock.json && npm ci`. Después de tocar dependencias, `npx expo install --check` debe decir «Dependencies are up to date».
+1. **MOV-01.** Inicia sesión. La pestaña Notificaciones dice «1 sin leer».
+2. **CAN-01 Vacantes.** «Técnico de soporte de TI» con **88 %** y «Ya te postulaste». Escribe «soporte» en el buscador y quita la búsqueda; abre **Filtros**, elige «Remoto» y aplica; toca **Limpiar**. Activa el chip «Solo las que cubren mis necesidades» (quedan las vacantes 1 y 2) y desactívalo.
+3. **CAN-02 Detalle.** Abre «Auxiliar de almacén»: el desglose dice en palabras qué cumple y qué no, y la accesibilidad va en dos grupos («El lugar cuenta con» y «La empresa puede ofrecer bajo solicitud»). Toca **Postularme**, elige compartir tus necesidades, confirma y el botón cambia a «Ver mi postulación».
+4. **CAN-05 Postulaciones.** «Activas» muestra «Técnico de soporte de TI» en **Entrevista** con la fecha y la hora; abre «Finalizadas» para ver Aceptada, No seleccionada y Retirada.
+5. **CAN-06 Detalle de postulación.** Historial en línea de tiempo con el mensaje del reclutador, «Estado actual» y **Tu entrevista** con **Abrir liga** y **Copiar liga**. Toca **Cancelar entrevista** (faltan 3 días, se puede), confirma y aparece **Elige un horario** con los días agrupados. Toca **Agendar** en un horario, confirma y la tarjeta de la entrevista regresa con la liga nueva.
+6. **CAN-03 Perfil.** «Tu perfil está al 90 % · Falta: foto». Expande **Necesidades de ajuste** (casillas por categoría y las tres opciones para compartir; sin diagnósticos) y **Preferencias laborales**. **Cambiar foto › Elegir de la galería** lleva el perfil a 100 %.
+7. **CAN-04 Mi CV.** Pestañas Experiencia, Formación y Habilidades; **+ Agregar** una habilidad (el contador dice «n de 30») y **Vista previa de mi CV** (sin correo ni teléfono).
+8. **CAN-07 Empresas.** ConCentro, LogiBajío y TecnoQro (no Estudio Trazo, que está pendiente). Abre TecnoQro: prácticas de inclusión, vacantes con la compatibilidad de Mariana y **⋮ › Reportar empresa**.
+9. **MOV-04 Notificaciones.** Toca «Tu postulación avanzó»: se abre CAN-06 con el último paso del historial resaltado («Desde tu notificación»). Cierra sesión desde Perfil.
 
-## Tipos del API
+### Parte 2 · Reclutadora (`rh@tecnoqro.mx`)
 
-`src/api/esquema.d.ts` se **genera** con `openapi-typescript` a partir de `docs/api/openapi.yaml`; no se edita a mano. Cuando cambie el contrato, corre `npm run tipos` y revisa los errores de TypeScript que aparezcan. `src/api/tipos.ts` solo les pone nombre (`Usuario`, `Sesion`, …).
+1. **Notificaciones.** Dice «1 sin leer» («Nueva entrevista»). Tócala: **REC-06 Agenda** se desplaza al horario de Mariana y lo marca («Desde tu notificación»). Se ve su entrevista con **Abrir liga**, **Copiar liga**, **Marcar como realizada** y **No asistió** deshabilitados con su explicación (todavía no empieza), y **Cancelar**.
+2. **REC-02 Mis vacantes.** «Técnico de soporte de TI», «Desarrollador web junior» y «Diseñador gráfico» (borrador), cada una con «n postulados · m nuevos». Filtra por estado con los chips y abre **⋮** de una vacante (el menú solo ofrece lo que permite su estado).
+3. **REC-04 Postulados.** Toca «Técnico de soporte de TI»: **28 postulados** ordenados por compatibilidad laboral (que solo considera habilidades, formación y modalidad). Filtra por «En revisión» y por «70 % o más»; **Quitar filtros**. Desplázate hasta el final: carga la segunda página.
+4. **REC-05 Detalle del postulado.** Abre a **Mariana** (83 %: desglose con ✓ y ✕, CV, necesidades «Ya cubierto por la vacante», contacto con **Escribir** y **Llamar**, entrevista). Abre a **Carlos Mendoza** («El candidato no compartió esta información.») y a **Fernando Silva** (necesidades «Por confirmar con la empresa»). En Carlos toca **Cambiar estado**: solo ofrece los pasos permitidos; elige «En revisión», escribe un mensaje y guarda. Agrega una **observación interna**.
+5. **REC-06 Agenda.** **+ Publicar horarios**: elige la vacante, día, hora, duración y la liga de Meet o Teams; marca «Repetir en los siguientes días hábiles» para publicar varios. Los nuevos horarios aparecen libres para los candidatos.
+6. **REC-03 Nueva vacante.** **+ Nueva vacante**: «Paso 1 de 4» (se anuncia), requisitos obligatorios y deseables, modalidad en tarjetas y, en el paso 4, los dos bloques de accesibilidad; **Guardar borrador** y **Publicar** (pide confirmar).
+7. **REC-01 Organización.** Banner verde «Empresa validada»; razón social y RFC bloqueados. Cierra sesión.
 
-## Capa de servicios
+### Parte 3 · Empresa pendiente (`contacto@estudiotrazo.mx`)
 
-Las pantallas y los componentes **nunca** importan datos de prueba; solo usan los servicios de `src/api` (`auth`, `catalogos`, `notificaciones`, `vacantes`, `postulaciones`, `horarios`, `entrevistas`, `empresas`, `reportes`, `candidatos`):
+Entra a **Organización** con el banner «Estamos revisando tu empresa. Puedes crear borradores, pero no publicar.»; **Subir constancia (PDF)** está disponible, y en REC-03 **Publicar** está deshabilitado con su explicación mientras **Guardar borrador** funciona. Para ver el banner rojo y subir constancia, usa `rechazada@constructorarivera.mx`; para el de suspendida, `suspendida@academiaalameda.mx`.
 
-```ts
-import { auth, ApiError } from '../../api';
+## Arquitectura
 
-const sesion = await auth.login({ correo, contrasena });
-```
-
-Cada servicio tiene una interfaz y dos implementaciones, y `src/api/index.ts` elige una según `EXPO_PUBLIC_USE_MOCK`:
-
-- **HTTP** (`auth.ts`, `catalogos.ts`, `notificaciones.ts`, `vacantes.ts`, `postulaciones.ts`, `reportes.ts`, `candidatos.ts`): usa el cliente Axios de `cliente.ts`, que agrega `Authorization: Bearer`, convierte toda respuesta de error en `ApiError { status, codigo, detail, campos }` y, ante un `401 no_autenticado`, avisa a la sesión para que se cierre. Los errores de red y los 5xx se convierten en `error_interno` con el mensaje «El servicio no está disponible; intenta más tarde».
-- **Mock** (`api/mock/`): responde con las mismas rutas lógicas, códigos HTTP, `codigo` de error y JSON del contrato, con latencia de 300 a 700 ms. ESLint impide importar `api/mock/` desde `pantallas/`, `componentes/`, `navegacion/` y `sesion/`.
-
-## Estructura de carpetas
+### Estructura de carpetas
 
 ```
 mobile/
@@ -192,123 +230,170 @@ mobile/
     │   └── mock/           Datos simulados (S002), motor de compatibilidad y simulador de respuestas
     ├── componentes/        Componentes base accesibles (Boton, CampoTexto, Selector, Casilla, …)
     ├── contenido/          Textos largos, como el aviso de privacidad
+    ├── navegacion/         Navegador raíz, barras inferiores por rol y contador de no leídas
     ├── pantallas/
     │   ├── compartidas/    MOV-00 a MOV-04
     │   ├── candidato/      CAN-01 a CAN-07 (con subcarpetas vacantes/, detalle/, perfil/, cv/, postulaciones/ y empresas/)
-    │   └── reclutador/     REC-01 a REC-06 (con subcarpetas organizacion/, vacantes/ y vacante/)
-    ├── navegacion/         Navegador raíz y barras inferiores por rol
+    │   └── reclutador/     REC-01 a REC-06 (con subcarpetas organizacion/, vacantes/, vacante/, postulados/, postulado/ y agenda/)
+    ├── pruebas/            Auditoría de accesibilidad que usan las pruebas (no se empaqueta en la app)
     ├── sesion/             Contexto de sesión y token en expo-secure-store
     ├── tema/               Colores, tipografía y espaciado
-    └── utilidades/         Formato de fechas, validaciones y lista paginada (useListaPaginada)
+    └── utilidades/         Fechas, formatos, validaciones, useCarga y lista paginada (useListaPaginada)
 ```
 
 Las pruebas viven junto al código, en carpetas `__tests__/`.
 
-## Estado de las pantallas
+### Capa de servicios y mock
 
-| Pantalla                                                                               | Estado |
-| -------------------------------------------------------------------------------------- | ------ |
-| MOV-00 Splash · MOV-01 Inicio de sesión                                                | Listas |
-| MOV-02 Registro (3 pasos, candidato y reclutador) y el aviso de privacidad completo    | Listas |
-| MOV-03 Recuperar contraseña (correo, código de 6 dígitos y nueva contraseña)           | Lista  |
-| MOV-04 Notificaciones (lista paginada, marcar leídas y preferencias)                   | Lista  |
-| Barras inferiores de candidato y reclutador (con contador de notificaciones no leídas) | Listas |
-| CAN-01 Vacantes (recomendadas, búsqueda, filtros y «cubre mis necesidades»)            | Lista  |
-| CAN-02 Detalle de vacante (desglose, postulación y reporte)                            | Lista  |
-| CAN-03 Mi perfil (completitud, foto, datos, preferencias, necesidades y cuenta)        | Lista  |
-| CAN-04 Mi CV (experiencia, formación, habilidades y vista previa)                      | Lista  |
-| CAN-05 Mis postulaciones (Activas y Finalizadas, filtro por estado)                    | Lista  |
-| CAN-06 Detalle de postulación (historial, agendar, cancelar entrevista y retirar)      | Lista  |
-| CAN-07 Empresas (directorio y ficha con prácticas de inclusión y reporte)              | Lista  |
-| REC-01 Organización (banner de validación, logo, datos, constancia y cuenta)           | Lista  |
-| REC-02 Mis vacantes (filtro por estado, menú de acciones, duplicar)                    | Lista  |
-| REC-03 Crear o editar vacante (4 pasos, publicar y recálculo de compatibilidad)        | Lista  |
-| REC-04 Postulados (orden por compatibilidad, filtros y paginación)                     | Lista  |
-| REC-05 Detalle del postulado (desglose, CV, contacto, estado, observaciones, reporte)  | Lista  |
-| REC-06 Agenda de entrevistas (publicar, eliminar, resultado y cancelar)                | Lista  |
+Servicios: `auth`, `catalogos`, `notificaciones`, `vacantes`, `postulaciones`, `horarios`, `entrevistas`, `empresas`, `reportes` y `candidatos`.
 
-### Cómo probar CAN-01 y CAN-02 en el teléfono
+```ts
+import { auth, ApiError } from '../../api';
 
-1. Entra como **mariana.lopez@correo.mx**: la lista abre con «Técnico de soporte de TI» (88 %) y su tarjeta dice «Ya te postulaste». Escribe «soporte» en el buscador (busca 400 ms después de dejar de escribir) y queda solo esa vacante.
-2. Abre **Filtros**: elige Modalidad «Remoto» y toca «Aplicar» (quedan las vacantes 4 y 6; el botón dice «Filtros (1)»). Con el ajuste «Intérprete de Lengua de Señas Mexicana» quedan la 2 y la 6. «Limpiar» y «Aplicar» regresan a la lista completa.
-3. Activa el chip **«Solo las que cubren mis necesidades»**: quedan las vacantes 1 y 2.
-4. Entra como **jorge.ramirez@correo.mx** (sin consentimiento): el chip se ve deshabilitado y explica por qué, con acceso a Perfil.
-5. Abre una vacante: el detalle muestra el desglose en texto y la accesibilidad en sus dos grupos. «Ejecutivo de atención telefónica» (ConCentro) muestra la declaración de «sin condiciones».
-6. Como Mariana, abre «Auxiliar de almacén» y toca **Postularme**: elige Sí o No (su preferencia es «preguntar»), confirma y el botón cambia a «Ver mi postulación».
-7. Menú **⋮ › Reportar vacante**: elige un motivo, envía y aparece «Gracias, revisaremos tu reporte».
-8. Para ver el bloqueo por perfil incompleto entra como **notificaciones@correo.mx** (perfil vacío): «Postularme» queda deshabilitado y dice qué falta.
+const sesion = await auth.login({ correo, contrasena });
+```
 
-Al tocar una notificación se abre la pantalla de su referencia pasándole el id (CAN-06, REC-05, REC-06, REC-01 o REC-02); todas son ya pantallas reales (CAN-06, REC-01, REC-02, REC-05 y REC-06).
+El mock guarda su estado en memoria (`src/api/mock/datos.ts`), valida igual que el contrato (códigos 401, 403, 404, 409, 410, 422, 423, 429 con `campos` y `Retry-After`) y copia las respuestas para que nadie modifique el estado sin pasar por un servicio. `simulador.ts` aplica la latencia (en las pruebas es 0).
 
-### Cómo probar CAN-03 y CAN-04 en el teléfono
+### Motor de compatibilidad
 
-Todo se guarda en memoria: al cerrar la app por completo vuelven los datos de S002.
+`src/api/mock/compatibilidad.ts` implementa las reglas de `docs/CONTEXTO.md` y de `db/pruebas/P002__compatibilidad.sql`: H (habilidades: obligatorias valen el doble), A (necesidades de ajuste cubiertas, 1 si no registró ninguna), M (modalidad) y F (formación). Para el candidato `round(100·(0.40H + 0.30A + 0.15M + 0.15F))` y para el reclutador `round(100·(0.40H + 0.15M + 0.15F)/0.70)`, sin A, para no penalizar a quien tiene más necesidades. Es una función pura; su prueba reproduce las 12 filas de S002 (Mariana con «Técnico de soporte de TI»: **88 %** y **83 %**). Cuando una vacante cambia (REC-03), el mock recalcula las compatibilidades y avisa a los postulados con proceso en curso.
 
-1. Entra como **mariana.lopez@correo.mx** y abre **Perfil**. Arriba dice «Tu perfil está al 90 % · Falta: foto» y la barra se anuncia como «Completitud del perfil, 90 por ciento».
-2. Toca **Cambiar foto › Elegir de la galería** (o **Tomar una foto**, que pide permiso de cámara con una explicación). Con la foto llega a **100 %**; **Quitar foto** (con confirmación) regresa a 90 %.
-3. Expande **Datos personales**, cambia el teléfono a 3 dígitos y toca **Guardar**: el error aparece bajo el campo. Corrígelo, guarda y se anuncia «Datos personales guardados. Tu perfil está al … por ciento.».
-4. Expande **Necesidades de ajuste**: arriba dice «No te pedimos diagnóstico…», las casillas van agrupadas por categoría y hay tres opciones para compartir. **Retirar mi consentimiento** pide confirmar y borra las necesidades y la nota.
-5. Cierra sesión y entra como **jorge.ramirez@correo.mx** (80 %, sin consentimiento): en **Necesidades de ajuste** ve la explicación y el enlace al aviso de privacidad. **Dar mi consentimiento** confirma antes de enviar; después marca «Intérprete de Lengua de Señas Mexicana» y guarda. En **Vacantes** el chip «Solo las que cubren mis necesidades» ya se puede usar.
-6. En Perfil, los botones de pendientes llevan a su lugar: «Agregar experiencia» abre **Mi CV** en esa pestaña.
-7. **Mi CV › Experiencia**: **+ Agregar**, elige mes y año de inicio (guarda el día 1) y marca «Trabajo aquí actualmente» (la fecha de fin se oculta). Una fecha de fin anterior al inicio se marca en su campo. Edita y elimina (con confirmación).
-8. **Formación**: igual; si el estado es «En curso», la fecha de fin es opcional.
-9. **Habilidades**: escribe «pyth» (sugerencias desde 2 letras), toca «Agregar Python», cambia su nivel y toca **Guardar habilidades**. El contador dice «5 de 30»; para llegar a 30 agrega más (el mock tiene 33 habilidades) y el buscador se deshabilita con su explicación.
-10. **Vista previa de mi CV**: modal de solo lectura, sin correo ni teléfono y con la aclaración del contacto.
-11. En Perfil, **Cambiar contraseña** (error «La contraseña actual no es correcta…» con una incorrecta) y **Eliminar mi cuenta**: primero explica qué se borra y que las postulaciones activas se retiran; después pide la contraseña. Al terminar vuelves a MOV-01 con un aviso, y esa cuenta responde 423 al iniciar sesión.
+### Navegación
 
-Con TalkBack o VoiceOver recorre el perfil de arriba abajo: cada sección es un botón «expandida/contraída», los campos tienen etiqueta y los errores se anuncian.
+`RaizNavegador` elige qué se ve según la sesión: splash, acceso sin sesión (MOV-01 a MOV-03) o el navegador del rol (`CandidatoTabs` o `ReclutadorTabs` más sus pantallas de detalle apiladas). `NoLeidasContext` mantiene el contador de la pestaña de notificaciones y se reinicia al cambiar de usuario. Un registro nuevo aterriza en Perfil (candidato) u Organización (reclutador). `src/navegacion/tipos.ts` declara todos los parámetros de ruta.
 
-### Cómo probar CAN-05, CAN-06 y CAN-07 en el teléfono
+### Componentes
 
-Los cambios se guardan en memoria: al cerrar la app por completo vuelven los datos de S002 y del mock.
+Todos están en `src/componentes/` y se importan de `componentes/index.ts`:
 
-1. Entra como **mariana.lopez@correo.mx** y abre **Postulaciones**. **Activas (1)** muestra «Técnico de soporte de TI» con su estado «Entrevista» (ícono y texto) y la fecha y hora de la entrevista. **Finalizadas (3)** muestra Retirada, Aceptada y No seleccionada. El filtro por estado cambia según la pestaña.
-2. Jala la lista hacia abajo para actualizarla. Entra con **notificaciones@correo.mx** para ver «Aún no te has postulado» con el botón «Ver vacantes».
-3. Abre la postulación de «Técnico de soporte de TI». El **Historial** es una lista: cada paso con fecha, hora y el mensaje del reclutador; el estado actual dice «Estado actual». «Ver vacante» abre CAN-02 y el nombre de la empresa abre su ficha.
-4. En **Tu entrevista**: **Abrir liga** abre Meet, **Copiar liga** copia la liga y avisa «Liga copiada.» (pégala en cualquier campo para comprobarlo).
-5. **Cancelar entrevista** (se puede: faltan 3 días) pide confirmar. Después aparece **Elige un horario** con los horarios libres agrupados («Hoy», «Mañana», «mié 21 oct»…, según el día).
-6. Toca **Agendar** en el único horario de **60 min**: confirma y aparece «Ese horario acaba de ser tomado, elige otro.»; la lista se recarga sin ese horario. Agenda cualquier otro y la tarjeta de la entrevista regresa con la liga nueva.
-7. **Retirar postulación** pide confirmar y, si hay entrevista, avisa que también se cancela. Al confirmar, el estado pasa a «Retirada» y la postulación aparece en Finalizadas de CAN-05. Las finalizadas no tienen el botón.
-8. Entra como **jorge.ramirez@correo.mx** y abre su postulación «Desarrollador web junior»: la entrevista empieza en 5 horas, no hay botón de cancelar y se explica por qué.
-9. Abre **Empresas**: aparecen ConCentro, LogiBajío y TecnoQro (no Estudio Trazo). Busca «logi» (desde 3 letras, 400 ms después de dejar de escribir) o filtra por sector «Manufactura».
-10. Abre **TecnoQro**: logo (o iniciales), sector, tamaño, municipio, descripción, **sitio web** (abre el navegador), **Prácticas de inclusión** y sus vacantes con la compatibilidad de Mariana (88 % y 15 %). Menú **⋮ › Reportar empresa**: elige un motivo, envía y aparece «Gracias, revisaremos tu reporte».
-11. En CAN-02, tocar el nombre de la empresa abre la misma ficha.
+| Familia         | Componentes                                                                                                                                                      |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Texto y botones | `Texto` (respeta el tamaño de letra hasta el 200 %), `Boton` (primario, secundario, peligro y texto), `Pantalla`                                                 |
+| Campos          | `CampoTexto`, `CampoCodigo`, `Casilla`, `Interruptor`, `GrupoRadio`, `Selector`, `SelectorUbicacion`, `SelectorMesAnio`, `BuscadorHabilidades`, `FiltroEstado`   |
+| Estados         | `Cargando`, `EstadoVacio`, `EstadoError` (con «Reintentar»), `ErrorCatalogo` (una lista de un formulario no cargó), `Aviso`, `ChipEstado` (texto, ícono y color) |
+| Contenedores    | `Tarjeta`, `SeccionDesplegable`, `BarraProgreso`, `Avatar`, `LogoEmpresa`, `Logotipo`, `ResaltadoNotificacion`                                                   |
+| Ventanas        | `VentanaModal`, `ModalFormulario`, `ModalConfirmacion`, `EncabezadoModal`                                                                                        |
+| Foco            | `useFocoEnTitulo`, `useRetornoFoco` (devuelve el foco al botón que abrió un modal) y `useMarcaDeNotificacion`                                                    |
 
-Con TalkBack o VoiceOver cada tarjeta de postulación y de empresa se lee como un solo elemento con todo su resumen (por ejemplo, «Técnico de soporte de TI, TecnoQro. Te postulaste el miércoles 30 de septiembre de 2026. Estado: Entrevista. Entrevista agendada el …, a las 10:00 de la mañana»); las pestañas se anuncian como pestañas con su número y los botones «Agendar» dicen la fecha, la hora y la duración.
+Utilidades comunes: `fechas.ts` (todas las fechas y horas en hora de la Ciudad de México, también «habladas» para el lector de pantalla), `formatos.ts` (porcentajes «88 %» / «88 por ciento», duraciones «45 min» / «45 minutos» y `capitalizar`), `validaciones.ts`, `useCarga` y `useListaPaginada`. **Regla:** ninguna pantalla formatea fechas, porcentajes o duraciones por su cuenta.
 
-### Cómo probar REC-01, REC-02 y REC-03 en el teléfono
+### Estados de carga, error y vacío
 
-Los cambios se guardan en memoria: al cerrar la app por completo vuelven los datos de S002 y del mock.
-
-1. Entra como **rh@tecnoqro.mx** (TecnoQro, validada) y abre **Organización**. El banner verde dice «Empresa validada»; se anuncia al abrir. **Razón social** y **RFC** aparecen con candado y «Para cambiarlos, escribe a soporte.». Cambia la descripción (contador «n / 1000») y toca **Guardar cambios**: aparece «Datos de la organización guardados.». **Cambiar logo** abre la galería cuando el diálogo ya se cerró. La sección «Documento de validación» no ofrece subir constancia (ya está validada).
-2. Cierra sesión y entra como **contacto@estudiotrazo.mx** (pendiente): el banner dice «Estamos revisando tu empresa. Puedes crear borradores, pero no publicar.»; ahora **Razón social** y **RFC** sí se editan (un RFC ya usado, como `TQU150312AB1`, se marca en su campo) y aparece **Subir constancia (PDF)**. Un archivo que no sea PDF o de más de 5 MB se rechaza con un mensaje.
-3. Entra como **rechazada@constructorarivera.mx**: banner rojo con el motivo y qué hacer. Toca **Subir constancia (PDF)**, elige un PDF y el banner pasa a «Pendiente de validación». Con **suspendida@academiaalameda.mx** el banner dice el motivo y no se puede subir constancia.
-4. En **Cuenta**: **Cambiar contraseña** (el mismo modal de CAN-03), **Aviso de privacidad** y **Cerrar sesión**.
-5. Entra otra vez como Laura y abre **Mis vacantes**: «Técnico de soporte de TI» y «Desarrollador web junior» (publicadas) y «Diseñador gráfico» (borrador). Cada tarjeta dice «n postulados · m nuevos» (con Roberto, «Analista de datos de operaciones» dice «2 postulados · 1 nuevo»). Filtra por estado con los chips y jala la lista para actualizarla.
-6. Toca **⋮** de una vacante: el menú solo ofrece lo que permite su estado (borrador: Editar, Publicar, Duplicar; publicada: Editar, Pausar, Cerrar, Duplicar; pausada: Editar, Reanudar, Cerrar, Duplicar; cerrada: Duplicar; suspendida: nada y la tarjeta dice «Suspendida por el administrador»). Pausar, Reanudar, Cerrar y Publicar piden confirmar. **Duplicar** crea un borrador « (copia)».
-7. **+ Nueva vacante** abre el formulario de 4 pasos («Paso 1 de 4», se anuncia al cambiar). «Siguiente» solo revisa el paso actual. Paso 2: busca una habilidad (como en Mi CV) y márcala **Obligatoria** o **Deseable**. Paso 3: tarjetas Presencial, Remoto e Híbrido. Paso 4: los dos bloques de ajustes; uno que marcas en un bloque se deshabilita en el otro, y «Por ahora no contamos con condiciones» limpia los dos.
-8. **Publicar** pide confirmar. Si falta algo (por ejemplo, ninguna habilidad obligatoria o la dirección de una vacante presencial) el formulario vuelve al primer paso con error y marca el campo. Con Estudio Trazo, **Publicar** está deshabilitado con su explicación, pero **Guardar borrador** funciona.
-9. Para ver el recálculo, entra primero como **mariana.lopez@correo.mx**: «Técnico de soporte de TI» tiene 88 %. Con Laura edita esa vacante y, en el paso 2, cambia **SQL** de Obligatoria a Deseable; al guardar dice «Avisamos a 26 postulados…» (los de la vacante con proceso en curso). Mariana ve ahora **91 %** en Vacantes y en el detalle.
-10. Si sales del formulario con cambios sin guardar (botón atrás o gesto), pide confirmar antes de descartarlos. Una vacante cerrada o suspendida no se edita y lo explica.
-
-Con TalkBack o VoiceOver cada tarjeta de vacante se lee como un solo elemento con todo su resumen (por ejemplo, «Técnico de soporte de TI. Híbrido. Estado: Publicada. 28 postulados, 17 nuevos. Publicada el 20 oct») y el menú ⋮ es un botón aparte («Más opciones de Técnico de soporte de TI»).
-
-### Cómo probar REC-04, REC-05 y REC-06 en el teléfono
-
-Los cambios se guardan en memoria: al cerrar la app por completo vuelven los datos de S002 y del mock.
-
-1. Entra como **rh@tecnoqro.mx** y en **Mis vacantes** toca la tarjeta de «Técnico de soporte de TI»: abre **Postulados** con el título y «28 postulados». Abajo del título dice «Ordenados de mayor a menor compatibilidad laboral.» y que el puntaje solo considera habilidades, formación y modalidad. Mariana sale con «Compatibilidad laboral 83 %».
-2. Filtra por estado (chips) y por **Compatibilidad mínima** (50, 70 u 85 %); el texto «Mostrando n postulados con estos filtros.» se anuncia. «Quitar filtros» regresa a la lista completa. Desplázate hasta el final: carga la segunda página. Las tarjetas no dicen nada de discapacidad; solo hay una etiqueta «Ajustes por confirmar» cuando aplica.
-3. Abre a **Mariana** (REC-05): desglose con ✓ y ✕ (le falta SQL), CV, mensaje de la postulación, necesidades («Ya cubierto por la vacante»), contacto (correo y teléfono con **Escribir** y **Llamar**) y la entrevista con **Abrir liga** y **Copiar liga**. Abre a **Carlos Mendoza** (postulada): «El candidato no compartió esta información.» y contacto «Disponibles al pasar a entrevista». Abre a **Fernando Silva**: sus necesidades salen «Por confirmar con la empresa».
-4. En Carlos toca **Cambiar estado**: solo ofrece «En revisión» y «No seleccionada». Elige «En revisión», escribe un mensaje (contador «n / 500» y «El candidato verá este mensaje») y guarda. Luego elige «Entrevista»: el contacto aparece y, si la vacante no tiene horarios libres, el aviso ofrece **Publicar horarios**. «No seleccionada» y «Aceptada» piden confirmar antes de enviarse.
-5. Para ver el cambio del lado del candidato: entra como `carlos.mendoza@correo.mx`, abre Notificaciones («Tu postulación avanzó») y la postulación: el estado y tu mensaje salen en la línea de tiempo.
-6. **Observaciones internas**: la de S002 ya está; agrega otra (contador «n / 1000»). La etiqueta «No visibles para el candidato» está siempre visible. El menú **⋮ › Reportar perfil** envía el reporte con «Gracias, revisaremos tu reporte».
-7. **Agenda**: agrupa por «Hoy», «Mañana» o «jue 22 oct» (VoiceOver lee la fecha completa). Los horarios libres tienen **Eliminar** (con confirmación). El agendado de Mariana tiene **Marcar como realizada** y **No asistió** deshabilitados con la explicación (aún no empieza); el de Irene sí se puede marcar. **Cancelar** pide un motivo obligatorio y avisa a la persona; con Mariana, entra como ella y en la postulación vuelve a aparecer «Elige un horario».
-8. **+ Publicar horarios**: elige la vacante (solo publicadas), el día, la hora (de 7:00 a 20:00 cada 15 min), la duración y la liga de Meet o Teams. Una liga de otro servicio se marca en su campo y un horario que se cruza con otro dice «Este horario se traslapa con otro.». Marca **Repetir en los siguientes días hábiles** (1 a 5) para publicar varios; al final dice cuántos se publicaron y cuáles chocaron. Los nuevos horarios aparecen libres para Mariana en «Elige un horario».
-9. **Ver más días** amplía la agenda de 30 en 30 días.
+Toda pantalla que pide datos muestra `Cargando` mientras espera, `EstadoError` con el botón **Reintentar** si falla (el mismo texto en todas) y `EstadoVacio` con una acción cuando no hay nada («Quitar filtros», «Ver vacantes», «Crear vacante»…). Las listas paginadas añaden «Cargando más…» y, si falla la siguiente página, un aviso con **Reintentar**. Los selectores que dependen de un catálogo (entidad, sector, modalidad, ajustes…) muestran `ErrorCatalogo` si la lista no cargó.
 
 ## Accesibilidad
 
-WCAG 2.1 AA: contraste de 4.5:1 (hay una prueba que lo comprueba con la paleta), áreas táctiles de 48 × 48 dp, texto que respeta el tamaño de fuente del sistema (hasta 200 %), `accessibilityLabel`, `accessibilityRole` y `accessibilityState` en todo lo interactivo, estados con texto e ícono y errores anunciados con `AccessibilityInfo.announceForAccessibility`.
+WCAG 2.1 AA (`docs/CONTEXTO.md`, sección 6): contraste de 4.5:1 (una prueba lo comprueba con la paleta), áreas táctiles de al menos 44 pt (la app usa 48), texto que respeta el tamaño de letra del sistema hasta el 200 %, `accessibilityLabel`, `accessibilityRole` y `accessibilityState` en todo lo interactivo, estados con texto e ícono (nunca solo color) y errores anunciados con `AccessibilityInfo.announceForAccessibility`.
 
-Patrones de CAN-03 y CAN-04 que conviene reutilizar: `SeccionDesplegable` (botón con estado expandido o contraído; el contenido sigue montado para no perder lo escrito), `ModalFormulario` (título al que va el foco, contenido con scroll y botón fijo dentro del área segura), `useRetornoFoco` (devuelve el foco al botón que abrió un modal), `BarraProgreso` (barra con valor dicho en voz alta, por ejemplo «90 por ciento») `SelectorMesAnio` (fecha de mes y año con listas accesibles, sin el selector nativo), `BuscadorHabilidades` (sugerencias del catálogo; lo usan Mi CV y los requisitos de la vacante), `SelectorUbicacion` (entidad y municipio), `FiltroEstado` (opciones excluyentes con palomita), `ModalContrasena` y `CvCandidato` (el CV como lo ve una empresa, compartido entre la vista previa de Mi CV y REC-05; en `pantallas/compartidas/`).
+**Qué revisan las pruebas** (`src/pruebas/auditoria.ts`, que usan `src/navegacion/__tests__/accesibilidadPantallas.test.tsx` y `src/componentes/__tests__/escalaDeTexto.test.tsx`):
+
+- Recorren las pantallas del candidato y del reclutador con el mock (pestañas, detalles, modales, los cuatro pasos de REC-03) y revisan el árbol que leerían VoiceOver y TalkBack. Un hallazgo nuevo hace fallar la prueba y dice la pantalla y el elemento.
+- **Todo lo tocable** tiene rol, nombre y un área de al menos 44 pt; las pestañas dicen si están seleccionadas y las casillas, interruptores y radios, si están marcados.
+- **Los íconos** son decorativos: están ocultos para el lector de pantalla o forman parte de un elemento agrupado con nombre. Las imágenes (logotipos, fotos) se ocultan salvo que describan algo.
+- **El texto escala:** ningún `Text` apaga `allowFontScaling` ni limita `maxFontSizeMultiplier` por debajo de 2, y ninguna caja con texto tiene alto fijo que lo corte. Para `Texto`, `Boton`, `CampoTexto`, `Tarjeta`, `ChipEstado`, `Aviso` y `Casilla` se calcula el tamaño con el sistema al 200 %. Las únicas excepciones son las iniciales decorativas de `Avatar` y `LogoEmpresa` (dentro de un círculo fijo y ocultas al lector de pantalla).
+- **Nada se comunica solo con color:** cada estado (`ChipEstado`), cada línea del desglose de compatibilidad y cada error llevan texto e ícono.
+
+**Lo que las pruebas no pueden decir** es cómo suena ni si el orden de lectura es cómodo: eso se revisa en el teléfono con la lista de abajo.
+
+**Patrones que conviene reutilizar:** `SeccionDesplegable` (botón con estado expandido o contraído; el contenido sigue montado para no perder lo escrito), `ModalFormulario` (título al que va el foco, contenido con scroll y botón fijo dentro del área segura), `useRetornoFoco`, `BarraProgreso` (barra con valor dicho en voz alta, por ejemplo «90 por ciento»), `SelectorMesAnio` (fecha de mes y año con listas accesibles, sin el selector nativo), `BuscadorHabilidades`, `SelectorUbicacion`, `FiltroEstado` (opciones excluyentes con palomita), `ModalContrasena` y `CvCandidato` (el CV como lo ve una empresa, compartido entre la vista previa de Mi CV y REC-05; en `pantallas/compartidas/`) y `ResaltadoNotificacion` + `useMarcaDeNotificacion` (resaltar lo que cambió).
+
+## Lista de verificación con VoiceOver y TalkBack
+
+Para seguirla en el teléfono, con Expo Go y el mock. Marca solo lo que se oyó bien; si algo falla, anota la pantalla y el elemento.
+
+**Preparación**
+
+- **iPhone:** Ajustes › Accesibilidad › VoiceOver (o triple clic del botón lateral). Deslizar a la derecha o izquierda cambia de elemento; doble toque activa.
+- **Android:** Ajustes › Accesibilidad › TalkBack (o mantener los dos botones de volumen). Mismos gestos.
+- **Letra al 200 %:** en iPhone, Ajustes › Accesibilidad › Pantalla y tamaño de texto › Texto más grande › Tamaños de accesibilidad mayores (máximo). En Android, Ajustes › Pantalla › Tamaño de fuente y de pantalla (máximo).
+- Cierra y abre Expo Go para partir de los datos iniciales. Cuentas: Mariana (candidata), Laura (reclutadora) y Daniel (empresa pendiente).
+
+**Siempre, en cada pantalla**
+
+- [ ] Lo primero que se lee es el título o el encabezado de la pantalla.
+- [ ] El orden de lectura va de arriba abajo, igual que lo visual (no salta a un botón fijo ni a otro bloque).
+- [ ] Cada botón dice qué hace («Guardar», «Postularme»), no «botón» ni el nombre del ícono; los deshabilitados lo dicen.
+- [ ] Los estados se dicen con palabras («Entrevista», «Publicada», «Retirada»), no solo por color.
+- [ ] Con la letra al 200 % no se corta ningún texto y se puede llegar a todos los botones (se desplaza).
+
+**Por pantalla**
+
+| Pantalla                      | Cuenta     | Qué comprobar                                                                                                                                                                                                                                                                                   |
+| ----------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| MOV-01 Inicio de sesión       | Sin sesión | Se leen «Correo» y «Contraseña» como campos de texto; con una contraseña incorrecta el error se anuncia solo; «Mostrar contraseña» dice su estado.                                                                                                                                              |
+| MOV-02 Registro               | Sin sesión | Al cambiar de paso se anuncia «Paso 2 de 3»; las dos tarjetas del paso 1 se leen como botones con su descripción; la casilla del aviso dice si está marcada; cada error se lee debajo del campo.                                                                                                |
+| MOV-03 Recuperar contraseña   | Sin sesión | «Paso 1 de 2»; el campo del código se lee como «Código de 6 dígitos»; el reenvío explica cuánto falta para poder usarlo.                                                                                                                                                                        |
+| MOV-04 Notificaciones         | Mariana    | La pestaña dice «Notificaciones, 1 sin leer»; cada notificación es un solo elemento («Nueva. Tu postulación avanzó…»); «Marcar todas como leídas» anuncia el resultado; en Preferencias los interruptores dicen activado o desactivado.                                                         |
+| CAN-01 Vacantes               | Mariana    | Cada tarjeta se lee completa («Técnico de soporte de TI, TecnoQro, empresa validada, híbrido… compatibilidad 88 por ciento… Ya te postulaste»); «Filtros, ninguno activo»; el chip «Solo las que cubren mis necesidades» es una casilla; en Jorge dice por qué está deshabilitado.              |
+| CAN-02 Detalle de vacante     | Mariana    | El encabezado dice «Compatibilidad 88 por ciento»; cada línea del desglose se lee con palabras («Habilidades: 2 de 3 obligatorias · te falta SQL»); la accesibilidad se lee en sus dos grupos; «Postularme» abre un modal cuyo título es lo primero que se oye; «Más opciones» abre el reporte. |
+| CAN-03 Mi perfil              | Mariana    | La barra dice «Completitud del perfil, 90 por ciento»; cada sección es un botón «expandida» o «contraída»; al guardar se anuncia «Datos personales guardados»; las tres opciones para compartir necesidades son radios con su estado.                                                           |
+| CAN-04 Mi CV                  | Mariana    | Las pestañas dicen «seleccionada»; «Agregar» abre un modal con su título; el selector de mes y año se maneja con listas; el contador de habilidades dice «n de 30».                                                                                                                             |
+| CAN-05 Mis postulaciones      | Mariana    | «Activas (1)» y «Finalizadas (3)» son pestañas; cada tarjeta se lee completa con su estado y la fecha de la entrevista.                                                                                                                                                                         |
+| CAN-06 Detalle de postulación | Mariana    | El historial es una lista; el último paso dice «Estado actual»; «Agendar» dice fecha, hora y duración; al cancelar, el foco vuelve a «Elige un horario»; **desde la notificación** se oye primero «Desde tu notificación».                                                                      |
+| CAN-07 Empresas               | Mariana    | Cada empresa es un elemento con sector y número de vacantes; en la ficha, «Sitio web» y «Prácticas de inclusión» se leen; «Reportar empresa» está en el menú.                                                                                                                                   |
+| REC-01 Organización           | Daniel     | Al abrir se anuncia el banner («Estamos revisando tu empresa…»); razón social y RFC dicen que no se pueden editar; «Subir constancia (PDF)» se lee como botón.                                                                                                                                  |
+| REC-02 Mis vacantes           | Laura      | Cada tarjeta es un elemento con título, modalidad, estado y «n postulados, m nuevos»; «Más opciones de…» es un botón aparte; el menú solo ofrece acciones permitidas.                                                                                                                           |
+| REC-03 Vacante                | Laura      | «Paso n de 4» se anuncia al cambiar; las tarjetas de modalidad son radios; cada habilidad dice «obligatoria» o «deseable»; «Publicar» deshabilitado explica por qué (Daniel); al salir con cambios pide confirmar.                                                                              |
+| REC-04 Postulados             | Laura      | «28 postulados»; cada tarjeta dice nombre, compatibilidad, estado y fecha (y «Ajustes por confirmar» si aplica); al filtrar se anuncia «Mostrando n postulados…».                                                                                                                               |
+| REC-05 Detalle del postulado  | Laura      | El desglose se lee en palabras; las necesidades dicen «Ya cubierto» o «Por confirmar con la empresa»; «Cambiar estado» solo ofrece pasos permitidos; «Escribir» y «Llamar» son botones.                                                                                                         |
+| REC-06 Agenda                 | Laura      | Cada día es un encabezado con la fecha completa («jueves 5 de noviembre de 2026»); cada horario se lee con hora, duración, vacante y candidato; «Marcar como realizada» deshabilitado dice desde cuándo; **desde la notificación** se oye «Desde tu notificación» antes del horario.            |
+
+## Qué falta probar en dispositivo
+
+Todo lo de arriba son pruebas automáticas sobre el árbol de accesibilidad; **falta oírlo en un teléfono**:
+
+- **TalkBack en Android nunca se ha probado.** Hay que recorrer la lista completa en un dispositivo Android (con Expo Go) y revisar el foco, los anuncios y el comportamiento de los modales.
+- **VoiceOver en iPhone:** falta un recorrido completo con la lista de arriba (no hay registro de uno).
+- **Letra al 200 % en teléfono real:** la barra inferior (sin alto fijo, pero sin ver en un aparato), las tarjetas con mucho texto, los chips de estado y los modales. En iPhone, React Navigation no escala las etiquetas de las pestañas (usa el visor de contenido grande de iOS); en Android sí.
+- **Foco al abrir desde una notificación** (`AccessibilityInfo.setAccessibilityFocus` tras el desplazamiento, 600 ms): se comprueba que se pide el foco, no que el lector lo respete en cada versión del sistema.
+- **Notificaciones push** reales (necesitan una _development build_), **cámara** y **galería** con los permisos reales, y **abrir la liga** de Meet o Teams.
+- **Orientación horizontal** (`app.json` la permite) y **tabletas** (`supportsTablet`): no se han revisado.
+- **API real:** nada se ha probado contra el API (aún no existe); con `EXPO_PUBLIC_USE_MOCK=false` los servicios HTTP solo tienen pruebas con respuestas del contrato.
+
+## Calidad
+
+| Comando                          | Qué hace                                                                     |
+| -------------------------------- | ---------------------------------------------------------------------------- |
+| `npm start`                      | Servidor de Expo.                                                            |
+| `npm run lint`                   | ESLint (con reglas de Expo y Prettier).                                      |
+| `npx tsc --noEmit`               | Revisión de tipos.                                                           |
+| `npm test`                       | Pruebas con Jest y Testing Library (la suite completa tarda unos 2 minutos). |
+| `npx expo install --check`       | Compara las dependencias con las que pide el SDK 57.                         |
+| `npx expo export --platform ios` | Empaqueta la app para iOS: comprueba que el bundle se arma.                  |
+| `npm run format`                 | Da formato con Prettier.                                                     |
+| `npm run tipos`                  | Regenera `src/api/esquema.d.ts` desde `../docs/api/openapi.yaml`.            |
+
+Las pruebas cubren los servicios (mock y HTTP), cada pantalla, los componentes base, la sesión, la navegación por rol, el motor de compatibilidad contra las filas de S002, los datos de la demostración (`demostracion.test.ts`) y la accesibilidad.
+
+## Dependencias y auditoría
+
+`npx expo install --check` dice «Dependencies are up to date».
+
+`npm audit` en `mobile/` reporta **18 hallazgos (3 altos, 2 moderados y 13 bajos; ninguno crítico)**. Ninguno es del código de la app: salen de tres paquetes que llegan de forma indirecta, y el resto del conteo son paquetes que solo los arrastran.
+
+| Paquete con el aviso | Aviso                                                              | Severidad | Instalado | Versión corregida                      | Quién lo trae                                      |
+| -------------------- | ------------------------------------------------------------------ | --------- | --------- | -------------------------------------- | -------------------------------------------------- |
+| `zod`                | GHSA-mrhx-c7xc-m3w5 (memoria con colecciones enormes al validar)   | Alta      | 3.25.76   | 4.6.6 (otra versión mayor)             | `eslint-plugin-react-hooks` (ESLint) y `@expo/cli` |
+| `uuid`               | GHSA-w5hq-g745-h8pq (límites del búfer en v3, v5 y v6)             | Moderada  | 3.4.0     | 11.1.1 o superior (otra versión mayor) | `@expo/ngrok` (el túnel de `expo start --tunnel`)  |
+| `deepmerge`          | GHSA-gcqx-w48m-w2h4 (contaminación de prototipos en `mergeObject`) | Baja      | 4.3.1     | ninguna publicada en la rama 4         | `@expo/config` (Expo) y `jest-config` (Jest)       |
+
+**Por qué no afectan la app instalada.** Son herramientas de desarrollo (ESLint, la CLI de Expo, Jest, el túnel) que corren en la computadora de quien programa; no se empaquetan en la app. Se comprobó con el mapa de fuentes de `npx expo export --platform ios --source-maps`: ni `zod` ni `deepmerge` ni el paquete `uuid` están en el bundle (solo entra el `uuid` propio de `expo-modules-core`).
+
+**Overrides: no hay ninguno, a propósito.** Un `overrides` solo sirve si existe una versión corregida dentro de la misma versión mayor que pide el dependiente. Para `zod` y `uuid` la corrección está en otra versión mayor que sus dependientes no piden, y para `deepmerge` no hay corrección; forzarlas puede romper `@expo/cli` o `@expo/ngrok` sin tener cómo probarlo. **`npm audit fix` (sin `--force`)** no elimina ningún hallazgo. Los hallazgos se corregirán cuando los paquetes de arriba publiquen una versión corregida y Expo, ESLint o Jest la adopten; conviene correr `npm audit` en cada subida de SDK.
+
+**`@expo/ngrok`** se conserva porque este README documenta `npx expo start --tunnel`; es lo que trae `uuid` 3.4.0. Si alguien deja de usar el túnel, se puede quitar de `devDependencies`.
+
+**Regla: nunca uses `npm audit fix --force`.** Propone bajar `expo` a 51 y destruye el proyecto. Si ya lo corriste, restaura con `git checkout package.json package-lock.json && npm ci`. Después de tocar dependencias, `npx expo install --check` debe decir «Dependencies are up to date».
+
+## Decisiones importantes
+
+- **Una sola app para dos roles.** La navegación cambia según el rol del token; el administrador usa el panel web (la app se lo indica y cierra su sesión).
+- **Necesidades de ajuste, nunca diagnósticos.** El candidato elige necesidades del catálogo `ajuste` con consentimiento expreso y decide si las comparte con cada empresa (`preguntar`, `siempre`, `nunca`). La compatibilidad del reclutador **no** incluye las necesidades (`/0.70`), para no penalizar a quien tiene más; REC-04 solo marca «Ajustes por confirmar».
+- **Servicios intercambiables.** Las pantallas solo conocen la interfaz; mock y HTTP responden igual. El mock vive en memoria a propósito: así cada grabación parte de cero.
+- **Fechas relativas a hoy** (`fechasS002.ts`): las de S002 se mueven juntas para que la demostración se vea igual cualquier día, sin cambiar textos ni estados; los datos extra (entrevistas, horarios, postulados) ya eran relativos.
+- **Una notificación lleva al elemento que cambió.** REC-06 y CAN-06 lo resaltan con borde y el texto «Desde tu notificación» (no solo color), se desplazan hasta él y piden el foco del lector. Si el elemento ya no existe, se avisa.
+- **Texto que crece y cajas que no lo cortan.** Nada de alto fijo con texto adentro; la barra inferior no tiene alto fijo y la insignia de «sin leer» es propia (la de React Navigation tiene alto fijo y cortaría el número al 200 %). Las iniciales decorativas de avatares y logos no se escalan.
+- **Los mismos textos para lo mismo:** «Reintentar» (error), «Quitar filtros» (lista sin resultados por filtros), «Liga copiada.» y los formatos de fecha, hora, porcentaje y duración salen de utilidades comunes.
+- **Sin push en Expo Go.** El registro del dispositivo se omite ahí; se prueba en una _development build_.
+- **Sin `overrides` en las dependencias** (ver arriba) y sin `npm audit fix --force`.
