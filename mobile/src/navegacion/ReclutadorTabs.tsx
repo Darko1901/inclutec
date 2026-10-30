@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 import MOV04Notificaciones from '../pantallas/compartidas/MOV04Notificaciones';
@@ -6,6 +5,7 @@ import REC01Organizacion from '../pantallas/reclutador/REC01Organizacion';
 import REC02MisVacantes from '../pantallas/reclutador/REC02MisVacantes';
 import REC06Agenda from '../pantallas/reclutador/REC06Agenda';
 import type { ReclutadorTabsParamList } from './tipos';
+import { IconoDePestana } from './IconoDePestana';
 import { opcionesBarra, opcionesNotificaciones, type IconoPestana } from './opcionesPestanas';
 import { useNoLeidas } from './NoLeidasContext';
 
@@ -27,7 +27,12 @@ export function ReclutadorTabs() {
       screenOptions={({ route }) => ({
         ...opcionesBarra,
         tabBarIcon: ({ focused, color, size }) => (
-          <Ionicons name={ICONOS[route.name][focused ? 0 : 1]} size={size} color={color} />
+          <IconoDePestana
+            nombre={ICONOS[route.name][focused ? 0 : 1]}
+            size={size}
+            color={color}
+            insignia={route.name === 'Notificaciones' ? noLeidas : 0}
+          />
         ),
       })}
       screenListeners={{ focus: refrescar }}

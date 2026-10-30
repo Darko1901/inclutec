@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 import CAN01Vacantes from '../pantallas/candidato/CAN01Vacantes';
@@ -7,6 +6,7 @@ import CAN05Postulaciones from '../pantallas/candidato/CAN05Postulaciones';
 import CAN07Empresas from '../pantallas/candidato/CAN07Empresas';
 import MOV04Notificaciones from '../pantallas/compartidas/MOV04Notificaciones';
 import type { CandidatoTabsParamList } from './tipos';
+import { IconoDePestana } from './IconoDePestana';
 import { opcionesBarra, opcionesNotificaciones, type IconoPestana } from './opcionesPestanas';
 import { useNoLeidas } from './NoLeidasContext';
 
@@ -29,7 +29,12 @@ export function CandidatoTabs() {
       screenOptions={({ route }) => ({
         ...opcionesBarra,
         tabBarIcon: ({ focused, color, size }) => (
-          <Ionicons name={ICONOS[route.name][focused ? 0 : 1]} size={size} color={color} />
+          <IconoDePestana
+            nombre={ICONOS[route.name][focused ? 0 : 1]}
+            size={size}
+            color={color}
+            insignia={route.name === 'Notificaciones' ? noLeidas : 0}
+          />
         ),
       })}
       screenListeners={{ focus: refrescar }}

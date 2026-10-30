@@ -91,7 +91,13 @@ const estilos = StyleSheet.create({
     borderWidth: 1,
     borderColor: colores.bordeSuave,
   },
-  cuerpo: { flex: 1, gap: espaciado.xs, padding: espaciado.lg, borderRadius: radio.lg },
+  cuerpo: {
+    flex: 1,
+    minHeight: AREA_TACTIL_MINIMA,
+    gap: espaciado.xs,
+    padding: espaciado.lg,
+    borderRadius: radio.lg,
+  },
   presionada: { opacity: 0.85 },
   menu: {
     width: AREA_TACTIL_MINIMA,

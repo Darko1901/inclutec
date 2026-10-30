@@ -74,7 +74,10 @@ describe('MOV-04 · Notificaciones', () => {
 
     expect(contador()).toBe('0');
     expect(screen.queryAllByText('Nueva', { hidden: true })).toHaveLength(0);
-    expect(mockNavegar).toHaveBeenCalledWith('DetallePostulacion', { id: 1, desde: 'cambio_estado' });
+    expect(mockNavegar).toHaveBeenCalledWith('DetallePostulacion', {
+      id: 1,
+      desde: 'cambio_estado',
+    });
     expect(marcar).toHaveBeenCalledWith(1);
     // El API confirma el mismo número.
     await waitFor(async () => expect(await notificaciones.resumen()).toEqual({ no_leidas: 0 }));
@@ -99,7 +102,10 @@ describe('MOV-04 · Notificaciones', () => {
 
     expect(marcar).not.toHaveBeenCalled();
     expect(contador()).toBe('1');
-    expect(mockNavegar).toHaveBeenCalledWith('DetallePostulacion', { id: 1, desde: 'recordatorio_entrevista' });
+    expect(mockNavegar).toHaveBeenCalledWith('DetallePostulacion', {
+      id: 1,
+      desde: 'recordatorio_entrevista',
+    });
   });
 
   it('«Marcar todas como leídas» deja el contador en 0', async () => {
