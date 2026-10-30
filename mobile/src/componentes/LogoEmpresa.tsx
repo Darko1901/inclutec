@@ -13,7 +13,7 @@ interface LogoEmpresaProps {
 }
 
 /** Hasta dos iniciales: «Estudio Trazo» → «ET», «TecnoQro» → «T». */
-export function inicialesDeEmpresa(nombre: string): string {
+function inicialesDeEmpresa(nombre: string): string {
   return nombre
     .trim()
     .split(/\s+/)

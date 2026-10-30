@@ -12,7 +12,7 @@ import {
 import { AREA_TACTIL_MINIMA, colores, espaciado, radio } from '../tema';
 import { Texto } from './Texto';
 
-export type VarianteBoton = 'primario' | 'secundario' | 'texto' | 'peligro';
+type VarianteBoton = 'primario' | 'secundario' | 'texto' | 'peligro';
 
 interface BotonProps {
   /** Para devolver el foco del lector de pantalla al botón (ver useRetornoFoco). */

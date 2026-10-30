@@ -1,6 +1,6 @@
 import type { Notificacion, RolUsuario } from '../../../api';
 
-export interface DestinoNotificacion {
+interface DestinoNotificacion {
   pantalla: string;
   params: Record<string, number> | undefined;
 }

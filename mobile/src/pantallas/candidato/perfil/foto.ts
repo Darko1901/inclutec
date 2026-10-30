@@ -4,7 +4,7 @@ import type { ArchivoLocal } from '../../../api';
 
 export type OrigenFoto = 'galeria' | 'camara';
 
-export type ResultadoFoto =
+type ResultadoFoto =
   | { tipo: 'archivo'; archivo: ArchivoLocal }
   | { tipo: 'cancelado' }
   | { tipo: 'sin_permiso' }

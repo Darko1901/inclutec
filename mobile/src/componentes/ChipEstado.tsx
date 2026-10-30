@@ -18,7 +18,7 @@ import { Texto } from './Texto';
 type Icono = keyof typeof Ionicons.glyphMap;
 type Tono = 'neutro' | 'info' | 'exito' | 'advertencia' | 'error' | 'secundario';
 
-export interface DefinicionEstado {
+interface DefinicionEstado {
   texto: string;
   icono: Icono;
   tono: Tono;

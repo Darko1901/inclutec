@@ -25,7 +25,7 @@ interface Props {
 const ocultar = { accessibilityElementsHidden: true, importantForAccessibility: 'no' } as const;
 
 /** Qué lee el lector de pantalla del bloque de datos de un horario. */
-export function resumenAccesibleHorario(horario: HorarioAgenda): string {
+function resumenAccesibleHorario(horario: HorarioAgenda): string {
   const partes = [
     `${formatearHoraHablada(horario.inicio)}, ${horario.duracion_min} minutos`,
     horario.vacante.titulo,

@@ -3,7 +3,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import type { ArchivoLocal } from '../../../api';
 import { MAX_CONSTANCIA_MB } from './textosOrganizacion';
 
-export type ResultadoConstancia =
+type ResultadoConstancia =
   | { tipo: 'archivo'; archivo: ArchivoLocal }
   | { tipo: 'cancelado' }
   /** El selector de archivos falló al abrirse. */

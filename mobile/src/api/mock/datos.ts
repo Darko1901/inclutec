@@ -36,7 +36,7 @@ interface CodigoRecuperacion {
   intentos: number;
 }
 
-export interface EstadoMock extends NegocioMock {
+interface EstadoMock extends NegocioMock {
   usuarios: UsuarioMock[];
   siguienteIdPostulacion: number;
   siguienteIdEntrevista: number;

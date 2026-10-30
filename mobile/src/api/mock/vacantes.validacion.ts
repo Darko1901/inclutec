@@ -16,7 +16,7 @@ const esPresencialOHibrida = (modalidadId: number) =>
   );
 
 /** Formatos: lo que se revisa aunque la vacante se guarde como borrador. */
-export function validarVacante(datos: VacanteEntrada): Campos {
+function validarVacante(datos: VacanteEntrada): Campos {
   const campos: Campos = {};
   if (!esTexto(datos?.titulo) || datos.titulo.trim() === '') {
     campos.titulo = 'Escribe el título de la vacante.';
@@ -132,7 +132,7 @@ type DatosPublicables = Pick<
 >;
 
 /** Lo que falta para publicar, con el mismo nombre de campo que usa el 422 `vacante_incompleta`. */
-export function camposFaltantesParaPublicar(datos: DatosPublicables): Campos {
+function camposFaltantesParaPublicar(datos: DatosPublicables): Campos {
   const faltantes: Campos = {};
   if (!datos.habilidades.some((h) => h.obligatoria)) {
     faltantes.habilidades = 'Agrega al menos una habilidad obligatoria.';

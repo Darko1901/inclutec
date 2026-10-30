@@ -19,7 +19,7 @@ export const EXPLICACION_CANCELACION_TARDIA =
 export const duracionCorta = (minutos: number) => `${minutos} min`;
 export const duracionHablada = (minutos: number) => `${minutos} minutos`;
 
-export interface GrupoHorarios {
+interface GrupoHorarios {
   clave: string;
   /** «Hoy», «Mañana» o «jue 22 oct». */
   titulo: string;

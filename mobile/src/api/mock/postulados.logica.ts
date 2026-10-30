@@ -51,7 +51,7 @@ export const usuarioDe = (id: number): UsuarioMock | undefined =>
   obtenerEstado().usuarios.find((u) => u.usuario.id === id);
 
 /** Vacante de la empresa del reclutador: inexistente → 404; de otra empresa → 403. */
-export function vacanteAccesible(id: number): VacanteMock {
+function vacanteAccesible(id: number): VacanteMock {
   const empresa = empresaDeLaSesion();
   const vacante = obtenerEstado().vacantes.find((v) => v.id === id);
   if (!vacante) throw fallo(404, 'no_encontrado', 'La vacante no existe.');
@@ -60,7 +60,7 @@ export function vacanteAccesible(id: number): VacanteMock {
 }
 
 /** Postulación a una vacante de la empresa del reclutador. */
-export function postulacionAccesible(id: number) {
+function postulacionAccesible(id: number) {
   const empresa = empresaDeLaSesion();
   const estado = obtenerEstado();
   const postulacion = estado.postulaciones.find((p) => p.id === id);

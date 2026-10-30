@@ -16,7 +16,7 @@ import {
 import { espaciado } from '../../../tema';
 import { useCarga } from '../../../utilidades/useCarga';
 
-export interface TextosPanelCV {
+interface TextosPanelCV {
   /** «Experiencia»: título de la lista. */
   encabezado: string;
   agregarEtiqueta: string;

@@ -4,7 +4,7 @@ import type { View } from 'react-native';
 import type { PerfilCandidato, PerfilCandidatoEntrada, SeccionPerfil } from '../../../api';
 
 /** Cómo se nombra cada sección pendiente en «Falta: …». */
-export const NOMBRE_PENDIENTE: Record<SeccionPerfil, string> = {
+const NOMBRE_PENDIENTE: Record<SeccionPerfil, string> = {
   datos_personales: 'datos personales',
   resumen: 'resumen',
   foto: 'foto',

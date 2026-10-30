@@ -2,7 +2,7 @@ import type { RolUsuario } from '../tipos';
 
 // Token con la misma forma que el JWT del contrato (sub, rol, exp). No se firma: el mock lo
 // reconoce por su contenido, así la sesión guardada sigue siendo válida al reiniciar la app.
-export const VIGENCIA_TOKEN_MS = 8 * 60 * 60 * 1000;
+const VIGENCIA_TOKEN_MS = 8 * 60 * 60 * 1000;
 
 interface CargaToken {
   sub: string;

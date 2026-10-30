@@ -33,8 +33,7 @@ const TITULOS: Record<Paso, string> = {
   2: 'Datos de tu cuenta',
   3: 'Privacidad',
 };
-export const MENSAJE_AVISO_OBLIGATORIO =
-  'Debes aceptar el aviso de privacidad para crear tu cuenta.';
+const MENSAJE_AVISO_OBLIGATORIO = 'Debes aceptar el aviso de privacidad para crear tu cuenta.';
 
 /** MOV-02: registro en tres pasos (tipo de cuenta, datos y privacidad). */
 export default function MOV02Registro({ navigation }: Props) {

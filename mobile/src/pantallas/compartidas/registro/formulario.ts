@@ -55,7 +55,7 @@ export const DATOS_INICIALES: DatosRegistro = {
 };
 
 /** Campos que se capturan en el paso 2, según el tipo de cuenta. */
-export const CAMPOS_PASO_2: Record<TipoCuenta, CampoRegistro[]> = {
+const CAMPOS_PASO_2: Record<TipoCuenta, CampoRegistro[]> = {
   candidato: [
     'nombre',
     'apellidos',

@@ -16,7 +16,7 @@ function esperar(): Promise<void> {
   return new Promise((resolver) => setTimeout(resolver, ms));
 }
 
-export function clonar<T>(valor: T): T {
+function clonar<T>(valor: T): T {
   return valor === undefined ? valor : (JSON.parse(JSON.stringify(valor)) as T);
 }
 

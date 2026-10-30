@@ -2,7 +2,7 @@ import type { Compatibilidad, PerfilCandidato } from '../../../api';
 
 export type NivelLinea = 'bien' | 'parcial' | 'mal' | 'neutro';
 
-export interface LineaCompatibilidad {
+interface LineaCompatibilidad {
   clave: 'habilidades' | 'necesidades' | 'modalidad' | 'formacion';
   nivel: NivelLinea;
   texto: string;

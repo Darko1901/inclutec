@@ -16,7 +16,7 @@ import {
 
 type Props = NativeStackScreenProps<RootStackParamList, 'RecuperarContrasena'>;
 
-export const SEGUNDOS_REENVIO = 60;
+const SEGUNDOS_REENVIO = 60;
 
 type Mensaje = { variante: 'exito' | 'advertencia' | 'error'; texto: string };
 

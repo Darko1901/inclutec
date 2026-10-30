@@ -2,7 +2,6 @@ import type { VacanteDetalle, VacanteEntrada } from '../../../api';
 
 export const TOTAL_PASOS = 4;
 export type Paso = 1 | 2 | 3 | 4;
-export const PASOS: Paso[] = [1, 2, 3, 4];
 export const TITULOS_PASO: Record<Paso, string> = {
   1: 'Datos generales',
   2: 'Requisitos',
@@ -15,7 +14,7 @@ export const MAX_DESCRIPCION = 2000;
 export const MAX_NOTAS = 500;
 export const MAX_DIRECCION = 255;
 
-export interface HabilidadElegida {
+interface HabilidadElegida {
   id: number;
   nombre: string;
   obligatoria: boolean;

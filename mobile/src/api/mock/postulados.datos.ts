@@ -14,7 +14,7 @@ const HORA_MS = 3600 * 1000;
 
 const aIso = (fecha: Date) => fecha.toISOString().replace(/\.\d{3}Z$/, 'Z');
 
-export interface CandidatoExtra {
+interface CandidatoExtra {
   usuario: { id: number; nombre: string; apellidos: string; correo: string; telefono: string };
   candidato: CandidatoMock;
   postulacion: PostulacionMock;
