@@ -16,6 +16,7 @@ import { SesionProvider, useSesion } from '../../../sesion';
 import CAN06DetallePostulacion from '../CAN06DetallePostulacion';
 import { etiquetaEvento } from '../postulaciones/LineaTiempo';
 import { agruparPorDia } from '../postulaciones/textosEntrevista';
+import { formatearFechaHoraHablada, formatearFechaLarga } from '../../../utilidades/fechas';
 
 const navegacion = { navigate: jest.fn(), setOptions: jest.fn() };
 
@@ -65,6 +66,9 @@ async function confirmar(titulo: string, textoBoton: string) {
   await fireEvent.press(within(screen.getByTestId('modal-confirmacion')).getByText(textoBoton));
 }
 
+/** Fechas de la postulación 1 del mock: son relativas al día en que se corre la prueba. */
+const postulacionMariana = () => obtenerEstado().postulaciones.find((p) => p.id === 1)!;
+
 const horarioEstado = (id: number) => obtenerEstado().horarios.find((h) => h.id === id)!;
 
 describe('CAN-06 · Detalle de postulación y entrevista', () => {
@@ -85,7 +89,9 @@ describe('CAN-06 · Detalle de postulación y entrevista', () => {
       await fireEvent.press(boton('TecnoQro'));
       expect(navegacion.navigate).toHaveBeenCalledWith('FichaEmpresa', { id: 1 });
       expect(
-        screen.getByLabelText(/^Estado: Entrevista\. Te postulaste el miércoles 30 de/),
+        screen.getByLabelText(
+          `Estado: Entrevista. Te postulaste el ${formatearFechaLarga(postulacionMariana().creado_en)}`,
+        ),
       ).toBeOnTheScreen();
     });
 
@@ -98,9 +104,7 @@ describe('CAN-06 · Detalle de postulación y entrevista', () => {
       const pasos = within(lista).getAllByTestId(/^paso-\d$/);
       expect(pasos).toHaveLength(3);
       expect(pasos.map((p) => p.props.accessibilityLabel)).toEqual([
-        expect.stringMatching(
-          /^Postulada\. miércoles 30 de septiembre de 2026, a las 11:20 de la mañana$/,
-        ),
+        `Postulada. ${formatearFechaHoraHablada(postulacionMariana().creado_en)}`,
         expect.stringMatching(/^En revisión\. /),
         expect.stringMatching(
           /^Estado actual: Entrevista\. .*Mensaje del reclutador: Nos gustaría conocerte; agenda un horario\.$/,

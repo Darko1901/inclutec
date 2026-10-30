@@ -4,6 +4,7 @@ import { AccessibilityInfo } from 'react-native';
 
 import { ApiError, postulaciones } from '../../../api';
 import { obtenerEstado } from '../../../api/mock/datos';
+import { formatearFechaCorta } from '../../../utilidades/fechas';
 import { CUENTAS, renderizarComo } from '../ayudasPrueba';
 import REC04Postulados from '../REC04Postulados';
 
@@ -92,8 +93,9 @@ describe('REC-04 · Postulados', () => {
   it('la tarjeta es un solo elemento con todo su resumen', async () => {
     await abrir();
     const boton = await screen.findByTestId('postulado-1');
-    expect(boton.props.accessibilityLabel).toMatch(
-      /^Mariana López García\. Compatibilidad laboral 83 por ciento\. Estado: Entrevista\. Se postuló el 30 sep( 2026)?$/,
+    const creado = obtenerEstado().postulaciones.find((p) => p.id === 1)!.creado_en;
+    expect(boton.props.accessibilityLabel).toBe(
+      `Mariana López García. Compatibilidad laboral 83 por ciento. Estado: Entrevista. Se postuló el ${formatearFechaCorta(creado)}`,
     );
     expect(boton.props.accessibilityHint).toBe('Abre el detalle del postulado');
     // «Ajustes por confirmar» se dice en el resumen solo cuando aplica.

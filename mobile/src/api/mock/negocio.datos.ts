@@ -1,3 +1,4 @@
+import { relativaAHoy } from './fechasS002';
 import { crearCandidatosExtra } from './postulados.datos';
 import type {
   CompartirAjustes,
@@ -227,6 +228,7 @@ export interface NegocioMock {
 }
 
 export function crearNegocioInicial(ahora = Date.now()): NegocioMock {
+  const s002 = (iso: string) => relativaAHoy(iso, ahora);
   const hace = (dias: number) => aIso(new Date(ahora - dias * DIA_MS));
   const ahoraIso = aIso(new Date(ahora));
 
@@ -593,7 +595,7 @@ export function crearNegocioInicial(ahora = Date.now()): NegocioMock {
       foto_url: null,
       disponible_reubicacion: false,
       compartir_ajustes: 'preguntar',
-      consentimiento_sensibles_en: '2026-09-28T17:00:00Z',
+      consentimiento_sensibles_en: s002('2026-09-28T17:00:00Z'),
       nota_ajustes: null,
       modalidad_ids: [2, 3],
       categoria_ids: [1],
@@ -626,7 +628,7 @@ export function crearNegocioInicial(ahora = Date.now()): NegocioMock {
           descripcion: 'Atención de tickets y mantenimiento de equipos.',
         },
       ],
-      actualizado_en: '2026-09-30T17:00:00Z',
+      actualizado_en: s002('2026-09-30T17:00:00Z'),
     },
     {
       usuario_id: 4,
@@ -658,12 +660,12 @@ export function crearNegocioInicial(ahora = Date.now()): NegocioMock {
         },
       ],
       experiencias: [],
-      actualizado_en: '2026-09-30T17:00:00Z',
+      actualizado_en: s002('2026-09-30T17:00:00Z'),
     },
     // Solo en el mock: la candidata suspendida y la de las 45 notificaciones tienen el perfil
     // vacío, así que no cumplen el perfil mínimo (sirven para probar el bloqueo de CAN-02).
     perfilVacio(100, 3, null),
-    perfilVacio(101, 3, '2026-09-28T17:00:00Z'),
+    perfilVacio(101, 3, s002('2026-09-28T17:00:00Z')),
   ];
 
   const postulaciones: PostulacionMock[] = [
@@ -674,26 +676,26 @@ export function crearNegocioInicial(ahora = Date.now()): NegocioMock {
       estado: 'entrevista',
       mensaje: 'Me interesa mucho el puesto; tengo experiencia en soporte.',
       comparte_ajustes: true,
-      creado_en: '2026-09-30T17:20:00Z',
-      actualizado_en: '2026-10-02T16:30:00Z',
+      creado_en: s002('2026-09-30T17:20:00Z'),
+      actualizado_en: s002('2026-10-02T16:30:00Z'),
       historial: [
         {
           estado_anterior: null,
           estado_nuevo: 'postulada',
           mensaje: null,
-          creado_en: '2026-09-30T17:20:00Z',
+          creado_en: s002('2026-09-30T17:20:00Z'),
         },
         {
           estado_anterior: 'postulada',
           estado_nuevo: 'en_revision',
           mensaje: null,
-          creado_en: '2026-10-01T15:00:00Z',
+          creado_en: s002('2026-10-01T15:00:00Z'),
         },
         {
           estado_anterior: 'en_revision',
           estado_nuevo: 'entrevista',
           mensaje: 'Nos gustaría conocerte; agenda un horario.',
-          creado_en: '2026-10-02T16:30:00Z',
+          creado_en: s002('2026-10-02T16:30:00Z'),
         },
       ],
     },
@@ -704,14 +706,14 @@ export function crearNegocioInicial(ahora = Date.now()): NegocioMock {
       estado: 'postulada',
       mensaje: 'Estoy terminando Ingeniería en Sistemas y manejo SQL y Python.',
       comparte_ajustes: false,
-      creado_en: '2026-10-05T17:30:00Z',
-      actualizado_en: '2026-10-05T17:30:00Z',
+      creado_en: s002('2026-10-05T17:30:00Z'),
+      actualizado_en: s002('2026-10-05T17:30:00Z'),
       historial: [
         {
           estado_anterior: null,
           estado_nuevo: 'postulada',
           mensaje: null,
-          creado_en: '2026-10-05T17:30:00Z',
+          creado_en: s002('2026-10-05T17:30:00Z'),
         },
       ],
     },
@@ -857,7 +859,7 @@ export function crearNegocioInicial(ahora = Date.now()): NegocioMock {
       postulacion_id: 1,
       estado: 'agendada',
       motivo_cancelacion: null,
-      creado_en: '2026-10-02T19:05:00Z',
+      creado_en: s002('2026-10-02T19:05:00Z'),
     },
     {
       id: 100,
@@ -887,7 +889,7 @@ export function crearNegocioInicial(ahora = Date.now()): NegocioMock {
       candidato_id: null,
       descripcion: 'El salario publicado no coincide con lo que me dijeron por teléfono.',
       estado: 'abierto',
-      creado_en: '2026-10-03T18:00:00Z',
+      creado_en: s002('2026-10-03T18:00:00Z'),
     },
   ];
 
@@ -919,7 +921,7 @@ export function crearNegocioInicial(ahora = Date.now()): NegocioMock {
       postulacion_id: 1,
       autor_id: 2,
       texto: 'Perfil sólido en soporte; confirmar disponibilidad de horario.',
-      creado_en: '2026-10-01T15:12:00Z',
+      creado_en: s002('2026-10-01T15:12:00Z'),
     },
   ];
 

@@ -85,7 +85,8 @@ describe('postulaciones mock · mis postulaciones', () => {
 
   it('cada candidato ve solo las suyas y un reclutador no puede consultarlas', async () => {
     conSesion(JORGE);
-    expect((await postulaciones.mias()).items.map((p) => p.id)).toEqual([100, 2]);
+    // De la más reciente a la más antigua: la de S002 (hace unas horas) y después la 100.
+    expect((await postulaciones.mias()).items.map((p) => p.id)).toEqual([2, 100]);
 
     conSesion(LAURA, 'reclutador');
     expect((await errorDe(postulaciones.mias())).status).toBe(403);

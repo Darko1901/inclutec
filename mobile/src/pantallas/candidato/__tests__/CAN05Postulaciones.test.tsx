@@ -4,6 +4,7 @@ import { useEffect, type ReactNode } from 'react';
 import { ApiError, auth, postulaciones, type PostulacionResumen } from '../../../api';
 import { obtenerEstado } from '../../../api/mock/datos';
 import { SesionProvider, useSesion } from '../../../sesion';
+import { formatearFechaCorta, formatearFechaLarga } from '../../../utilidades/fechas';
 import CAN05Postulaciones from '../CAN05Postulaciones';
 import { resumenAccesiblePostulacion } from '../postulaciones/textosPostulacion';
 
@@ -44,6 +45,9 @@ async function esperarActivas() {
   await screen.findByTestId('postulacion-1');
 }
 
+/** La postulación 1 del mock se movió a «hace unos días» (ver fechasS002): su fecha cambia con el día. */
+const creadaMariana = () => obtenerEstado().postulaciones.find((p) => p.id === 1)!.creado_en;
+
 describe('CAN-05 · Mis postulaciones', () => {
   beforeEach(() => mockNavegar.mockClear());
   afterEach(() => jest.restoreAllMocks());
@@ -56,7 +60,11 @@ describe('CAN-05 · Mis postulaciones', () => {
     const tarjeta = within(screen.getByTestId('postulacion-1'));
     expect(tarjeta.getByText('Técnico de soporte de TI', { hidden: true })).toBeOnTheScreen();
     expect(tarjeta.getByText('TecnoQro', { hidden: true })).toBeOnTheScreen();
-    expect(tarjeta.getByText('Te postulaste el 30 sep', { hidden: true })).toBeOnTheScreen();
+    expect(
+      tarjeta.getByText(`Te postulaste el ${formatearFechaCorta(creadaMariana())}`, {
+        hidden: true,
+      }),
+    ).toBeOnTheScreen();
     expect(tarjeta.getByText('Entrevista', { hidden: true })).toBeOnTheScreen();
     expect(tarjeta.getByText(/^Entrevista el \d+ \w+, /, { hidden: true })).toBeOnTheScreen();
   });
@@ -133,7 +141,10 @@ describe('CAN-05 · Mis postulaciones', () => {
     expect(botones).toHaveLength(1);
     const etiqueta = botones[0].props.accessibilityLabel as string;
     expect(etiqueta).toMatch(
-      /^Técnico de soporte de TI, TecnoQro\. Te postulaste el miércoles 30 de septiembre de 2026\. Estado: Entrevista\. Entrevista agendada el \p{L}+ \d+ de \p{L}+ de \d{4}, a las \d+:\d{2} de la \p{L}+$/u,
+      new RegExp(
+        `^Técnico de soporte de TI, TecnoQro\\. Te postulaste el ${formatearFechaLarga(creadaMariana())}\\. Estado: Entrevista\\. Entrevista agendada el \\p{L}+ \\d+ de \\p{L}+ de \\d{4}, a las \\d+:\\d{2} de la \\p{L}+$`,
+        'u',
+      ),
     );
     expect(botones[0].props.accessibilityHint).toBe('Abre el detalle de la postulación');
 

@@ -4,6 +4,7 @@ import type { ComponentProps } from 'react';
 import { Linking } from 'react-native';
 
 import { obtenerEstado } from '../../../api/mock/datos';
+import { formatearFechaCorta } from '../../../utilidades/fechas';
 import { CUENTAS, renderizarComo } from '../ayudasPrueba';
 import REC05DetallePostulado from '../REC05DetallePostulado';
 
@@ -65,8 +66,12 @@ describe('REC-05 · Detalle del postulado', () => {
         'Compatibilidad laboral 83 %',
       );
       expect(screen.getByLabelText('Estado: Entrevista')).toBeOnTheScreen();
+      const creado = obtenerEstado().postulaciones.find((p) => p.id === 1)!.creado_en;
       expect(
-        screen.getByText(/Postulado a «Técnico de soporte de TI» el 30 sep/),
+        screen.getByText(
+          `Postulado a «Técnico de soporte de TI» el ${formatearFechaCorta(creado)}`,
+          { exact: false },
+        ),
       ).toBeOnTheScreen();
     });
 
