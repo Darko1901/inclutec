@@ -145,10 +145,10 @@ describe('MOV-04 · Notificaciones', () => {
     expect(listar).toHaveBeenCalledTimes(3);
   });
 
-  it('sin notificaciones muestra «No tienes notificaciones»', async () => {
+  it('sin notificaciones muestra «Aún no tienes notificaciones»', async () => {
     await abrir('jorge.ramirez@correo.mx');
 
-    expect(await screen.findByText('No tienes notificaciones')).toBeOnTheScreen();
+    expect(await screen.findByText('Aún no tienes notificaciones')).toBeOnTheScreen();
   });
 
   it('si falla la carga muestra el error con «Reintentar»', async () => {

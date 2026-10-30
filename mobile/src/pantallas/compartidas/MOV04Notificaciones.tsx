@@ -212,7 +212,11 @@ export default function MOV04Notificaciones() {
           onEndReached={() => void cargarMas()}
           onEndReachedThreshold={0.5}
           ListEmptyComponent={
-            <EstadoVacio titulo="No tienes notificaciones" icono="notifications-off-outline" />
+            <EstadoVacio
+              titulo="Aún no tienes notificaciones"
+              mensaje="Cuando haya novedades, las verás aquí."
+              icono="notifications-off-outline"
+            />
           }
           ListFooterComponent={
             cargandoMas ? (
