@@ -1,5 +1,5 @@
 import { useRef, useState, type Ref } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, type ViewInstance } from 'react-native';
 
 import { ApiError, empresas, type EmpresaPropia } from '../../../api';
 import { Aviso, Boton, LogoEmpresa, Texto } from '../../../componentes';
@@ -11,7 +11,7 @@ interface Props {
   empresa: EmpresaPropia;
   onCambiado: () => Promise<void> | void;
   /** Para devolver el foco del lector de pantalla al botón cuando se cierra el diálogo. */
-  refBoton: Ref<View>;
+  refBoton: Ref<ViewInstance>;
   onAbrirDialogo: () => void;
   onCerrarDialogo: () => void;
 }

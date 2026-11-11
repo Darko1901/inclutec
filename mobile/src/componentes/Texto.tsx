@@ -1,5 +1,5 @@
 import type { Ref } from 'react';
-import { Text, type TextProps } from 'react-native';
+import { Text, type TextInstance, type TextProps } from 'react-native';
 
 import {
   colores,
@@ -11,7 +11,7 @@ import {
 
 interface TextoProps extends TextProps {
   /** Para llevar el foco del lector de pantalla a este texto (por ejemplo, el título de un modal). */
-  ref?: Ref<Text>;
+  ref?: Ref<TextInstance>;
   variante?: VarianteTexto;
   color?: NombreColor;
 }

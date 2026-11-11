@@ -1,6 +1,6 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useRef, useState } from 'react';
-import { StyleSheet, View, type TextInput } from 'react-native';
+import { StyleSheet, View, type TextInputInstance } from 'react-native';
 
 import { ApiError, auth } from '../../api';
 import { Aviso, Boton, CampoTexto, Logotipo, Pantalla, Texto } from '../../componentes';
@@ -25,7 +25,7 @@ export default function MOV01InicioSesion({ navigation, route }: Props) {
   const [tocado, setTocado] = useState({ correo: false, contrasena: false });
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState<ApiError | null>(null);
-  const campoContrasena = useRef<TextInput>(null);
+  const campoContrasena = useRef<TextInputInstance>(null);
 
   const formularioValido = esCorreoValido(correo) && esContrasenaDeLogin(contrasena);
   const errorCorreo =

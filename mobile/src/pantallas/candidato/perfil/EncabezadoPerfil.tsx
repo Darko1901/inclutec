@@ -1,5 +1,12 @@
 import type { Ref } from 'react';
-import { Linking, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import {
+  Linking,
+  StyleSheet,
+  View,
+  type StyleProp,
+  type ViewInstance,
+  type ViewStyle,
+} from 'react-native';
 
 import type { PerfilCandidato, SeccionPerfil } from '../../../api';
 import { Aviso, Avatar, BarraProgreso, Boton, Texto } from '../../../componentes';
@@ -19,8 +26,8 @@ interface Props {
   perfil: PerfilCandidato;
   ocupado: boolean;
   aviso: AvisoFoto | undefined;
-  refCambiarFoto: Ref<View>;
-  refQuitarFoto: Ref<View>;
+  refCambiarFoto: Ref<ViewInstance>;
+  refQuitarFoto: Ref<ViewInstance>;
   onCambiarFoto: () => void;
   onQuitarFoto: () => void;
   onPendiente: (seccion: SeccionPerfil) => void;
