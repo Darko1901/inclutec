@@ -5,7 +5,7 @@ import {
   type ParamListBase,
 } from '@react-navigation/native';
 import { useCallback, useRef, useState } from 'react';
-import { type LayoutChangeEvent, type ScrollView, View } from 'react-native';
+import { View, type LayoutChangeEvent, type ScrollViewInstance } from 'react-native';
 
 import { ApiError, candidatos, type PerfilCandidato, type SeccionPerfil } from '../../api';
 import {
@@ -45,7 +45,7 @@ export default function CAN03Perfil() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const { estado, recargar, recargarSilencioso, establecer } = useCarga(cargarPerfil);
   const { registrar, recordar, devolver } = useRetornoFoco();
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<ScrollViewInstance>(null);
   const posiciones = useRef<Partial<Record<Seccion, number>>>({});
 
   const [expandidas, setExpandidas] = useState<Record<Seccion, boolean>>({

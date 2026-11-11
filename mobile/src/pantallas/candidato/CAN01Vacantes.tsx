@@ -265,7 +265,7 @@ export default function CAN01Vacantes() {
                 onPress={lista.reintentarMas}
               />
             </View>
-          ) : null
+          ) : undefined
         }
         refreshControl={
           <RefreshControl refreshing={lista.refrescando} onRefresh={() => void lista.refrescar()} />
