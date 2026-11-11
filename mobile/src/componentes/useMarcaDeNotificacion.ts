@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { AccessibilityInfo, findNodeHandle, type ScrollView, type View } from 'react-native';
+import {
+  AccessibilityInfo,
+  findNodeHandle,
+  type HostInstance,
+  type ScrollViewInstance,
+} from 'react-native';
 
 import { espaciado } from '../tema';
 
@@ -11,7 +16,7 @@ const ESPERA_DESPLAZAMIENTO_MS = 600;
  * de VoiceOver / TalkBack, para que la persona oiga primero «Desde tu notificación».
  */
 export function useMarcaDeNotificacion() {
-  const refMarca = useRef<View>(null);
+  const refMarca = useRef<HostInstance>(null);
   const espera = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(
@@ -26,12 +31,12 @@ export function useMarcaDeNotificacion() {
     if (espera.current) clearTimeout(espera.current);
     espera.current = setTimeout(() => {
       const nodo = findNodeHandle(refMarca.current);
-      if (nodo !== null) AccessibilityInfo.setAccessibilityFocus(nodo);
+      if (nodo != null) AccessibilityInfo.setAccessibilityFocus(nodo);
     }, ESPERA_DESPLAZAMIENTO_MS);
   }, []);
 
   /** Desplaza el ScrollView para que la marca quede arriba, con un margen. */
-  const desplazar = useCallback((scroll: ScrollView | null) => {
+  const desplazar = useCallback((scroll: ScrollViewInstance | null) => {
     const marca = refMarca.current;
     const contenido = scroll?.getInnerViewNode?.();
     if (!scroll || !marca || contenido == null) return;

@@ -161,7 +161,7 @@ export default function CAN07Empresas() {
                 onPress={lista.reintentarMas}
               />
             </View>
-          ) : null
+          ) : undefined
         }
         refreshControl={
           <RefreshControl refreshing={lista.refrescando} onRefresh={() => void lista.refrescar()} />
