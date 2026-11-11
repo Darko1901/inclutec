@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import type { ReactNode, Ref } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, type ViewInstance } from 'react-native';
 
 import { colores, espaciado, radio } from '../tema';
 import { Texto } from './Texto';
@@ -12,7 +12,7 @@ interface Props {
   activo: boolean;
   children: ReactNode;
   /** Para llevar el foco del lector de pantalla a la marca (ver useMarcaDeNotificacion). */
-  refMarca?: Ref<View>;
+  refMarca?: Ref<ViewInstance>;
   testID?: string;
 }
 

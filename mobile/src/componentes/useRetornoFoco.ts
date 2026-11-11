@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { AccessibilityInfo, findNodeHandle, type View } from 'react-native';
+import { AccessibilityInfo, findNodeHandle, type ViewInstance } from 'react-native';
 
 const ESPERA_CIERRE_MS = 400;
 
@@ -10,7 +10,7 @@ const ESPERA_CIERRE_MS = 400;
  * existe (por ejemplo, la tarjeta se eliminó) usa la clave de respaldo.
  */
 export function useRetornoFoco() {
-  const nodos = useRef(new Map<string, View>());
+  const nodos = useRef(new Map<string, ViewInstance>());
   const origen = useRef<string | null>(null);
   const espera = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -22,7 +22,7 @@ export function useRetornoFoco() {
   );
 
   const registrar = useCallback(
-    (clave: string) => (nodo: View | null) => {
+    (clave: string) => (nodo: ViewInstance | null) => {
       if (nodo) nodos.current.set(clave, nodo);
       else nodos.current.delete(clave);
     },
@@ -42,7 +42,7 @@ export function useRetornoFoco() {
         (clave ? nodos.current.get(clave) : undefined) ??
         (respaldo ? nodos.current.get(respaldo) : undefined);
       const manejador = nodo ? findNodeHandle(nodo) : null;
-      if (manejador !== null) AccessibilityInfo.setAccessibilityFocus(manejador);
+      if (manejador != null) AccessibilityInfo.setAccessibilityFocus(manejador);
     }, ESPERA_CIERRE_MS);
   }, []);
 

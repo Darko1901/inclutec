@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import type { Ref } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, type ViewInstance } from 'react-native';
 
 import type { DiaAgenda } from '../../../api';
 import { Boton, ChipEstado, Tarjeta, Texto } from '../../../componentes';
@@ -20,7 +20,7 @@ interface Props {
   onAbrirCandidato: (postulacionId: number) => void;
   onAbrirLiga: (liga: string) => void;
   onCopiarLiga: (liga: string) => void;
-  refAccion?: Ref<View>;
+  refAccion?: Ref<ViewInstance>;
 }
 
 const ocultar = { accessibilityElementsHidden: true, importantForAccessibility: 'no' } as const;

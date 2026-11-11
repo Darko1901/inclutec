@@ -6,6 +6,7 @@ import {
   StyleSheet,
   View,
   type StyleProp,
+  type ViewInstance,
   type ViewStyle,
 } from 'react-native';
 
@@ -16,7 +17,7 @@ type VarianteBoton = 'primario' | 'secundario' | 'texto' | 'peligro';
 
 interface BotonProps {
   /** Para devolver el foco del lector de pantalla al botón (ver useRetornoFoco). */
-  ref?: Ref<View>;
+  ref?: Ref<ViewInstance>;
   titulo: string;
   onPress: () => void;
   variante?: VarianteBoton;

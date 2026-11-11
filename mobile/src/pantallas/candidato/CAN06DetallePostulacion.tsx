@@ -1,6 +1,13 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import {
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  View,
+  type ScrollViewInstance,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {
@@ -58,7 +65,7 @@ export default function CAN06DetallePostulacion({ route, navigation }: Props) {
   const [refrescando, setRefrescando] = useState(false);
   const [mensaje, setMensaje] = useState<Mensaje | null>(null);
   const { registrar, recordar, devolver } = useRetornoFoco();
-  const scroll = useRef<ScrollView>(null);
+  const scroll = useRef<ScrollViewInstance>(null);
   const { refMarca, enfocar, desplazar } = useMarcaDeNotificacion();
   // Parte que se resalta al llegar desde una notificación; se fija al cargar y no se mueve después.
   const [destacado, setDestacado] = useState<Destacado | null>(null);

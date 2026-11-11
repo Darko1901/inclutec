@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import type { Ref } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, type ViewInstance } from 'react-native';
 
 import type { Entrevista } from '../../../api';
 import { Boton, ChipEstado, Tarjeta, Texto } from '../../../componentes';
@@ -19,8 +19,8 @@ interface Props {
   onCopiarLiga: () => void;
   onCancelar: () => void;
   /** Para devolver el foco del lector de pantalla a estos botones (ver useRetornoFoco). */
-  refCancelar?: Ref<View>;
-  refTitulo?: Ref<View>;
+  refCancelar?: Ref<ViewInstance>;
+  refTitulo?: Ref<ViewInstance>;
 }
 
 const ocultar = { accessibilityElementsHidden: true, importantForAccessibility: 'no' } as const;
