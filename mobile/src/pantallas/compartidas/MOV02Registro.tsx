@@ -1,7 +1,13 @@
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { AccessibilityInfo, BackHandler, ScrollView, StyleSheet, View } from 'react-native';
+import {
+  View,
+  AccessibilityInfo,
+  BackHandler,
+  StyleSheet,
+  type ScrollViewInstance,
+} from 'react-native';
 
 import { ApiError, auth } from '../../api';
 import { Aviso, Boton, Pantalla, Texto } from '../../componentes';
@@ -49,7 +55,7 @@ export default function MOV02Registro({ navigation }: Props) {
   );
   const [correoDuplicado, setCorreoDuplicado] = useState(false);
   const [enviando, setEnviando] = useState(false);
-  const desplazamiento = useRef<ScrollView>(null);
+  const desplazamiento = useRef<ScrollViewInstance>(null);
 
   const erroresLocales = useMemo(() => validarDatos(tipo, datos), [tipo, datos]);
 

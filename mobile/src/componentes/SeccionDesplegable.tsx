@@ -1,12 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
 import type { ReactNode, Ref } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { View, Pressable, StyleSheet, type HostInstance } from 'react-native';
 
 import { AREA_TACTIL_MINIMA, colores, espaciado, radio } from '../tema';
 import { Texto } from './Texto';
 
 interface SeccionDesplegableProps {
-  ref?: Ref<View>;
+  ref?: Ref<HostInstance>;
   titulo: string;
   expandida: boolean;
   onAlternar: () => void;

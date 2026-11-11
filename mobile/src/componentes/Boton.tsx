@@ -1,12 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
 import type { Ref } from 'react';
 import {
+  View,
   ActivityIndicator,
   Pressable,
   StyleSheet,
-  View,
   type StyleProp,
   type ViewStyle,
+  type HostInstance,
 } from 'react-native';
 
 import { AREA_TACTIL_MINIMA, colores, espaciado, radio } from '../tema';
@@ -16,7 +17,7 @@ type VarianteBoton = 'primario' | 'secundario' | 'texto' | 'peligro';
 
 interface BotonProps {
   /** Para devolver el foco del lector de pantalla al botón (ver useRetornoFoco). */
-  ref?: Ref<View>;
+  ref?: Ref<HostInstance>;
   titulo: string;
   onPress: () => void;
   variante?: VarianteBoton;

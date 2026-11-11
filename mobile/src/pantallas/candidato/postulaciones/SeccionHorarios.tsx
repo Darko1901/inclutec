@@ -1,5 +1,5 @@
 import type { Ref } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { View, StyleSheet, type HostInstance } from 'react-native';
 
 import type { Horario } from '../../../api';
 import { Boton, Cargando, EstadoError, Tarjeta, Texto } from '../../../componentes';
@@ -16,8 +16,8 @@ interface Props {
   onAgendar: (horario: Horario) => void;
   onReintentar: () => void;
   /** Devuelve una referencia para regresar el foco del lector de pantalla al botón (useRetornoFoco). */
-  referenciaBoton: (horarioId: number) => Ref<View>;
-  referenciaTitulo?: Ref<View>;
+  referenciaBoton: (horarioId: number) => Ref<HostInstance>;
+  referenciaTitulo?: Ref<HostInstance>;
 }
 
 /** «Elige un horario»: los horarios libres agrupados por día, cada uno con su botón «Agendar». */

@@ -3,12 +3,13 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { NavigationAction } from '@react-navigation/native';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  ScrollView,
+  View,
   AccessibilityInfo,
   KeyboardAvoidingView,
   Platform,
-  ScrollView,
   StyleSheet,
-  View,
+  type ScrollViewInstance,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -64,7 +65,7 @@ function Asistente({ navigation, vacante }: AsistenteProps) {
   const [confirmandoPublicar, setConfirmandoPublicar] = useState(false);
   const [descartar, setDescartar] = useState<NavigationAction | null>(null);
   const [resultado, setResultado] = useState<Resultado | null>(null);
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<ScrollViewInstance>(null);
   const permitirSalir = useRef(false);
 
   const empresa = useCarga(cargarEmpresa);

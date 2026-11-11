@@ -1,5 +1,5 @@
 import type { Ref } from 'react';
-import type { View } from 'react-native';
+import type { HostInstance } from 'react-native';
 
 import type { PerfilCandidato, PerfilCandidatoEntrada, SeccionPerfil } from '../../../api';
 import { formatearPorcentaje } from '../../../utilidades/formatos';
@@ -97,7 +97,7 @@ export interface AvisoSeccion {
 /** Lo que reciben las secciones desplegables de CAN-03. */
 export interface PropiedadesSeccion {
   /** Para llevar el foco del lector de pantalla al botón de la sección. */
-  refBoton?: Ref<View>;
+  refBoton?: Ref<HostInstance>;
   perfil: PerfilCandidato;
   expandida: boolean;
   onAlternar: () => void;
