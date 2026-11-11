@@ -13,12 +13,12 @@ Hasta que el API exista (sprint 4), la app corre con **datos simulados** que res
 
 ## Requisitos
 
-| Herramienta | Versión                                                                                    |
-| ----------- | ------------------------------------------------------------------------------------------ |
-| Node.js     | 20.19.4 o superior (22.13+ o 24.3+ recomendado; probado con 24.21)                         |
-| npm         | 10 o superior                                                                              |
-| Expo SDK    | 57 (ya viene en `package.json`)                                                            |
-| Teléfono    | Android 8+ o iOS 15+ con la app **Expo Go** actualizada a la versión que soporta el SDK 57 |
+| Herramienta | Versión                                                                                                                         |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Node.js     | 22.13 o superior en la rama 22, 24.3 o superior en la 24, o 26+ (sin versiones impares; probado con 24.22). Node 20 ya no sirve |
+| npm         | 10 o superior (probado con 12)                                                                                                  |
+| Expo SDK    | 58, con React Native 0.88 y React 19.3 (ya vienen en `package.json`)                                                            |
+| Teléfono    | Android 7+ o iOS 16.4+ con la app **Expo Go** actualizada a la versión del SDK 58 (solo abre proyectos del SDK 58)              |
 
 ## Instalación
 
@@ -353,38 +353,54 @@ Todo lo de arriba son pruebas automáticas sobre el árbol de accesibilidad; **f
 
 ## Calidad
 
-| Comando                          | Qué hace                                                                     |
-| -------------------------------- | ---------------------------------------------------------------------------- |
-| `npm start`                      | Servidor de Expo.                                                            |
-| `npm run lint`                   | ESLint (con reglas de Expo y Prettier).                                      |
-| `npx tsc --noEmit`               | Revisión de tipos.                                                           |
-| `npm test`                       | Pruebas con Jest y Testing Library (la suite completa tarda unos 2 minutos). |
-| `npx expo install --check`       | Compara las dependencias con las que pide el SDK 57.                         |
-| `npx expo export --platform ios` | Empaqueta la app para iOS: comprueba que el bundle se arma.                  |
-| `npm run format`                 | Da formato con Prettier.                                                     |
-| `npm run tipos`                  | Regenera `src/api/esquema.d.ts` desde `../docs/api/openapi.yaml`.            |
+| Comando                              | Qué hace                                                                     |
+| ------------------------------------ | ---------------------------------------------------------------------------- |
+| `npm start`                          | Servidor de Expo.                                                            |
+| `npm run lint`                       | ESLint (con reglas de Expo y Prettier).                                      |
+| `npx tsc --noEmit`                   | Revisión de tipos.                                                           |
+| `npm test`                           | Pruebas con Jest y Testing Library (la suite completa tarda unos 2 minutos). |
+| `npx expo install --check`           | Compara las dependencias con las que pide el SDK 58.                         |
+| `npx expo-doctor`                    | Revisa que el proyecto y sus dependencias sean coherentes con el SDK.        |
+| `npx expo export --platform ios`     | Empaqueta la app para iOS: comprueba que el bundle se arma.                  |
+| `npx expo export --platform android` | Lo mismo para Android.                                                       |
+| `npm run format`                     | Da formato con Prettier.                                                     |
+| `npm run tipos`                      | Regenera `src/api/esquema.d.ts` desde `../docs/api/openapi.yaml`.            |
 
 Las pruebas cubren los servicios (mock y HTTP), cada pantalla, los componentes base, la sesión, la navegación por rol, el motor de compatibilidad contra las filas de S002, los datos de la demostración (`demostracion.test.ts`) y la accesibilidad.
 
 ## Dependencias y auditoría
 
-`npx expo install --check` dice «Dependencies are up to date».
+La app está en el **SDK 58 de Expo** (React Native 0.88.1, React 19.3.0). Se actualizó con `npx expo install expo@^58.0.0` y `npx expo install --fix`; esa herramienta también subió **Jest a la versión 30** (la que pide `jest-expo` 58) y agregó el plugin `expo-status-bar` a `app.json`. React Navigation, Testing Library y TypeScript no se tocaron porque el SDK no lo exigió. `npx expo-doctor` pasa los 20 chequeos y `npx expo install --check` dice «Dependencies are up to date».
 
-`npm audit` en `mobile/` reporta **18 hallazgos (3 altos, 2 moderados y 13 bajos; ninguno crítico)**. Ninguno es del código de la app: salen de tres paquetes que llegan de forma indirecta, y el resto del conteo son paquetes que solo los arrastran.
+**Subir de SDK.** Hazlo de uno en uno, con `npx expo install expo@^N.0.0`, `npx expo install --fix` y `npx expo-doctor`; nunca borres `package-lock.json` para regenerarlo. Después corre `npm run lint`, `npx tsc --noEmit`, `npm test` y los dos `expo export`. Lo que cambió en esta subida: con React Native 0.87 el tipado estricto es el predeterminado, así que las referencias se tipan con `ViewInstance`, `TextInstance`, `ScrollViewInstance` y `TextInputInstance` (no con `View`, `Text`, etc.) y `ListFooterComponent` no acepta `null`.
 
-| Paquete con el aviso | Aviso                                                              | Severidad | Instalado | Versión corregida                      | Quién lo trae                                      |
-| -------------------- | ------------------------------------------------------------------ | --------- | --------- | -------------------------------------- | -------------------------------------------------- |
-| `zod`                | GHSA-mrhx-c7xc-m3w5 (memoria con colecciones enormes al validar)   | Alta      | 3.25.76   | 4.6.6 (otra versión mayor)             | `eslint-plugin-react-hooks` (ESLint) y `@expo/cli` |
-| `uuid`               | GHSA-w5hq-g745-h8pq (límites del búfer en v3, v5 y v6)             | Moderada  | 3.4.0     | 11.1.1 o superior (otra versión mayor) | `@expo/ngrok` (el túnel de `expo start --tunnel`)  |
-| `deepmerge`          | GHSA-gcqx-w48m-w2h4 (contaminación de prototipos en `mergeObject`) | Baja      | 4.3.1     | ninguna publicada en la rama 4         | `@expo/config` (Expo) y `jest-config` (Jest)       |
+### `npm audit`
 
-**Por qué no afectan la app instalada.** Son herramientas de desarrollo (ESLint, la CLI de Expo, Jest, el túnel) que corren en la computadora de quien programa; no se empaquetan en la app. Se comprobó con el mapa de fuentes de `npx expo export --platform ios --source-maps`: ni `zod` ni `deepmerge` ni el paquete `uuid` están en el bundle (solo entra el `uuid` propio de `expo-modules-core`).
+| Momento          | Total  | Bajos | Moderados | Altos | Críticos |
+| ---------------- | ------ | ----- | --------- | ----- | -------- |
+| SDK 57 (antes)   | **27** | 9     | 15        | 3     | 0        |
+| SDK 58 (después) | **32** | 1     | 29        | 2     | 0        |
 
-**Overrides: no hay ninguno, a propósito.** Un `overrides` solo sirve si existe una versión corregida dentro de la misma versión mayor que pide el dependiente. Para `zod` y `uuid` la corrección está en otra versión mayor que sus dependientes no piden, y para `deepmerge` no hay corrección; forzarlas puede romper `@expo/cli` o `@expo/ngrok` sin tener cómo probarlo. **`npm audit fix` (sin `--force`)** no elimina ningún hallazgo. Los hallazgos se corregirán cuando los paquetes de arriba publiquen una versión corregida y Expo, ESLint o Jest la adopten; conviene correr `npm audit` en cada subida de SDK.
+El README anterior decía 18: ese conteo estaba desactualizado (se publicaron avisos nuevos); 27 es lo que da `npm audit` sobre el `package-lock.json` del SDK 57. El total subió porque Jest 30 trae `glob` y `minimatch` con avisos y cada paquete de Jest que los arrastra cuenta como un hallazgo más (por eso suben los moderados); no hay ningún aviso nuevo en las dependencias de la app. Ninguno es del código de la app: salen de seis paquetes que llegan de forma indirecta, y el resto del conteo son paquetes que solo los arrastran.
+
+| Paquete con el aviso | Aviso                                                                  | Severidad | Instalado | Versión corregida                                                           | Quién lo trae                                                        |
+| -------------------- | ---------------------------------------------------------------------- | --------- | --------- | --------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| `zod`                | GHSA-mrhx-c7xc-m3w5 (memoria con colecciones enormes al validar)       | Alta      | 3.25.76   | 4.6.6 (otra versión mayor)                                                  | `eslint-plugin-react-hooks` (ESLint)                                 |
+| `follow-redirects`   | GHSA-mrwp-f3q8-3g9p (credenciales personalizadas siguen redirecciones) | Alta      | 1.16.1    | 1.16.3 (misma versión mayor; no se aplicó porque esta tarea solo documenta) | `axios`                                                              |
+| `uuid`               | GHSA-w5hq-g745-h8pq (límites del búfer en v3, v5 y v6)                 | Moderada  | 3.4.0     | 11.1.1 o superior (otra versión mayor)                                      | `@expo/ngrok` (el túnel de `expo start --tunnel`)                    |
+| `glob`               | GHSA-3g3m-2fjr-6pw4 (cancelación con `AbortSignal` sin efecto)         | Moderada  | 13.0.7    | 14.0.2 o superior (otra versión mayor)                                      | Jest 30 (`@jest/reporters`, `jest-runtime`, `test-exclude`)          |
+| `minimatch`          | GHSA-g3hv-75wg-m249 (denegación de servicio con patrones largos)       | Moderada  | 10.2.6    | 11.0.1 o superior (otra versión mayor)                                      | Jest 30 (`test-exclude`), `@expo/fingerprint` y `@typescript-eslint` |
+| `deepmerge`          | GHSA-gcqx-w48m-w2h4 (contaminación de prototipos en `mergeObject`)     | Baja      | 4.3.1     | ninguna publicada en la rama 4                                              | `jest-config` (Jest)                                                 |
+
+Con el SDK 58 dejaron de aparecer `node-forge` y el aviso de `@expo/cli`; `deepmerge` ya solo lo trae Jest.
+
+**Por qué no afectan la app instalada.** Son herramientas de desarrollo (ESLint, la CLI de Expo, Jest, el túnel) que corren en la computadora de quien programa; no se empaquetan en la app. Se comprobó con el mapa de fuentes de `npx expo export --platform ios --source-maps`: ni `zod`, ni `follow-redirects`, ni `glob`, ni `minimatch`, ni `deepmerge`, ni el paquete `uuid` están en el bundle (de `axios` solo entra su adaptador para XHR; `follow-redirects` es del adaptador de Node).
+
+**Overrides: no hay ninguno, a propósito.** Un `overrides` solo sirve si existe una versión corregida dentro de la misma versión mayor que pide el dependiente. Para `zod` y `uuid` la corrección está en otra versión mayor que sus dependientes no piden, y para `deepmerge` no hay corrección; forzarlas puede romper ESLint, Jest o `@expo/ngrok` sin tener cómo probarlo. Esta subida solo **documenta** los hallazgos: no se corrió `npm audit fix` de ninguna forma. Se corregirán cuando los paquetes de arriba publiquen una versión corregida y Expo, ESLint, Jest o Axios la adopten; conviene correr `npm audit` en cada subida de SDK.
 
 **`@expo/ngrok`** se conserva porque este README documenta `npx expo start --tunnel`; es lo que trae `uuid` 3.4.0. Si alguien deja de usar el túnel, se puede quitar de `devDependencies`.
 
-**Regla: nunca uses `npm audit fix --force`.** Propone bajar `expo` a 51 y destruye el proyecto. Si ya lo corriste, restaura con `git checkout package.json package-lock.json && npm ci`. Después de tocar dependencias, `npx expo install --check` debe decir «Dependencies are up to date».
+**Regla: nunca uses `npm audit fix --force`.** Propone bajar `expo` a 52 y destruye el proyecto. Si ya lo corriste, restaura con `git checkout package.json package-lock.json && npm ci`. Después de tocar dependencias, `npx expo install --check` debe decir «Dependencies are up to date».
 
 ## Decisiones importantes
 
