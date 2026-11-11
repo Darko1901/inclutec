@@ -31,7 +31,8 @@
           "photosPermission": "IncluTec usa tus fotos solo para que elijas la foto de tu perfil.",
           "cameraPermission": "IncluTec usa la cámara solo para que tomes la foto de tu perfil."
         }
-      ]
+      ],
+      "expo-status-bar"
     ]
   }
 }
