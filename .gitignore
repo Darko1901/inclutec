@@ -21,6 +21,7 @@ web-build/
 /web/public/storage
 /web/public/hot
 /web/.phpunit.result.cache
+/web/database/*.sqlite*
 
 # Python (api)
 __pycache__/
