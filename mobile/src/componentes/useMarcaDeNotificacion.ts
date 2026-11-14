@@ -38,7 +38,7 @@ export function useMarcaDeNotificacion() {
   /** Desplaza el ScrollView para que la marca quede arriba, con un margen. */
   const desplazar = useCallback((scroll: ScrollViewInstance | null) => {
     const marca = refMarca.current;
-    const contenido = scroll?.getInnerViewNode?.();
+    const contenido = scroll?.getInnerViewRef?.();
     if (!scroll || !marca || contenido == null) return;
     marca.measureLayout?.(
       contenido,
