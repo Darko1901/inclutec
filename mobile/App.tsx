@@ -1,6 +1,6 @@
 import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { initialWindowMetrics, SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { RaizNavegador } from './src/navegacion';
 import { SesionProvider } from './src/sesion';
@@ -20,7 +20,7 @@ const temaNavegacion = {
 
 export default function App() {
   return (
-    <SafeAreaProvider>
+    <SafeAreaProvider initialMetrics={initialWindowMetrics}>
       <SesionProvider>
         <NavigationContainer theme={temaNavegacion}>
           <RaizNavegador />

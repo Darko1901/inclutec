@@ -34,7 +34,12 @@ export function RaizNavegador() {
   return (
     // La clave reinicia el contador al cambiar de usuario.
     <NoLeidasProvider key={usuario?.id ?? 'sin-sesion'} activo={estado === 'activa'}>
-      <Pila.Navigator screenOptions={{ headerShown: false }}>
+      <Pila.Navigator
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: colores.fondoSuave },
+        }}
+      >
         {estado === 'cargando' ? (
           <Pila.Screen name="Splash" component={MOV00Splash} />
         ) : estado === 'sin_sesion' || !usuario ? (
@@ -113,6 +118,12 @@ export function RaizNavegador() {
               name="DetallePostulado"
               component={REC05DetallePostulado}
               options={{ ...opcionesEncabezado, title: 'Detalle del postulado' }}
+            />
+            {/* REC-01 enlaza al aviso desde «Cuenta». */}
+            <Pila.Screen
+              name="AvisoPrivacidad"
+              component={AvisoPrivacidad}
+              options={{ ...opcionesEncabezado, title: 'Aviso de privacidad' }}
             />
           </>
         )}
