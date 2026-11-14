@@ -8,7 +8,6 @@ import {
   espaciado,
   MAX_ESCALA_FUENTE,
   radio,
-  tipografia,
 } from '../tema';
 import { Texto } from './Texto';
 
@@ -86,6 +85,10 @@ export function CampoCodigo({
           caretHidden
           contextMenuHidden
           selectionColor="transparent"
+          cursorColor="transparent"
+          underlineColorAndroid="transparent"
+          autoCorrect={false}
+          spellCheck={false}
           accessibilityLabel={ETIQUETA_CODIGO}
           accessibilityHint={error ?? 'Escribe los 6 dígitos que te enviamos por correo'}
           accessibilityState={{ disabled: !editable }}
@@ -131,15 +134,21 @@ const estilos = StyleSheet.create({
     borderRadius: radio.md,
     backgroundColor: colores.fondo,
   },
-  // El campo real cubre las casillas y su texto es transparente: se escribe "sobre" ellas.
+  // El campo real cubre las casillas pero es invisible (opacity 0, no solo texto transparente,
+  // porque algunos teclados de Android pintan el texto igual): se escribe "sobre" las casillas.
   entrada: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
+    opacity: 0,
     color: 'transparent',
-    fontSize: tipografia.cuerpo.fontSize,
+    // Tamaño mínimo: si algún teclado pinta el texto pese a la transparencia, no se nota.
+    fontSize: 1,
+    lineHeight: 1,
+    padding: 0,
+    textShadowColor: 'transparent',
   },
   error: { flexDirection: 'row', alignItems: 'flex-start', gap: espaciado.xs },
   textoError: { flexShrink: 1 },
