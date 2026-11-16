@@ -6,6 +6,7 @@ al terminar, así que ninguna deja datos para la siguiente. Se configura con TES
 (ver .env.example).
 """
 
+import re
 from collections.abc import Iterator
 from pathlib import Path
 
@@ -21,6 +22,8 @@ from app.config import obtener_configuracion
 from app.db import obtener_db
 from app.main import app
 from app.routers.auth import limite_login
+from app.servicios.correo import obtener_enviador
+from app.servicios.recuperacion import reiniciar_fantasmas
 
 RAIZ_REPO = Path(__file__).resolve().parents[2]
 CONTRASENA_PRUEBA = "Inclutec2026"
@@ -80,7 +83,13 @@ def db(motor) -> Iterator[Session]:
 
 
 @pytest.fixture
-def cliente(db: Session) -> Iterator[TestClient]:
+def correos() -> list[tuple[str, str, str]]:
+    """Correos que el API "envió" durante la prueba: (destinatario, asunto, texto)."""
+    return []
+
+
+@pytest.fixture
+def cliente(db: Session, correos: list[tuple[str, str, str]]) -> Iterator[TestClient]:
     def _db() -> Iterator[Session]:
         try:
             yield db
@@ -90,7 +99,9 @@ def cliente(db: Session) -> Iterator[TestClient]:
             raise
 
     app.dependency_overrides[obtener_db] = _db
+    app.dependency_overrides[obtener_enviador] = lambda: lambda *datos: correos.append(datos)
     limite_login.reiniciar()
+    reiniciar_fantasmas()
     # raise_server_exceptions=False: un error no previsto debe verse como el 500 del contrato.
     with TestClient(app, raise_server_exceptions=False) as cliente:
         yield cliente
@@ -104,3 +115,9 @@ def iniciar_sesion(cliente: TestClient, correo: str) -> dict[str, str]:
     )
     assert respuesta.status_code == 200, respuesta.text
     return {"Authorization": f"Bearer {respuesta.json()['access_token']}"}
+
+
+def codigo_enviado(correos: list[tuple[str, str, str]]) -> str:
+    """El código de 6 dígitos del último correo enviado."""
+
+    return re.search(r"\b(\d{6})\b", correos[-1][2]).group(1)

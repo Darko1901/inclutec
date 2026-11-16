@@ -111,9 +111,9 @@ class TestLogin:
 
     def test_cinco_fallos_bloquean_el_correo_con_retry_after(self, cliente: TestClient) -> None:
         for _ in range(5):
-            assert _login(cliente, "jorge.ramirez@correo.mx", "mal").status_code == 401
+            assert _login(cliente, "jorge.ramirez@correo.mx", "Equivocada1").status_code == 401
 
-        bloqueado = _login(cliente, "jorge.ramirez@correo.mx", "mal")
+        bloqueado = _login(cliente, "jorge.ramirez@correo.mx", "Equivocada1")
         assert bloqueado.status_code == 429
         assert bloqueado.json()["codigo"] == "demasiados_intentos"
         assert 800 < int(bloqueado.headers["Retry-After"]) <= 900
@@ -124,10 +124,10 @@ class TestLogin:
 
     def test_un_acceso_correcto_reinicia_el_contador(self, cliente: TestClient) -> None:
         for _ in range(4):
-            _login(cliente, "jorge.ramirez@correo.mx", "mal")
+            _login(cliente, "jorge.ramirez@correo.mx", "Equivocada1")
         assert _login(cliente, "jorge.ramirez@correo.mx").status_code == 200
         for _ in range(4):
-            assert _login(cliente, "jorge.ramirez@correo.mx", "mal").status_code == 401
+            assert _login(cliente, "jorge.ramirez@correo.mx", "Equivocada1").status_code == 401
 
     def test_cuenta_suspendida_responde_423(self, cliente: TestClient, db: Session) -> None:
         db.execute(text("UPDATE usuario SET estado = 'suspendido' WHERE id = 4"))
@@ -147,7 +147,7 @@ class TestLogin:
     ) -> None:
         db.execute(text("UPDATE usuario SET estado = 'suspendido' WHERE id = 4"))
 
-        assert _login(cliente, "jorge.ramirez@correo.mx", "mal").status_code == 401
+        assert _login(cliente, "jorge.ramirez@correo.mx", "Equivocada1").status_code == 401
 
     def test_validacion_da_422_con_campos(self, cliente: TestClient) -> None:
         respuesta = cliente.post(LOGIN, json={"correo": "no-es-correo", "contrasena": ""})
@@ -158,13 +158,13 @@ class TestLogin:
         assert cuerpo["detail"] == "Revisa los datos marcados."
         assert set(cuerpo["campos"]) == {"correo", "contrasena"}
 
-    def test_cuerpo_vacio_da_422_con_los_dos_campos_obligatorios(self, cliente: TestClient) -> None:
+    def test_cuerpo_vacio_da_422_con_los_dos_campos(self, cliente: TestClient) -> None:
         respuesta = cliente.post(LOGIN, json={})
 
         assert respuesta.status_code == 422
         assert respuesta.json()["campos"] == {
-            "correo": "Este campo es obligatorio.",
-            "contrasena": "Este campo es obligatorio.",
+            "correo": "Escribe un correo válido.",
+            "contrasena": "Debe tener de 8 a 64 caracteres.",
         }
 
 

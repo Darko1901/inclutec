@@ -4,6 +4,7 @@ Guarda los intentos en memoria del proceso: la base de datos no tiene tabla para
 corre con un solo proceso en desarrollo. Un reinicio del servidor los borra.
 """
 
+import math
 import threading
 import time
 from dataclasses import dataclass
@@ -30,7 +31,7 @@ class LimiteIntentos:
                 return 0
             restante = intentos.bloqueado_hasta - time.monotonic()
             if restante > 0:
-                return int(restante) + 1
+                return math.ceil(restante)
             # El bloqueo ya terminó: se empieza de cero.
             del self._estado[clave]
             return 0
