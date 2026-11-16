@@ -2,7 +2,7 @@
 
 Único componente que se conecta a la base de datos. Implementa el contrato de [`docs/api/contrato.md`](../docs/api/contrato.md) (versión 1.2): las rutas, los campos, los estados y los códigos de error se copian de ahí, y si algo no alcanza se cambia primero el contrato.
 
-**Estado:** pasos 1 a 3 de [la guía de la etapa 3](../docs/api/README.md). Ya responden 44 de los 101 endpoints del contrato (más la descarga de archivos): autenticación y cuenta, catálogos, perfil y CV del candidato, empresas (directorio, ficha, mi organización, logotipo, constancia y mis vacantes) y vacantes con el motor de compatibilidad. Faltan los postulados de una vacante (`GET /vacantes/{id}/postulaciones`) y los grupos de los pasos 4 y 5.
+**Estado:** pasos 1 a 4 de [la guía de la etapa 3](../docs/api/README.md). Ya responden 67 de los 101 endpoints del contrato (más la descarga de archivos): autenticación y cuenta, catálogos, perfil y CV del candidato, empresas, vacantes con el motor de compatibilidad, postulaciones, horarios y entrevistas, y notificaciones. Faltan los 34 de administración (paso 5).
 
 ## Qué trae la base
 
@@ -19,6 +19,8 @@
 | `app/routers/` | Un archivo por grupo del contrato (`auth`, `catalogos`, `candidatos`, `empresas`) y `archivos` para descargar fotos, logotipos y constancias. |
 | `app/servicios/` | Reglas que comparten varios endpoints: archivos, correo, recuperación de contraseña, completitud, perfil y CV, y límite de intentos de login. |
 | `app/servicios/compatibilidad.py` | Motor de compatibilidad (H, A, M y F) con fracciones exactas; guarda y recalcula la tabla `compatibilidad`. |
+| `app/servicios/notificaciones.py` | Crea el aviso en la app y programa el push (Expo) y el correo según las preferencias; los manda en otro hilo y solo después del commit. |
+| `app/servicios/recordatorios.py` | Recordatorio 24 horas antes de cada entrevista; lo corre un ciclo que arranca con el API. |
 | `app/validaciones*.py` | Validación a mano de los cuerpos, con los mismos mensajes que el mock de la app móvil. |
 
 ## Instalación
@@ -77,6 +79,13 @@ PYTHONUTF8=1 sqlacodegen --generator declarative --options nojoined,nocomments \
 Después se quitan las líneas `relationship(...)` y su import, y se conserva el encabezado del archivo. Nada del API crea ni modifica tablas: no hay `create_all` ni Alembic.
 
 ## Decisiones
+
+- **Avisos después del commit y en otro hilo.** `notificaciones.crear` deja la entrega pendiente en la sesión (`db.info["entregas"]`); `obtener_db` la despacha solo si la transacción se confirmó, así que un error no manda avisos falsos y el correo o el push lentos no retrasan la respuesta. Sin Mailpit o sin red, el fallo solo se registra.
+- **Reservar un horario.** `SELECT … FOR UPDATE` sobre el horario más el índice único parcial de la base; hay una prueba con dos transacciones simultáneas y solo una gana. Quien pierde recibe `409 horario_ocupado`.
+- **Cancelar entrevistas.** Si cancela el candidato (o retira la postulación), el horario vuelve a `libre`; si cancela el reclutador, o la postulación pasa a `no_seleccionada`, queda `cancelado`. Un horario liberado que ya tuvo entrevistas canceladas no se borra con `DELETE /horarios-entrevista/{id}`: pasa a `cancelado` para conservar el historial.
+- **Recordatorios.** Cada entrevista se recuerda una vez (`entrevista.recordatorio_en`); si se agendó con menos de 24 horas de anticipación no se recuerda. El ciclo corre cada `RECORDATORIOS_CADA_SEGUNDOS` (300; 0 lo apaga).
+- **Hora de la agenda.** Los días de `GET /entrevistas/me` y sus filtros usan la hora de la Ciudad de México (UTC−6); todo lo demás va en UTC con `Z`. Una hora de inicio sin zona horaria se rechaza.
+- **Ligas de entrevista.** Solo Google Meet y Microsoft Teams (`teams.microsoft.com`), como dice el contrato; la base acepta además `teams.live.com`.
 
 - **Compatibilidad guardada y al día.** Se calcula y se guarda en la tabla `compatibilidad` cuando el candidato cambia su perfil, CV o necesidades y cuando una vacante se publica o cambia requisitos. Antes de listar, buscar o mostrar una ficha se calculan los pares que falten o hayan quedado más viejos que el perfil o la vacante, así que nunca se muestra un puntaje desactualizado. Solo tienen compatibilidad las vacantes que ya salieron de borrador.
 - **Redondeo.** El motor usa fracciones exactas y redondea «mitad hacia arriba», igual que `round()` de PostgreSQL en `P002`; con coma flotante un 47.5 exacto podía bajar a 47.
