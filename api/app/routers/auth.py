@@ -55,6 +55,7 @@ from app.validaciones import (
     es_correo_valido,
     es_rfc_valido,
     es_telefono_valido,
+    existe,
     lanzar_si_hay_campos,
     normalizar_correo,
     texto_valido,
@@ -160,15 +161,6 @@ def _correo_duplicado() -> ApiError:
     return ApiError(409, "correo_duplicado", mensaje, {"correo": mensaje})
 
 
-def _existe(db: Session, modelo, identificador) -> bool:
-    if not isinstance(identificador, int) or isinstance(identificador, bool):
-        return False
-    consulta = select(modelo.id).where(modelo.id == identificador)
-    if hasattr(modelo, "activo"):
-        consulta = consulta.where(modelo.activo.is_(True))
-    return db.scalar(consulta) is not None
-
-
 def _crear_usuario(
     db: Session,
     rol: str,
@@ -210,7 +202,7 @@ def registrar_candidato(datos: RegistroCandidato, db: Db) -> Sesion:
         campos["correo"] = MENSAJE_CORREO
     if not es_telefono_valido(datos.telefono):
         campos["telefono"] = MENSAJE_TELEFONO
-    if not _existe(db, Municipio, datos.municipio_id):
+    if not existe(db, Municipio, datos.municipio_id):
         campos["municipio_id"] = "Elige tu municipio."
     if not es_contrasena_valida(datos.contrasena):
         campos["contrasena"] = MENSAJE_CONTRASENA
@@ -273,11 +265,11 @@ def registrar_reclutador(datos: RegistroReclutador, db: Db) -> Sesion:
         campos["empresa.nombre_comercial"] = "Escribe el nombre comercial."
     if not es_rfc_valido(empresa.rfc):
         campos["empresa.rfc"] = MENSAJE_RFC
-    if not _existe(db, Sector, empresa.sector_id):
+    if not existe(db, Sector, empresa.sector_id):
         campos["empresa.sector_id"] = "Elige un sector."
-    if not _existe(db, TamanoEmpresa, empresa.tamano_empresa_id):
+    if not existe(db, TamanoEmpresa, empresa.tamano_empresa_id):
         campos["empresa.tamano_empresa_id"] = "Elige el tamaño de la empresa."
-    if not _existe(db, Municipio, empresa.municipio_id):
+    if not existe(db, Municipio, empresa.municipio_id):
         campos["empresa.municipio_id"] = "Elige el municipio."
     if datos.acepta_aviso is not True:
         campos["acepta_aviso"] = MENSAJE_AVISO
