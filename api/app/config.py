@@ -21,6 +21,16 @@ class Configuracion(BaseSettings):
     archivos_dir: str = "uploads"
 
     # Tras 5 intentos fallidos con el mismo correo, el acceso se bloquea 15 minutos.
+    # Correo (en desarrollo, un SMTP local como Mailpit: smtp_host=localhost, smtp_port=1025).
+    smtp_host: str = "localhost"
+    smtp_port: int = 1025
+    smtp_remitente: str = "no-responder@inclutec.mx"
+
+    # Recuperación de contraseña: código de 6 dígitos, 15 minutos, 5 intentos, reenvío cada 60 s.
+    codigo_vigencia_segundos: int = 15 * 60
+    codigo_max_intentos: int = 5
+    codigo_reenvio_segundos: int = 60
+
     login_max_intentos: int = 5
     login_bloqueo_segundos: int = 15 * 60
 
