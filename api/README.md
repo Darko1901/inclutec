@@ -2,7 +2,7 @@
 
 Único componente que se conecta a la base de datos. Implementa el contrato de [`docs/api/contrato.md`](../docs/api/contrato.md) (versión 1.2): las rutas, los campos, los estados y los códigos de error se copian de ahí, y si algo no alcanza se cambia primero el contrato.
 
-**Estado:** pasos 1 y 2 de [la guía de la etapa 3](../docs/api/README.md). Ya responden 39 endpoints: autenticación y cuenta (los 9), catálogos, el perfil y el CV del candidato (18) y las empresas (directorio, mi organización, logotipo y constancia). Faltan la ficha `GET /empresas/{id}` y `GET /empresas/me/vacantes`, que necesitan el resumen de vacante y el motor de compatibilidad del paso 3, y el resto de los grupos (pasos 3 a 5).
+**Estado:** pasos 1 a 3 de [la guía de la etapa 3](../docs/api/README.md). Ya responden 44 de los 101 endpoints del contrato (más la descarga de archivos): autenticación y cuenta, catálogos, perfil y CV del candidato, empresas (directorio, ficha, mi organización, logotipo, constancia y mis vacantes) y vacantes con el motor de compatibilidad. Faltan los postulados de una vacante (`GET /vacantes/{id}/postulaciones`) y los grupos de los pasos 4 y 5.
 
 ## Qué trae la base
 
@@ -18,6 +18,7 @@
 | `app/esquemas/` | Cuerpos y respuestas. Las fechas-hora salen en UTC con `Z`; `Pagina[T]` es `{items, total, page, size}`. |
 | `app/routers/` | Un archivo por grupo del contrato (`auth`, `catalogos`, `candidatos`, `empresas`) y `archivos` para descargar fotos, logotipos y constancias. |
 | `app/servicios/` | Reglas que comparten varios endpoints: archivos, correo, recuperación de contraseña, completitud, perfil y CV, y límite de intentos de login. |
+| `app/servicios/compatibilidad.py` | Motor de compatibilidad (H, A, M y F) con fracciones exactas; guarda y recalcula la tabla `compatibilidad`. |
 | `app/validaciones*.py` | Validación a mano de los cuerpos, con los mismos mensajes que el mock de la app móvil. |
 
 ## Instalación
@@ -77,7 +78,10 @@ Después se quitan las líneas `relationship(...)` y su import, y se conserva el
 
 ## Decisiones
 
-- **Compatibilidad pendiente.** Los cambios del perfil, el CV y las necesidades llaman a `recalcular_compatibilidad` (`app/servicios/candidato.py`), que por ahora no hace nada: el motor llega en el paso 3.
+- **Compatibilidad guardada y al día.** Se calcula y se guarda en la tabla `compatibilidad` cuando el candidato cambia su perfil, CV o necesidades y cuando una vacante se publica o cambia requisitos. Antes de listar, buscar o mostrar una ficha se calculan los pares que falten o hayan quedado más viejos que el perfil o la vacante, así que nunca se muestra un puntaje desactualizado. Solo tienen compatibilidad las vacantes que ya salieron de borrador.
+- **Redondeo.** El motor usa fracciones exactas y redondea «mitad hacia arriba», igual que `round()` de PostgreSQL en `P002`; con coma flotante un 47.5 exacto podía bajar a 47.
+- **`cubre_mis_necesidades`** es `componente_a = 1`: el candidato sin necesidades (o sin consentimiento) las cubre todas.
+- **Aviso por cambio de requisitos.** Al editar una vacante con postulados activos y cambiar habilidades, formación, modalidad o ajustes, se crea una notificación `vacante_actualizada` para cada uno y se responde `postulados_notificados`. El push y el correo llegan en el paso 4.
 - **Ids fuera de rango.** Un id mayor que el de la columna (por ejemplo, `99999` contra un `SMALLINT`) se responde como si no existiera (404 o 422), nunca como un 500 de la base de datos.
 - **Códigos de recuperación de correos inexistentes.** Para que `solicitar`, `verificar` y `restablecer` respondan igual exista o no la cuenta, un correo desconocido lleva un registro en memoria que nunca acepta ningún código.
 - **`rfc_duplicado` en `PUT /empresas/me`** marca el campo `rfc`; en el registro marca `empresa.rfc`, como en el mock.

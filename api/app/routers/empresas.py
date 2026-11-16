@@ -9,11 +9,20 @@ from sqlalchemy.orm import Session
 from app.dependencias import Db, SesionActual, UsuarioActual, exigir_roles
 from app.errores import ApiError
 from app.esquemas.comunes import Archivo, Pagina, Ref
-from app.esquemas.empresa import EmpresaEntrada, EmpresaPropia, EmpresaResumen, TamanoEmpresa
+from app.esquemas.empresa import (
+    EmpresaEntrada,
+    EmpresaPropia,
+    EmpresaPublica,
+    EmpresaResumen,
+    TamanoEmpresa,
+)
+from app.esquemas.vacante import VacanteReclutador
 from app.modelos import Empresa, Reclutador, Sector, Vacante
 from app.modelos import TamanoEmpresa as TamanoEmpresaTabla
 from app.paginacion import PaginacionConsulta
 from app.servicios import archivos
+from app.servicios import compatibilidad as motor
+from app.servicios import vacantes as servicio_vacantes
 from app.servicios.candidato import municipio_de
 from app.validaciones import lanzar_si_hay_campos
 from app.validaciones_empresa import validar_empresa
@@ -262,3 +271,79 @@ def subir_constancia(
         empresa.motivo_estado = None
     empresa.actualizado_en = datetime.now(UTC)
     return Archivo(url=empresa.documento_url)
+
+
+ESTADOS_VACANTE = ("borrador", "publicada", "pausada", "cerrada", "suspendida")
+
+
+@router.get(
+    "/me/vacantes",
+    response_model=Pagina[VacanteReclutador],
+    summary="Vacantes de mi empresa",
+    operation_id="get_empresas_me_vacantes",
+)
+def mis_vacantes(
+    actual: Reclutadora,
+    db: Db,
+    pagina: PaginacionConsulta,
+    estado: Annotated[str | None, Query(description="Estado de la vacante.")] = None,
+) -> Pagina[VacanteReclutador]:
+    """Más recientes primero."""
+    if estado is not None and estado not in ESTADOS_VACANTE:
+        lanzar_si_hay_campos(
+            {"estado": "El estado puede ser borrador, publicada, pausada, cerrada o suspendida."}
+        )
+    empresa = _empresa_del_reclutador(db, actual)
+    filtros = [Vacante.empresa_id == empresa.id]
+    if estado is not None:
+        filtros.append(Vacante.estado == estado)
+    total = db.scalar(select(func.count()).select_from(Vacante).where(*filtros)) or 0
+    vacantes = db.scalars(
+        select(Vacante)
+        .where(*filtros)
+        .order_by(
+            func.coalesce(Vacante.publicada_en, Vacante.actualizado_en).desc(), Vacante.id.desc()
+        )
+        .limit(pagina.size)
+        .offset(pagina.desplazamiento)
+    )
+    items = [servicio_vacantes.resumen_para_reclutador(db, v) for v in vacantes]
+    return Pagina[VacanteReclutador](items=items, total=total, page=pagina.page, size=pagina.size)
+
+
+@router.get(
+    "/{id}",
+    response_model=EmpresaPublica,
+    summary="Ficha de empresa",
+    operation_id="get_empresas_id",
+)
+def ficha(id: int, actual: SesionActual, db: Db) -> EmpresaPublica:
+    """Datos públicos de una empresa validada y sus vacantes publicadas.
+
+    La compatibilidad solo viene si quien consulta es candidato.
+    """
+    empresa = db.get(Empresa, id) if 1 <= id <= 2**63 - 1 else None
+    if empresa is None or empresa.estado != "validada":
+        raise ApiError(404, "no_encontrado", "La empresa no existe o ya no está disponible.")
+    vacantes = list(
+        db.scalars(
+            select(Vacante)
+            .where(Vacante.empresa_id == empresa.id, Vacante.estado == "publicada")
+            .order_by(Vacante.publicada_en.desc().nulls_last(), Vacante.id)
+        )
+    )
+    candidato_id = actual.id if actual.rol == "candidato" else None
+    if candidato_id is not None:
+        motor.asegurar_candidato(db, candidato_id, vacantes)
+    return EmpresaPublica(
+        id=empresa.id,
+        nombre_comercial=empresa.nombre_comercial,
+        logo_url=empresa.logo_url,
+        sector=_sector(db, empresa.sector_id),
+        tamano_empresa=_tamano(db, empresa.tamano_empresa_id),
+        municipio=municipio_de(db, empresa.municipio_id),
+        descripcion=empresa.descripcion,
+        sitio_web=empresa.sitio_web,
+        practicas_inclusion=empresa.practicas_inclusion,
+        vacantes=[servicio_vacantes.resumen_de(db, v, candidato_id) for v in vacantes],
+    )
