@@ -30,6 +30,7 @@ from app.modelos import (
 from app.modelos import (
     Formacion as FormacionTabla,
 )
+from app.servicios import compatibilidad
 from app.servicios.completitud import recalcular_completitud
 
 
@@ -49,11 +50,8 @@ def tocar(db: Session, candidato: Candidato) -> None:
 
 
 def recalcular_compatibilidad(db: Session, candidato_id: int) -> None:
-    """Recalcula la compatibilidad del candidato con las vacantes publicadas.
-
-    El motor se implementa en el paso 3 (vacantes y compatibilidad); hasta entonces los cambios del
-    perfil, el CV y las necesidades solo dejan la fecha de actualización al día.
-    """
+    """Recalcula la compatibilidad del candidato con las vacantes ya publicadas."""
+    compatibilidad.recalcular_candidato(db, candidato_id)
 
 
 def municipio_de(db: Session, municipio_id: int | None) -> MunicipioRef | None:

@@ -1,6 +1,7 @@
 from typing import Literal
 
 from app.esquemas.comunes import Esquema, FechaHora, MunicipioRef, Ref
+from app.esquemas.vacante import VacanteResumen
 
 
 class TamanoEmpresa(Ref):
@@ -52,3 +53,18 @@ class EmpresaEntrada(Esquema):
     razon_social: str | None = None
     rfc: str | None = None
     puesto: str | None = None
+
+
+class EmpresaPublica(Esquema):
+    """Ficha pública: sin razón social, RFC ni documento."""
+
+    id: int
+    nombre_comercial: str
+    logo_url: str | None
+    sector: Ref
+    tamano_empresa: TamanoEmpresa
+    municipio: MunicipioRef
+    descripcion: str | None
+    sitio_web: str | None
+    practicas_inclusion: str | None
+    vacantes: list[VacanteResumen]

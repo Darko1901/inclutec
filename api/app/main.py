@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 
 from app.errores import instalar_manejadores
-from app.routers import archivos, auth, candidatos, catalogos, empresas
+from app.routers import archivos, auth, candidatos, catalogos, empresas, vacantes
 
 PREFIJO = "/api/v1"
 
@@ -22,6 +22,7 @@ def crear_app() -> FastAPI:
     app.include_router(catalogos.router, prefix=PREFIJO)
     app.include_router(candidatos.router, prefix=PREFIJO)
     app.include_router(empresas.router, prefix=PREFIJO)
+    app.include_router(vacantes.router, prefix=PREFIJO)
     # Los archivos se sirven fuera de /api/v1 (por ejemplo /archivos/fotos/candidato-3.jpg).
     app.include_router(archivos.router)
     return app
