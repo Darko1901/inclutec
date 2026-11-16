@@ -6,7 +6,8 @@ Esta carpeta es la **única fuente del esquema** de la base de datos: 39 tablas 
 
 | Ruta | Para qué sirve |
 |---|---|
-| `migraciones/V001__esquema_inicial.sql` | Crea las 39 tablas. Los cambios futuros van en archivos nuevos (`V002__...`, `V003__...`); los ya existentes no se editan. |
+| `migraciones/V001__esquema_inicial.sql` | Crea las 39 tablas. Los cambios futuros van en archivos nuevos; los ya existentes no se editan. |
+| `migraciones/V002__notificacion_vacante_actualizada.sql` | Agrega el tipo de notificación `vacante_actualizada` (contrato v1.2). |
 | `semillas/S001__catalogos.sql` | Catálogos que la plataforma necesita para funcionar: roles, entidades, modalidades, habilidades, ajustes razonables y motivos de reporte. |
 | `semillas/S002__datos_prueba.sql` | Datos de desarrollo: 7 cuentas, 4 empresas (una pendiente de validar), 8 vacantes (6 publicadas y 2 borradores) y una postulación con entrevista. Son los mismos que usan los mocks de `mobile/` y `web/`. |
 | `pruebas/P001__restricciones.sql` | 8 operaciones que la BD debe rechazar y 1 que debe aceptar. |
