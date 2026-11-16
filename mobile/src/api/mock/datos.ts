@@ -53,6 +53,8 @@ interface EstadoMock extends NegocioMock {
   siguienteIdObservacion: number;
   notificaciones: NotificacionMock[];
   preferencias: Map<number, PreferenciaNotificacion[]>;
+  /** Puesto de cada reclutador (id de usuario), como en la tabla reclutador. */
+  puestos: Map<number, string>;
   dispositivos: Map<string, { usuarioId: number; plataforma: string }>;
   intentosLogin: Map<string, IntentosLogin>;
   codigos: Map<string, CodigoRecuperacion>;
@@ -64,6 +66,7 @@ export const TIPOS_POR_ROL: Record<RolUsuario, TipoNotificacion[]> = {
     'entrevista_cancelada',
     'recordatorio_entrevista',
     'vacante_suspendida',
+    'vacante_actualizada',
     'reporte_resuelto',
   ],
   reclutador: [
@@ -374,6 +377,13 @@ function crearEstadoInicial(): EstadoMock {
     ...crearNegocioInicial(),
     notificaciones,
     preferencias: new Map(),
+    // Puestos de los reclutadores de S002.
+    puestos: new Map([
+      [2, 'Coordinadora de Recursos Humanos'],
+      [5, 'Jefe de Recursos Humanos'],
+      [6, 'Coordinadora de Talento'],
+      [7, 'Director creativo'],
+    ]),
     dispositivos: new Map(),
     intentosLogin: new Map(),
     codigos: new Map(),

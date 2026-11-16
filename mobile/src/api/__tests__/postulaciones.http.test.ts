@@ -79,8 +79,10 @@ describe('servicios HTTP de la organización y las vacantes del reclutador', () 
   let post: jest.SpyInstance;
   let put: jest.SpyInstance;
   let patch: jest.SpyInstance;
+  let borrarEmpresa: jest.SpyInstance;
 
   beforeEach(() => {
+    borrarEmpresa = jest.spyOn(cliente, 'delete').mockResolvedValue({ data: undefined });
     get = jest.spyOn(cliente, 'get').mockResolvedValue({ data: {} });
     post = jest.spyOn(cliente, 'post').mockResolvedValue({ data: {} });
     put = jest.spyOn(cliente, 'put').mockResolvedValue({ data: {} });
@@ -101,6 +103,7 @@ describe('servicios HTTP de la organización y las vacantes del reclutador', () 
       municipio_id: 3,
     });
     await empresas.subirLogo(archivo);
+    await empresas.quitarLogo();
     await empresas.subirConstancia(archivo);
     await vacantes.cambiarEstado(1, 'pausada');
     await vacantes.duplicar(1);
@@ -117,6 +120,7 @@ describe('servicios HTTP de la organización y las vacantes del reclutador', () 
       '/vacantes/1/duplicar',
     ]);
     expect(patch.mock.calls[0]).toEqual(['/vacantes/1/estado', { estado: 'pausada' }]);
+    expect(borrarEmpresa.mock.calls[0][0]).toBe('/empresas/me/logo');
   });
 
   it('sube el archivo como multipart en el campo «archivo»', async () => {

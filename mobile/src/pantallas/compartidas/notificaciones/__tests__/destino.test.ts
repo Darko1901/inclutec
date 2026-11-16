@@ -83,7 +83,7 @@ describe('destinoNotificacion (tabla de notificaciones del contrato)', () => {
 
   it('todos los tipos de notificación tienen nombre claro e ícono', () => {
     const tipos = Object.keys(TIPOS_NOTIFICACION);
-    expect(tipos).toHaveLength(9);
+    expect(tipos).toHaveLength(10);
     for (const datos of Object.values(TIPOS_NOTIFICACION)) {
       expect(datos.nombre.length).toBeGreaterThan(5);
       expect(datos.icono).toBeTruthy();

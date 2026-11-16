@@ -328,6 +328,7 @@ export class AuthMock implements AuthServicio {
       };
       estado.usuarios.push({ usuario, contrasena: reclutador.contrasena });
       estado.preferencias.set(usuario.id, preferenciasPorOmision('reclutador'));
+      estado.puestos.set(usuario.id, reclutador.puesto.trim());
       return sesionPara(usuario);
     });
   }

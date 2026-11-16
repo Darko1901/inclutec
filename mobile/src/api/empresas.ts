@@ -23,6 +23,8 @@ export interface EmpresasServicio {
   actualizarMiOrganizacion(datos: EmpresaEntrada): Promise<EmpresaPropia>;
   /** POST /empresas/me/logo (multipart, campo `archivo`): JPG o PNG de hasta 2 MB. */
   subirLogo(archivo: ArchivoLocal): Promise<Archivo>;
+  /** DELETE /empresas/me/logo: deja el logotipo en null (204, también si no había). */
+  quitarLogo(): Promise<void>;
   /** POST /empresas/me/documento (multipart, campo `archivo`): PDF de hasta 5 MB. */
   subirConstancia(archivo: ArchivoLocal): Promise<Archivo>;
   /** GET /empresas/me/vacantes */
@@ -62,6 +64,10 @@ export class EmpresasHttp implements EmpresasServicio {
   async subirLogo(archivo: ArchivoLocal) {
     return (await cliente.post<Archivo>('/empresas/me/logo', comoFormulario(archivo), MULTIPART))
       .data;
+  }
+
+  async quitarLogo() {
+    await cliente.delete('/empresas/me/logo');
   }
 
   async subirConstancia(archivo: ArchivoLocal) {

@@ -728,7 +728,14 @@ export interface paths {
          *     **Trazabilidad:** REC-01 RF-01
          */
         post: operations["post_empresas_me_logo"];
-        delete?: never;
+        /**
+         * Quitar logotipo
+         * @description Deja `logo_url` en `null` y borra el archivo. Si la empresa no tiene logotipo, responde igual `204`.
+         *
+         *     **Rol:** reclutador
+         *     **Trazabilidad:** REC-01 RF-01
+         */
+        delete: operations["delete_empresas_me_logo"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1738,7 +1745,7 @@ export interface paths {
         };
         /**
          * Bandeja de reportes
-         * @description Por omisión, los más antiguos primero.
+         * @description Por omisión, los más antiguos primero. Los filtros `vacante_id`, `empresa_id` y `candidato_id` se usan de uno en uno; si se manda más de uno, se combinan y casi siempre dan una lista vacía.
          *
          *     **Rol:** administrador
          *     **Trazabilidad:** WEB-08 RF-01, RF-02 · CU-26
@@ -2177,7 +2184,7 @@ export interface components {
         Notificacion: {
             id: number;
             /** @enum {string} */
-            tipo: "cambio_estado" | "nueva_postulacion" | "entrevista_agendada" | "entrevista_cancelada" | "recordatorio_entrevista" | "empresa_validada" | "empresa_rechazada" | "vacante_suspendida" | "reporte_resuelto";
+            tipo: "cambio_estado" | "nueva_postulacion" | "entrevista_agendada" | "entrevista_cancelada" | "recordatorio_entrevista" | "empresa_validada" | "empresa_rechazada" | "vacante_suspendida" | "vacante_actualizada" | "reporte_resuelto";
             titulo: string;
             mensaje: string;
             /** @description Recurso al que lleva la notificación al tocarla. */
@@ -2234,7 +2241,7 @@ export interface components {
          */
         PreferenciaNotificacion: {
             /** @enum {string} */
-            tipo: "cambio_estado" | "nueva_postulacion" | "entrevista_agendada" | "entrevista_cancelada" | "recordatorio_entrevista" | "empresa_validada" | "empresa_rechazada" | "vacante_suspendida" | "reporte_resuelto";
+            tipo: "cambio_estado" | "nueva_postulacion" | "entrevista_agendada" | "entrevista_cancelada" | "recordatorio_entrevista" | "empresa_validada" | "empresa_rechazada" | "vacante_suspendida" | "vacante_actualizada" | "reporte_resuelto";
             push: boolean;
             correo: boolean;
         };
@@ -2447,7 +2454,7 @@ export interface components {
             fecha_inicio: string;
             /**
              * Format: date
-             * @description Posterior a fecha_inicio; null si actual = true.
+             * @description Igual o posterior a fecha_inicio; null si actual = true.
              */
             fecha_fin: string | null;
             actual: boolean;
@@ -2689,6 +2696,7 @@ export interface components {
          *       "estado": "validada",
          *       "motivo_estado": null,
          *       "validada_en": "2026-09-28T16:00:00Z",
+         *       "puesto": null,
          *       "datos_fiscales_editables": false
          *     }
          */
@@ -2712,6 +2720,8 @@ export interface components {
             motivo_estado: string | null;
             /** Format: date-time */
             validada_en: string | null;
+            /** @description Puesto del reclutador que consulta; null en las respuestas al administrador. */
+            puesto: string | null;
             /** @description false cuando la empresa ya está validada. */
             datos_fiscales_editables: boolean;
         };
@@ -2740,6 +2750,8 @@ export interface components {
             razon_social?: string;
             /** @description Solo se acepta si la empresa no está validada. */
             rfc?: string;
+            /** @description Solo en `PUT /empresas/me`: puesto del reclutador que hace la petición. Los endpoints del administrador lo ignoran. */
+            puesto?: string;
         };
         /**
          * @example {
@@ -3112,7 +3124,7 @@ export interface components {
             municipio: components["schemas"]["Municipio"];
             direccion: string | null;
             plazas: number;
-            /** @description Para el candidato, null si mostrar_salario = false. */
+            /** @description Siempre llega al reclutador dueño de la vacante y al administrador; solo es null para el candidato cuando mostrar_salario es false. */
             salario: {
                 min: number | null;
                 max: number | null;
@@ -4736,6 +4748,7 @@ export interface components {
          *         "estado": "validada",
          *         "motivo_estado": null,
          *         "validada_en": "2026-09-28T16:00:00Z",
+         *         "puesto": null,
          *         "datos_fiscales_editables": false
          *       },
          *       "reclutadores": [
@@ -4854,6 +4867,7 @@ export interface components {
          *         "estado": "suspendida",
          *         "motivo_estado": "Varias vacantes reportadas como engañosas.",
          *         "validada_en": "2026-09-28T16:00:00Z",
+         *         "puesto": null,
          *         "datos_fiscales_editables": false
          *       },
          *       "vacantes_suspendidas": 1,
@@ -7919,6 +7933,7 @@ export interface operations {
                      *       "estado": "validada",
                      *       "motivo_estado": null,
                      *       "validada_en": "2026-09-28T16:00:00Z",
+                     *       "puesto": "Coordinadora de Recursos Humanos",
                      *       "datos_fiscales_editables": false
                      *     }
                      */
@@ -7963,7 +7978,8 @@ export interface operations {
                  *       "direccion": "Av. Constituyentes 100, Querétaro",
                  *       "descripcion": "Empresa de desarrollo de software y soporte técnico.",
                  *       "sitio_web": "https://tecnoqro.mx",
-                 *       "practicas_inclusion": "Programa de inclusión laboral desde 2022; personal capacitado en LSM básica."
+                 *       "practicas_inclusion": "Programa de inclusión laboral desde 2022; personal capacitado en LSM básica.",
+                 *       "puesto": "Coordinadora de Recursos Humanos"
                  *     }
                  */
                 "application/json": components["schemas"]["EmpresaEntrada"];
@@ -8008,6 +8024,7 @@ export interface operations {
                      *       "estado": "validada",
                      *       "motivo_estado": null,
                      *       "validada_en": "2026-09-28T16:00:00Z",
+                     *       "puesto": "Coordinadora de Recursos Humanos",
                      *       "datos_fiscales_editables": false
                      *     }
                      */
@@ -8102,6 +8119,42 @@ export interface operations {
             };
             /** @description `archivo_invalido`: No es JPG/PNG o supera 2 MB. */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    delete_empresas_me_logo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Sin contenido. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description `no_autenticado`: Falta el token, es inválido o ya venció. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description `sin_permiso`: El rol del usuario no tiene acceso a este endpoint. */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -11929,6 +11982,7 @@ export interface operations {
                      *       "estado": "validada",
                      *       "motivo_estado": null,
                      *       "validada_en": "2026-09-28T16:00:00Z",
+                     *       "puesto": null,
                      *       "datos_fiscales_editables": false
                      *     }
                      */
@@ -12023,6 +12077,7 @@ export interface operations {
                      *         "estado": "validada",
                      *         "motivo_estado": null,
                      *         "validada_en": "2026-09-28T16:00:00Z",
+                     *         "puesto": null,
                      *         "datos_fiscales_editables": false
                      *       },
                      *       "reclutadores": [
@@ -12138,6 +12193,7 @@ export interface operations {
                      *       "estado": "validada",
                      *       "motivo_estado": null,
                      *       "validada_en": "2026-09-28T16:00:00Z",
+                     *       "puesto": null,
                      *       "datos_fiscales_editables": false
                      *     }
                      */
@@ -12250,6 +12306,7 @@ export interface operations {
                      *       "estado": "validada",
                      *       "motivo_estado": null,
                      *       "validada_en": "2026-09-28T16:00:00Z",
+                     *       "puesto": null,
                      *       "datos_fiscales_editables": false
                      *     }
                      */
@@ -12363,6 +12420,7 @@ export interface operations {
                      *         "estado": "suspendida",
                      *         "motivo_estado": "Varias vacantes reportadas como engañosas.",
                      *         "validada_en": "2026-09-28T16:00:00Z",
+                     *         "puesto": null,
                      *         "datos_fiscales_editables": false
                      *       },
                      *       "vacantes_suspendidas": 1,
@@ -13769,6 +13827,12 @@ export interface operations {
                 tipo?: string;
                 /** @description Motivo. */
                 motivo_reporte_id?: number;
+                /** @description Solo los reportes de esa vacante. */
+                vacante_id?: number;
+                /** @description Solo los reportes de esa empresa. */
+                empresa_id?: number;
+                /** @description Solo los reportes de ese candidato. */
+                candidato_id?: number;
                 /** @description `antiguos` (por omisión) o `recientes`. */
                 orden?: string;
                 /** @description Página, desde 1. */
