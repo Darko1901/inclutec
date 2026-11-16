@@ -26,6 +26,11 @@ class Configuracion(BaseSettings):
     smtp_port: int = 1025
     smtp_remitente: str = "no-responder@inclutec.mx"
 
+    # Notificaciones push (Expo). Sin tokens registrados no se manda nada.
+    expo_push_url: str = "https://exp.host/--/api/v2/push/send"
+    # Cada cuántos segundos busca entrevistas a 24 horas para mandar el recordatorio (0 = apagado).
+    recordatorios_cada_segundos: int = 300
+
     # Recuperación de contraseña: código de 6 dígitos, 15 minutos, 5 intentos, reenvío cada 60 s.
     codigo_vigencia_segundos: int = 15 * 60
     codigo_max_intentos: int = 5
