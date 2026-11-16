@@ -7,6 +7,7 @@ from sqlalchemy import select
 from app.dependencias import Db, SesionActual, UsuarioActual, exigir_roles
 from app.errores import ApiError
 from app.esquemas.comunes import Pagina
+from app.esquemas.postulacion import Postulado
 from app.esquemas.vacante import (
     CambioEstadoVacante,
     CompatibilidadDesglose,
@@ -18,6 +19,7 @@ from app.esquemas.vacante import (
 from app.modelos import Empresa, Reclutador, Vacante, VacanteAjuste, VacanteHabilidad
 from app.paginacion import PaginacionConsulta
 from app.servicios import compatibilidad as motor
+from app.servicios import postulaciones as servicio_postulaciones
 from app.servicios import vacantes as servicio
 from app.validaciones import lanzar_si_hay_campos
 from app.validaciones_vacante import (
@@ -390,3 +392,44 @@ def cambiar_estado(
     if datos.estado == "publicada":
         motor.recalcular_vacante(db, vacante)
     return servicio.detalle_de(db, vacante, ver_todo=True)
+
+
+@router.get(
+    "/{id}/postulaciones",
+    response_model=Pagina[Postulado],
+    summary="Postulados de una vacante",
+    operation_id="get_vacantes_id_postulaciones",
+)
+def postulados(
+    id: int,
+    actual: Reclutadora,
+    db: Db,
+    pagina: PaginacionConsulta,
+    estado: Annotated[str | None, Query(description="Estado de la postulación.")] = None,
+    compatibilidad_min: Annotated[
+        int | None, Query(description="Puntaje mínimo (0 a 100).")
+    ] = None,
+) -> Pagina[Postulado]:
+    """Ordenados por compatibilidad del reclutador (sin A); las necesidades no afectan el orden."""
+    empresa = _empresa_del_reclutador(db, actual)
+    vacante = servicio.vacante_por_id(db, id)
+    if vacante is None:
+        raise ApiError(404, "no_encontrado", "La vacante no existe.")
+    if vacante.empresa_id != empresa.id:
+        raise ApiError(403, "sin_permiso", "Esta vacante o postulación no es de tu empresa.")
+    campos: dict[str, str] = {}
+    if estado is not None and estado not in servicio_postulaciones.ESTADOS:
+        campos["estado"] = "Elige un estado de la lista."
+    if compatibilidad_min is not None and not 0 <= compatibilidad_min <= 100:
+        campos["compatibilidad_min"] = "Debe ser un número de 0 a 100."
+    lanzar_si_hay_campos(campos)
+
+    items, total = servicio_postulaciones.listar_postulados(
+        db,
+        vacante,
+        estado=estado,
+        compatibilidad_min=compatibilidad_min,
+        desplazamiento=pagina.desplazamiento,
+        limite=pagina.size,
+    )
+    return Pagina[Postulado](items=items, total=total, page=pagina.page, size=pagina.size)

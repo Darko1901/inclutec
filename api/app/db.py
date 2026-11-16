@@ -5,6 +5,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.config import obtener_configuracion
+from app.servicios.notificaciones import despachar_en_segundo_plano
 
 
 def crear_motor(url: str | None = None) -> Engine:
@@ -30,6 +31,8 @@ def obtener_db() -> Iterator[Session]:
     try:
         yield sesion
         sesion.commit()
+        # Los avisos salen solo si la transacción se confirmó, y en otro hilo.
+        despachar_en_segundo_plano(sesion.info.pop("entregas", []))
     except Exception:
         sesion.rollback()
         raise
