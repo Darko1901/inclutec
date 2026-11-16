@@ -40,6 +40,13 @@ function validarEmpresa(datos: EmpresaEntrada): Campos {
   } else if (sitio && !/^https?:\/\/\S+\.\S+$/i.test(sitio)) {
     campos.sitio_web = 'Escribe la dirección completa, por ejemplo https://tuempresa.mx.';
   }
+  if (datos?.puesto !== undefined) {
+    if (!esTexto(datos.puesto) || datos.puesto.trim() === '') {
+      campos.puesto = 'Escribe tu puesto.';
+    } else if (datos.puesto.length > 100) {
+      campos.puesto = 'Usa máximo 100 caracteres.';
+    }
+  }
   if (datos?.razon_social !== undefined) {
     if (!esTexto(datos.razon_social) || datos.razon_social.trim() === '') {
       campos.razon_social = 'Escribe la razón social.';

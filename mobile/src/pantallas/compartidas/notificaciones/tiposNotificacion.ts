@@ -51,6 +51,11 @@ export const TIPOS_NOTIFICACION: Record<TipoNotificacion, DatosTipo> = {
     icono: 'ban-outline',
     color: 'advertenciaTexto',
   },
+  vacante_actualizada: {
+    nombre: 'Cambios en vacantes a las que me postulé',
+    icono: 'create-outline',
+    color: 'infoTexto',
+  },
   reporte_resuelto: {
     nombre: 'Respuesta a mis reportes',
     icono: 'flag-outline',

@@ -452,7 +452,7 @@ export function fichaDeEmpresa(
   };
 }
 
-export function vistaDeEmpresaPropia(empresa: EmpresaMock): EmpresaPropia {
+export function vistaDeEmpresaPropia(empresa: EmpresaMock, puesto: string | null): EmpresaPropia {
   return {
     id: empresa.id,
     razon_social: empresa.razon_social,
@@ -470,6 +470,7 @@ export function vistaDeEmpresaPropia(empresa: EmpresaMock): EmpresaPropia {
     estado: empresa.estado,
     motivo_estado: empresa.motivo_estado,
     validada_en: empresa.validada_en,
+    puesto,
     datos_fiscales_editables: empresa.estado !== 'validada',
   };
 }

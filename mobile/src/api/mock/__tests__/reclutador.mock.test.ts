@@ -69,8 +69,22 @@ describe('empresa propia · lectura y datos fiscales', () => {
       direccion: 'Av. Constituyentes 100, Querétaro',
       estado: 'validada',
       motivo_estado: null,
+      puesto: 'Coordinadora de Recursos Humanos',
       datos_fiscales_editables: false,
     });
+  });
+
+  it('el puesto se cambia con PUT y se valida', async () => {
+    conSesion(LAURA);
+    const nueva = await empresas.actualizarMiOrganizacion({
+      ...DATOS_EMPRESA,
+      puesto: 'Gerente de Talento',
+    });
+    expect(nueva.puesto).toBe('Gerente de Talento');
+    expect((await empresas.miOrganizacion()).puesto).toBe('Gerente de Talento');
+    await expect(
+      empresas.actualizarMiOrganizacion({ ...DATOS_EMPRESA, puesto: '  ' }),
+    ).rejects.toMatchObject({ status: 422, codigo: 'validacion' });
   });
 
   it('exige sesión de reclutador', async () => {
@@ -146,6 +160,14 @@ describe('empresa propia · lectura y datos fiscales', () => {
 });
 
 describe('empresa propia · archivos y estado', () => {
+  it('quitar el logotipo lo deja en null, también si no había', async () => {
+    conSesion(LAURA);
+    await empresas.subirLogo(LOGO);
+    await empresas.quitarLogo();
+    expect((await empresas.miOrganizacion()).logo_url).toBeNull();
+    await expect(empresas.quitarLogo()).resolves.toBeUndefined();
+  });
+
   it('el logotipo acepta JPG o PNG de hasta 2 MB', async () => {
     conSesion(LAURA);
     expect(await empresas.subirLogo(LOGO)).toEqual({ url: LOGO.uri });

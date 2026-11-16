@@ -42,6 +42,12 @@ export function empresaDeLaSesion(): EmpresaMock {
   return empresa;
 }
 
+/** Puesto del reclutador de la sesión (tabla reclutador). */
+function puestoDeLaSesion(): string | null {
+  const usuario = exigirSesion(['reclutador']);
+  return obtenerEstado().puestos.get(usuario.usuario.id) ?? null;
+}
+
 /** Mantiene al día lo que la sesión dice de la empresa (nombre y estado de validación). */
 function sincronizarUsuarios(empresa: EmpresaMock): void {
   for (const { usuario } of obtenerEstado().usuarios) {
@@ -88,7 +94,10 @@ export class EmpresasMock implements EmpresasServicio {
   }
 
   miOrganizacion() {
-    return simular((): EmpresaPropia => vistaDeEmpresaPropia(empresaDeLaSesion()));
+    return simular((): EmpresaPropia => {
+      const empresa = empresaDeLaSesion();
+      return vistaDeEmpresaPropia(empresa, puestoDeLaSesion());
+    });
   }
 
   actualizarMiOrganizacion(datos: EmpresaEntrada) {
@@ -127,8 +136,11 @@ export class EmpresasMock implements EmpresasServicio {
       empresa.descripcion = datos.descripcion?.trim() || null;
       empresa.sitio_web = datos.sitio_web?.trim() || null;
       empresa.practicas_inclusion = datos.practicas_inclusion?.trim() || null;
+      if (datos.puesto !== undefined) {
+        obtenerEstado().puestos.set(exigirSesion(['reclutador']).usuario.id, datos.puesto.trim());
+      }
       sincronizarUsuarios(empresa);
-      return vistaDeEmpresaPropia(empresa);
+      return vistaDeEmpresaPropia(empresa, puestoDeLaSesion());
     });
   }
 
@@ -139,6 +151,12 @@ export class EmpresasMock implements EmpresasServicio {
       // El mock no tiene servidor de archivos: guarda la URI local y la usa como ruta pública.
       empresa.logo_url = archivo.uri;
       return { url: archivo.uri };
+    });
+  }
+
+  quitarLogo() {
+    return simular(() => {
+      empresaDeLaSesion().logo_url = null;
     });
   }
 

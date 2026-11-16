@@ -180,7 +180,7 @@ describe('MOV-04 · Notificaciones', () => {
       ).toBeChecked();
       // El candidato no recibe avisos de nuevas postulaciones.
       expect(screen.queryByText('Nuevas postulaciones a mis vacantes')).not.toBeOnTheScreen();
-      expect(screen.getAllByRole('switch')).toHaveLength(10);
+      expect(screen.getAllByRole('switch')).toHaveLength(12);
     });
 
     it('guarda con PUT al cerrar y avisa «Preferencias guardadas»', async () => {
