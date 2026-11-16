@@ -186,11 +186,11 @@ interface ApiAdmin
 
     /**
      * GET /admin/reportes. Devuelve PaginaReportes (ReporteAdmin: folio, tipo, elemento reportado, motivo,
-     * quién reporta, estado y fecha). `orden` es `antiguos` (por omisión) o `recientes`.
+     * quién reporta, estado y fecha). `orden` es `antiguos` (por omisión) o `recientes`. `vacanteId`, `empresaId` y `candidatoId` filtran por el elemento reportado.
      *
      * @return array{items: list<array<string, mixed>>, total: int, page: int, size: int}
      */
-    public function reportes(?string $estado = null, ?string $tipo = null, ?int $motivoReporteId = null, string $orden = 'antiguos', int $page = 1, int $size = 25): array;
+    public function reportes(?string $estado = null, ?string $tipo = null, ?int $motivoReporteId = null, string $orden = 'antiguos', int $page = 1, int $size = 25, ?int $vacanteId = null, ?int $empresaId = null, ?int $candidatoId = null): array;
 
     /**
      * GET /admin/reportes/{id}. Devuelve ReporteAdminDetalle: el reporte, su descripción y resolución, el

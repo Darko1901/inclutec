@@ -71,6 +71,28 @@ class ReportesMockTest extends TestCase
         $this->assertSame(array_reverse($antiguos), $recientes);
     }
 
+    public function test_filtra_por_el_elemento_reportado(): void
+    {
+        $api = $this->api();
+
+        $deVacante = $api->reportes(vacanteId: 5, size: 100)['items'];
+        $this->assertGreaterThanOrEqual(2, count($deVacante));
+        foreach ($deVacante as $reporte) {
+            $this->assertSame('vacante', $reporte['tipo']);
+            $this->assertSame(5, $reporte['objeto']['id']);
+        }
+
+        $deEmpresa = $api->reportes(empresaId: 2, size: 100)['items'];
+        $this->assertNotSame([], $deEmpresa);
+        $this->assertSame(['empresa'], array_values(array_unique(array_column($deEmpresa, 'tipo'))));
+
+        $deCandidato = $api->reportes(candidatoId: 109, size: 100)['items'];
+        $this->assertNotSame([], $deCandidato);
+        $this->assertSame(['candidato'], array_values(array_unique(array_column($deCandidato, 'tipo'))));
+
+        $this->assertSame(0, $api->reportes(vacanteId: 5, empresaId: 2)['total']);
+    }
+
     public function test_los_filtros_se_combinan_y_paginan(): void
     {
         $api = $this->api();

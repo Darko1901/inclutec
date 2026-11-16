@@ -30,7 +30,7 @@ class GestionReportes
      * @param  array<string, mixed>  $estado
      * @return array{items: list<array<string, mixed>>, total: int, page: int, size: int}
      */
-    public static function listar(array $estado, ?string $estadoReporte, ?string $tipo, ?int $motivoId, string $orden, int $page, int $size): array
+    public static function listar(array $estado, ?string $estadoReporte, ?string $tipo, ?int $motivoId, string $orden, int $page, int $size, ?int $vacanteId = null, ?int $empresaId = null, ?int $candidatoId = null): array
     {
         $campos = [];
         if ($estadoReporte !== null && $estadoReporte !== '' && ! in_array($estadoReporte, self::ESTADOS, true)) {
@@ -54,7 +54,10 @@ class GestionReportes
 
         $reportes = array_values(array_filter($estado['reportes'], fn (array $r) => ($estadoReporte === null || $estadoReporte === '' || $r['estado'] === $estadoReporte)
             && ($tipo === null || $tipo === '' || self::tipo($r) === $tipo)
-            && ($motivoId === null || $r['motivo_reporte_id'] === $motivoId)));
+            && ($motivoId === null || $r['motivo_reporte_id'] === $motivoId)
+            && ($vacanteId === null || $r['vacante_id'] === $vacanteId)
+            && ($empresaId === null || $r['empresa_id'] === $empresaId)
+            && ($candidatoId === null || $r['candidato_id'] === $candidatoId)));
 
         // Por omisión, los más antiguos primero (y el folio desempata).
         usort($reportes, fn (array $a, array $b) => $orden === 'recientes'
