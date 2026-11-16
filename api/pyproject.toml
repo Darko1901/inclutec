@@ -1,0 +1,17 @@
+[project]
+name = "inclutec-api"
+version = "0.1.0"
+description = "API REST de IncluTec (FastAPI + SQLAlchemy sobre PostgreSQL 16)."
+requires-python = ">=3.12"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["app/modelos/tablas.py"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
