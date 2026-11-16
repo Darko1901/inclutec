@@ -49,7 +49,10 @@ def _aplicar_scripts(conninfo: str) -> None:
 @pytest.fixture(scope="session", autouse=True)
 def carpeta_de_archivos(tmp_path_factory: pytest.TempPathFactory) -> None:
     """Las fotos, logotipos y constancias de las pruebas van a una carpeta temporal."""
-    obtener_configuracion().archivos_dir = str(tmp_path_factory.mktemp("archivos"))
+    config = obtener_configuracion()
+    config.archivos_dir = str(tmp_path_factory.mktemp("archivos"))
+    # El ciclo de recordatorios de la app usa la base de desarrollo: en las pruebas se corre a mano.
+    config.recordatorios_cada_segundos = 0
 
 
 @pytest.fixture(scope="session")
