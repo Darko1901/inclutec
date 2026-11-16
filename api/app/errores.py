@@ -94,6 +94,11 @@ def instalar_manejadores(app: FastAPI) -> None:
     async def _http(_: Request, error: HTTPExceptionStarlette) -> JSONResponse:
         if error.status_code == 404:
             return respuesta_de_error(404, "no_encontrado", "El recurso no existe.")
+        if error.status_code == 400:
+            # Cuerpo que no se puede leer (JSON roto o que no es UTF-8).
+            return respuesta_de_error(
+                422, "validacion", MENSAJE_VALIDACION, {"cuerpo": "El cuerpo no es un JSON válido."}
+            )
         if error.status_code == 405:
             return respuesta_de_error(405, "metodo_no_permitido", "Ese método no está permitido.")
         return respuesta_de_error(error.status_code, "error_interno", str(error.detail))

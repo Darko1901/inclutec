@@ -99,3 +99,15 @@ def test_token_creado_se_puede_leer() -> None:
     token, _ = crear_token(7, "reclutador")
 
     assert leer_token(token)["sub"] == "7"
+
+
+def test_cuerpo_ilegible_da_422_validacion(cliente: TestClient) -> None:
+    respuesta = cliente.post(
+        "/api/v1/auth/login",
+        content=b'{"correo": "P\xe9rez"}',
+        headers={"Content-Type": "application/json"},
+    )
+
+    assert respuesta.status_code == 422
+    assert respuesta.json()["codigo"] == "validacion"
+    assert "cuerpo" in respuesta.json()["campos"]
