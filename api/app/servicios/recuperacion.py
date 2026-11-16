@@ -104,6 +104,8 @@ def solicitar_codigo(db: Session, correo_crudo: str) -> tuple[str, str] | None:
         TokenRecuperacion(
             usuario_id=usuario.id,
             codigo_hash=_hash_codigo(codigo),
+            # Con la hora de este servidor, no la del reloj de la base: el reenvío se mide con ella.
+            creado_en=ahora,
             expira_en=ahora + timedelta(seconds=config.codigo_vigencia_segundos),
         )
     )

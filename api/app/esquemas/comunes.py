@@ -27,3 +27,28 @@ class Pagina[T](BaseModel):
     total: int
     page: int
     size: int
+
+
+class Ref(Esquema):
+    id: int
+    nombre: str
+
+
+class AjusteRef(Ref):
+    categoria: str
+
+
+class NivelEducativoRef(Ref):
+    orden: int
+
+
+class EntidadRef(Ref):
+    pass
+
+
+class MunicipioRef(Ref):
+    entidad: EntidadRef
+
+
+class Archivo(Esquema):
+    url: str

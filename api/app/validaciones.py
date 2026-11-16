@@ -3,6 +3,9 @@
 import re
 from typing import Any
 
+from sqlalchemy import BigInteger, Integer, SmallInteger, select
+from sqlalchemy.orm import Session
+
 from app.errores import MENSAJE_VALIDACION, ApiError
 
 LONGITUD_MIN_CONTRASENA = 8
@@ -81,3 +84,27 @@ def entero_valido(valor: Any) -> bool:
 def lanzar_si_hay_campos(campos: Campos) -> None:
     if campos:
         raise ApiError(422, "validacion", MENSAJE_VALIDACION, campos)
+
+
+_MAXIMOS = ((SmallInteger, 2**15 - 1), (BigInteger, 2**63 - 1), (Integer, 2**31 - 1))
+
+
+def id_en_rango(modelo: Any, valor: Any) -> bool:
+    """Entero positivo que cabe en la llave primaria (si no, la base respondería con un error)."""
+    if not isinstance(valor, int) or isinstance(valor, bool) or valor < 1:
+        return False
+    tipo = modelo.id.type
+    for clase, tope in _MAXIMOS:
+        if isinstance(tipo, clase):
+            return valor <= tope
+    return True
+
+
+def existe(db: Session, modelo: Any, valor: Any) -> bool:
+    """El id existe en la tabla y, si tiene la columna `activo`, está activo."""
+    if not id_en_rango(modelo, valor):
+        return False
+    consulta = select(modelo.id).where(modelo.id == valor)
+    if hasattr(modelo, "activo"):
+        consulta = consulta.where(modelo.activo.is_(True))
+    return db.scalar(consulta) is not None
