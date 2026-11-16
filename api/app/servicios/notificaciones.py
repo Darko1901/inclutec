@@ -148,8 +148,8 @@ def _enviar_push(tokens: list[str], titulo: str, mensaje: str, datos: dict | Non
     ]
     try:
         httpx.post(url, json=cuerpo, timeout=10)
-    except httpx.HTTPError:
-        registro.warning("No se pudo mandar el push «%s»", titulo, exc_info=True)
+    except httpx.HTTPError as error:
+        registro.warning("No se pudo mandar el push «%s»: %s", titulo, error)
 
 
 def entregar(entregas: list[Entrega]) -> None:

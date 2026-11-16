@@ -24,9 +24,9 @@ def enviar_por_smtp(destinatario: str, asunto: str, texto: str) -> None:
     try:
         with smtplib.SMTP(config.smtp_host, config.smtp_port, timeout=10) as servidor:
             servidor.send_message(mensaje)
-    except (OSError, smtplib.SMTPException):
+    except (OSError, smtplib.SMTPException) as error:
         # Sin servidor de correo (por ejemplo, Mailpit apagado) el API sigue funcionando.
-        registro.warning("No se pudo enviar el correo «%s»", asunto, exc_info=True)
+        registro.warning("No se pudo enviar el correo «%s»: %s", asunto, error)
 
 
 def obtener_enviador() -> Enviador:
