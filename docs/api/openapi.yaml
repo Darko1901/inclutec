@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: API de IncluTec
-  version: '1.1'
+  version: '1.2'
   description: 'Contrato del API REST de IncluTec. Fuente: docs/api/contrato.md.'
 servers:
 - url: http://localhost:8000/api/v1
@@ -2538,6 +2538,7 @@ paths:
                 estado: validada
                 motivo_estado: null
                 validada_en: '2026-09-28T16:00:00Z'
+                puesto: Coordinadora de Recursos Humanos
                 datos_fiscales_editables: false
         '401':
           description: '`no_autenticado`: Falta el token, es inválido o ya venció.'
@@ -2587,6 +2588,7 @@ paths:
               descripcion: Empresa de desarrollo de software y soporte técnico.
               sitio_web: https://tecnoqro.mx
               practicas_inclusion: Programa de inclusión laboral desde 2022; personal capacitado en LSM básica.
+              puesto: Coordinadora de Recursos Humanos
       responses:
         '200':
           description: OK
@@ -2621,6 +2623,7 @@ paths:
                 estado: validada
                 motivo_estado: null
                 validada_en: '2026-09-28T16:00:00Z'
+                puesto: Coordinadora de Recursos Humanos
                 datos_fiscales_editables: false
         '401':
           description: '`no_autenticado`: Falta el token, es inválido o ya venció.'
@@ -2742,6 +2745,41 @@ paths:
                   value:
                     detail: No es JPG/PNG o supera 2 MB.
                     codigo: archivo_invalido
+                    campos: null
+    delete:
+      tags:
+      - Empresas
+      summary: Quitar logotipo
+      operationId: delete_empresas_me_logo
+      description: "Deja `logo_url` en `null` y borra el archivo. Si la empresa no tiene logotipo, responde igual `204`.\n\n**Rol:** reclutador  \n**Trazabilidad:** REC-01 RF-01"
+      security:
+      - bearer: []
+      responses:
+        '204':
+          description: Sin contenido.
+        '401':
+          description: '`no_autenticado`: Falta el token, es inválido o ya venció.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                no_autenticado:
+                  value:
+                    detail: Falta el token, es inválido o ya venció.
+                    codigo: no_autenticado
+                    campos: null
+        '403':
+          description: '`sin_permiso`: El rol del usuario no tiene acceso a este endpoint.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                sin_permiso:
+                  value:
+                    detail: El rol del usuario no tiene acceso a este endpoint.
+                    codigo: sin_permiso
                     campos: null
   /empresas/me/documento:
     post:
@@ -6610,6 +6648,7 @@ paths:
                 estado: validada
                 motivo_estado: null
                 validada_en: '2026-09-28T16:00:00Z'
+                puesto: null
                 datos_fiscales_editables: false
         '401':
           description: '`no_autenticado`: Falta el token, es inválido o ya venció.'
@@ -6709,6 +6748,7 @@ paths:
                   estado: validada
                   motivo_estado: null
                   validada_en: '2026-09-28T16:00:00Z'
+                  puesto: null
                   datos_fiscales_editables: false
                 reclutadores:
                 - usuario_id: 2
@@ -6821,6 +6861,7 @@ paths:
                 estado: validada
                 motivo_estado: null
                 validada_en: '2026-09-28T16:00:00Z'
+                puesto: null
                 datos_fiscales_editables: false
         '401':
           description: '`no_autenticado`: Falta el token, es inválido o ya venció.'
@@ -6941,6 +6982,7 @@ paths:
                 estado: validada
                 motivo_estado: null
                 validada_en: '2026-09-28T16:00:00Z'
+                puesto: null
                 datos_fiscales_editables: false
         '401':
           description: '`no_autenticado`: Falta el token, es inválido o ya venció.'
@@ -7063,6 +7105,7 @@ paths:
                   estado: suspendida
                   motivo_estado: Varias vacantes reportadas como engañosas.
                   validada_en: '2026-09-28T16:00:00Z'
+                  puesto: null
                   datos_fiscales_editables: false
                 vacantes_suspendidas: 1
                 postulados_notificados: 1
@@ -8610,7 +8653,7 @@ paths:
       - 'Administración: reportes'
       summary: Bandeja de reportes
       operationId: get_admin_reportes
-      description: "Por omisión, los más antiguos primero.\n\n**Rol:** administrador  \n**Trazabilidad:** WEB-08 RF-01, RF-02\
+      description: "Por omisión, los más antiguos primero. Los filtros `vacante_id`, `empresa_id` y `candidato_id` se usan de uno en uno; si se manda más de uno, se combinan y casi siempre dan una lista vacía.\n\n**Rol:** administrador  \n**Trazabilidad:** WEB-08 RF-01, RF-02\
         \ · CU-26"
       parameters:
       - name: estado
@@ -8629,6 +8672,24 @@ paths:
         in: query
         required: false
         description: Motivo.
+        schema:
+          type: integer
+      - name: vacante_id
+        in: query
+        required: false
+        description: Solo los reportes de esa vacante.
+        schema:
+          type: integer
+      - name: empresa_id
+        in: query
+        required: false
+        description: Solo los reportes de esa empresa.
+        schema:
+          type: integer
+      - name: candidato_id
+        in: query
+        required: false
+        description: Solo los reportes de ese candidato.
         schema:
           type: integer
       - name: orden
@@ -9567,6 +9628,7 @@ components:
           - empresa_validada
           - empresa_rechazada
           - vacante_suspendida
+          - vacante_actualizada
           - reporte_resuelto
         titulo:
           type: string
@@ -9673,6 +9735,7 @@ components:
           - empresa_validada
           - empresa_rechazada
           - vacante_suspendida
+          - vacante_actualizada
           - reporte_resuelto
         push:
           type: boolean
@@ -10028,7 +10091,7 @@ components:
           - string
           - 'null'
           format: date
-          description: Posterior a fecha_inicio; null si actual = true.
+          description: Igual o posterior a fecha_inicio; null si actual = true.
         actual:
           type: boolean
         descripcion:
@@ -10395,6 +10458,11 @@ components:
           - string
           - 'null'
           format: date-time
+        puesto:
+          type:
+          - string
+          - 'null'
+          description: Puesto del reclutador que consulta; null en las respuestas al administrador.
         datos_fiscales_editables:
           type: boolean
           description: false cuando la empresa ya está validada.
@@ -10415,6 +10483,7 @@ components:
       - estado
       - motivo_estado
       - validada_en
+      - puesto
       - datos_fiscales_editables
       additionalProperties: false
       examples:
@@ -10444,6 +10513,7 @@ components:
         estado: validada
         motivo_estado: null
         validada_en: '2026-09-28T16:00:00Z'
+        puesto: null
         datos_fiscales_editables: false
     EmpresaEntrada:
       type: object
@@ -10485,6 +10555,10 @@ components:
           type: string
           pattern: ^[A-ZÑ&]{3,4}[0-9]{6}[A-Z0-9]{3}$
           description: Solo se acepta si la empresa no está validada.
+        puesto:
+          type: string
+          maxLength: 100
+          description: 'Solo en `PUT /empresas/me`: puesto del reclutador que hace la petición. Los endpoints del administrador lo ignoran.'
       required:
       - nombre_comercial
       - sector_id
@@ -10872,7 +10946,7 @@ components:
           - min
           - max
           additionalProperties: false
-          description: Para el candidato, null si mostrar_salario = false.
+          description: Siempre llega al reclutador dueño de la vacante y al administrador; solo es null para el candidato cuando mostrar_salario es false.
         mostrar_salario:
           type: boolean
         nivel_educativo:
@@ -13444,6 +13518,7 @@ components:
           estado: validada
           motivo_estado: null
           validada_en: '2026-09-28T16:00:00Z'
+          puesto: null
           datos_fiscales_editables: false
         reclutadores:
         - usuario_id: 2
@@ -13594,6 +13669,7 @@ components:
           estado: suspendida
           motivo_estado: Varias vacantes reportadas como engañosas.
           validada_en: '2026-09-28T16:00:00Z'
+          puesto: null
           datos_fiscales_editables: false
         vacantes_suspendidas: 1
         postulados_notificados: 1

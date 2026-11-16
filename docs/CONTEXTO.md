@@ -108,7 +108,7 @@ Además hay 8 vacantes (6 publicadas y 2 borradores), las compatibilidades de lo
 
 | Archivo | Contenido |
 |---|---|
-| `docs/api/contrato.md` | Contrato del API: 100 endpoints, reglas de negocio, errores y objetos (y `openapi.yaml`) |
+| `docs/api/contrato.md` | Contrato del API: 101 endpoints, reglas de negocio, errores y objetos (y `openapi.yaml`) |
 | `docs/diseno/requerimientos.md` | 156 requerimientos funcionales por interfaz y 43 no funcionales |
 | `docs/diseno/pantallas.md` | Contenido de cada pantalla, campos de BD, catálogos, estados y datos de ejemplo |
 | `docs/diseno/casos_de_uso.md` | 27 casos de uso con flujos, flujos alternos y diagrama de secuencia |

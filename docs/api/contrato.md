@@ -1,10 +1,21 @@
 # Contrato del API de IncluTec
 
-Versión 1.1 · 7 de octubre de 2026 · Base: `http://localhost:8000/api/v1`
+Versión 1.2 · 16 de noviembre de 2026 · Base: `http://localhost:8000/api/v1`
 
 Este documento define cada endpoint del API: ruta, rol que puede usarlo, parámetros, cuerpo, respuesta y errores. La app móvil y el panel web lo usan para sus datos simulados mientras el API no existe, y el API lo implementa en los sprints 4 y 5. Si al implementar algo el contrato no alcanza o no funciona, se reporta y se actualiza el contrato antes de cambiar el código; el código nunca se aparta de él en silencio.
 
 La versión para herramientas está en [`openapi.yaml`](openapi.yaml) (OpenAPI 3.1): se puede abrir en https://editor.swagger.io y sirve para generar los tipos de TypeScript de la app (`npx openapi-typescript docs/api/openapi.yaml -o src/api/tipos.ts`).
+
+**Cambios en la versión 1.2** (huecos detectados al construir los clientes):
+
+1. `EmpresaPropia` devuelve `puesto` (el del reclutador que consulta; `null` para el administrador) y `PUT /empresas/me` permite cambiarlo.
+2. Nuevo `DELETE /empresas/me/logo` para quitar el logotipo. Son 101 endpoints.
+3. Nuevo tipo de notificación `vacante_actualizada`: avisa a los postulados activos que cambiaron los requisitos de la vacante. Requiere la migración `db/migraciones/V002__notificacion_vacante_actualizada.sql`.
+4. Se documenta qué pasa con la entrevista agendada cuando la postulación pasa a `no_seleccionada`.
+5. Los horarios y las entrevistas de otra empresa responden `404 no_encontrado`.
+6. `GET /admin/reportes` acepta los filtros `vacante_id`, `empresa_id` y `candidato_id`.
+7. `VacanteDetalle`: el salario siempre llega al reclutador dueño y al administrador; solo es `null` para el candidato cuando `mostrar_salario` es false.
+8. La fecha de fin de una experiencia es «igual o posterior» a la de inicio, como acepta la base de datos.
 
 **Cambios en la versión 1.1:** los ejemplos se actualizaron con los datos de prueba ampliados (tres empresas validadas, una pendiente, ocho vacantes y un reporte abierto) y el código de recuperación de ejemplo es `123456`, igual que en el mock. Ningún endpoint ni objeto cambió.
 
@@ -25,7 +36,7 @@ Los ejemplos usan los datos de `db/semillas/S002__datos_prueba.sql`: Mariana (ca
 - `POST /auth/login` devuelve un JWT firmado con HS256 que vence a las 8 horas. Su carga útil es `{"sub": "<id de usuario>", "rol": "candidato|reclutador|administrador", "exp": <epoch>}`.
 - Toda petición, salvo las marcadas como *público*, lleva `Authorization: Bearer <token>`. Sin token, o con uno vencido, la respuesta es `401` con `codigo: no_autenticado`; el cliente borra el token y regresa al inicio de sesión.
 - La app móvil guarda el token en `expo-secure-store`. El panel web lo guarda en la sesión del servidor de Laravel y nunca lo manda al navegador.
-- Además del rol, el API revisa la **propiedad**: un candidato solo ve sus propios datos y un reclutador solo las vacantes, postulaciones y horarios de su empresa. Un recurso ajeno responde `403 sin_permiso` o `404 no_encontrado`, según se indica en cada endpoint.
+- Además del rol, el API revisa la **propiedad**: un candidato solo ve sus propios datos y un reclutador solo las vacantes, postulaciones y horarios de su empresa. Un recurso ajeno responde `403 sin_permiso` o `404 no_encontrado`, según se indica en cada endpoint. Los horarios y las entrevistas de otra empresa responden siempre `404 no_encontrado`, para no revelar que existen.
 
 ### Formato
 
@@ -160,6 +171,8 @@ Mariana tiene todo menos la foto: 90. Jorge no tiene foto ni experiencia: 80.
 
 Una transición que no está en la tabla responde `409 transicion_invalida` y no cambia nada.
 
+Si una postulación con entrevista agendada pasa a `no_seleccionada`, la entrevista pasa a `cancelada` y su horario a `cancelado` (no vuelve a `libre`). El candidato recibe solo el aviso `cambio_estado` de esa transición, no una `entrevista_cancelada` adicional.
+
 ### Notificaciones
 
 Cada evento crea una fila en `notificacion` (la ve el usuario en MOV-04) y, según las preferencias del usuario, se envía por push (Expo) y por correo en segundo plano, sin retrasar la respuesta.
@@ -174,6 +187,7 @@ Cada evento crea una fila en `notificacion` (la ve el usuario en MOV-04) y, seg�
 | `empresa_validada` | Reclutadores de la empresa | El administrador valida la empresa | empresa | REC-01 |
 | `empresa_rechazada` | Reclutadores de la empresa | El administrador la rechaza | empresa | REC-01 |
 | `vacante_suspendida` | Reclutador y postulados activos | Se suspende la vacante o su empresa | vacante / postulacion | REC-02 / CAN-06 |
+| `vacante_actualizada` | Candidatos con postulación activa (postulada, en_revision o entrevista) | El reclutador cambia habilidades, formación, modalidad o ajustes de la vacante (`postulados_notificados` en `PUT /vacantes/{id}`) | postulacion | CAN-06 |
 | `reporte_resuelto` | Quien reportó | El reporte se resuelve o se descarta | reporte | MOV-04 |
 
 Los mensajes nunca incluyen datos sensibles (necesidades de ajuste) ni detalles de sanciones.
@@ -244,6 +258,7 @@ Los mensajes nunca incluyen datos sensibles (necesidades de ajuste) ni detalles 
 | `GET` | [`/empresas/me`](#get-empresas-me) | reclutador | Mi organización |
 | `PUT` | [`/empresas/me`](#put-empresas-me) | reclutador | Actualizar mi organización |
 | `POST` | [`/empresas/me/logo`](#post-empresas-me-logo) | reclutador | Subir logotipo |
+| `DELETE` | [`/empresas/me/logo`](#delete-empresas-me-logo) | reclutador | Quitar logotipo |
 | `POST` | [`/empresas/me/documento`](#post-empresas-me-documento) | reclutador | Subir constancia de situación fiscal |
 | `GET` | [`/empresas/me/vacantes`](#get-empresas-me-vacantes) | reclutador | Vacantes de mi empresa |
 
@@ -355,7 +370,7 @@ Los mensajes nunca incluyen datos sensibles (necesidades de ajuste) ni detalles 
 | `GET` | [`/admin/reportes/{id}`](#get-admin-reportes-id) | administrador | Detalle del reporte |
 | `PATCH` | [`/admin/reportes/{id}`](#patch-admin-reportes-id) | administrador | Dar seguimiento al reporte |
 
-Total: 100 endpoints.
+Total: 101 endpoints.
 
 ## 4. Endpoints
 
@@ -1751,6 +1766,7 @@ Datos públicos de una empresa validada más sus vacantes publicadas (con la com
   "estado": "validada",
   "motivo_estado": null,
   "validada_en": "2026-09-28T16:00:00Z",
+  "puesto": "Coordinadora de Recursos Humanos",
   "datos_fiscales_editables": false
 }
 ```
@@ -1762,7 +1778,7 @@ Datos públicos de una empresa validada más sus vacantes publicadas (con la com
 
 **Rol:** reclutador · **Trazabilidad:** REC-01 RF-01, RF-04 · CU-13
 
-`razon_social` y `rfc` solo se aceptan mientras la empresa no esté validada.
+`razon_social` y `rfc` solo se aceptan mientras la empresa no esté validada. `puesto` cambia el puesto del reclutador que hace la petición.
 
 **Cuerpo** ([EmpresaEntrada](#obj-empresaentrada)):
 
@@ -1775,7 +1791,8 @@ Datos públicos de una empresa validada más sus vacantes publicadas (con la com
   "direccion": "Av. Constituyentes 100, Querétaro",
   "descripcion": "Empresa de desarrollo de software y soporte técnico.",
   "sitio_web": "https://tecnoqro.mx",
-  "practicas_inclusion": "Programa de inclusión laboral desde 2022; personal capacitado en LSM básica."
+  "practicas_inclusion": "Programa de inclusión laboral desde 2022; personal capacitado en LSM básica.",
+  "puesto": "Coordinadora de Recursos Humanos"
 }
 ```
 
@@ -1813,6 +1830,7 @@ Datos públicos de una empresa validada más sus vacantes publicadas (con la com
   "estado": "validada",
   "motivo_estado": null,
   "validada_en": "2026-09-28T16:00:00Z",
+  "puesto": "Coordinadora de Recursos Humanos",
   "datos_fiscales_editables": false
 }
 ```
@@ -1835,6 +1853,17 @@ Datos públicos de una empresa validada más sus vacantes publicadas (con la com
 ```
 
 **Errores:** `401 no_autenticado` Falta el token, es inválido o ya venció. · `403 sin_permiso` El rol del usuario no tiene acceso a este endpoint. · `422 archivo_invalido` No es JPG/PNG o supera 2 MB.
+
+<a id="delete-empresas-me-logo"></a>
+#### `DELETE /empresas/me/logo` · Quitar logotipo
+
+**Rol:** reclutador · **Trazabilidad:** REC-01 RF-01
+
+Deja `logo_url` en `null` y borra el archivo. Si la empresa no tiene logotipo, responde igual `204`.
+
+**Respuesta 204:** sin cuerpo.
+
+**Errores:** `401 no_autenticado` Falta el token, es inválido o ya venció. · `403 sin_permiso` El rol del usuario no tiene acceso a este endpoint.
 
 <a id="post-empresas-me-documento"></a>
 #### `POST /empresas/me/documento` · Subir constancia de situación fiscal
@@ -4282,6 +4311,7 @@ Las pendientes primero, de la más antigua a la más reciente; después las dem�
     "estado": "validada",
     "motivo_estado": null,
     "validada_en": "2026-09-28T16:00:00Z",
+    "puesto": null,
     "datos_fiscales_editables": false
   },
   "reclutadores": [
@@ -4359,6 +4389,7 @@ Se crea en estado «validada».
   "estado": "validada",
   "motivo_estado": null,
   "validada_en": "2026-09-28T16:00:00Z",
+  "puesto": null,
   "datos_fiscales_editables": false
 }
 ```
@@ -4427,6 +4458,7 @@ El administrador sí puede corregir razón social y RFC de una empresa validada.
   "estado": "validada",
   "motivo_estado": null,
   "validada_en": "2026-09-28T16:00:00Z",
+  "puesto": null,
   "datos_fiscales_editables": false
 }
 ```
@@ -4487,6 +4519,7 @@ Solo para empresas «pendiente». Registra quién y cuándo, escribe en la bitá
   "estado": "validada",
   "motivo_estado": null,
   "validada_en": "2026-09-28T16:00:00Z",
+  "puesto": null,
   "datos_fiscales_editables": false
 }
 ```
@@ -4548,6 +4581,7 @@ Al suspender, sus vacantes publicadas pasan a «suspendida» y se notifica a los
     "estado": "suspendida",
     "motivo_estado": "Varias vacantes reportadas como engañosas.",
     "validada_en": "2026-09-28T16:00:00Z",
+    "puesto": null,
     "datos_fiscales_editables": false
   },
   "vacantes_suspendidas": 1,
@@ -5196,13 +5230,16 @@ Los campos obligatorios dependen del tipo (ver `CatalogoEntrada`). `tipo`: `moda
 
 **Rol:** administrador · **Trazabilidad:** WEB-08 RF-01, RF-02 · CU-26
 
-Por omisión, los más antiguos primero.
+Por omisión, los más antiguos primero. Los filtros `vacante_id`, `empresa_id` y `candidato_id` se usan de uno en uno; si se manda más de uno, se combinan y casi siempre dan una lista vacía.
 
 | Parámetro | En | Tipo | Descripción |
 |---|---|---|---|
 | `estado` | query | texto | abierto, en_revision, resuelto o descartado. |
 | `tipo` | query | texto | vacante, empresa o candidato. |
 | `motivo_reporte_id` | query | entero | Motivo. |
+| `vacante_id` | query | entero | Solo los reportes de esa vacante. |
+| `empresa_id` | query | entero | Solo los reportes de esa empresa. |
+| `candidato_id` | query | entero | Solo los reportes de ese candidato. |
 | `orden` | query | texto | `antiguos` (por omisión) o `recientes`. |
 | `page` | query | entero | Página, desde 1. Por omisión: `1`. |
 | `size` | query | entero | Tamaño de página (máximo 100). Por omisión: `25`. |
@@ -5613,7 +5650,7 @@ Elemento de un catálogo. Solo vienen los campos que aplican al tipo.
 | Campo | Tipo | Descripción |
 |---|---|---|
 | `id` | entero |  |
-| `tipo` | `cambio_estado` \| `nueva_postulacion` \| `entrevista_agendada` \| `entrevista_cancelada` \| `recordatorio_entrevista` \| `empresa_validada` \| `empresa_rechazada` \| `vacante_suspendida` \| `reporte_resuelto` |  |
+| `tipo` | `cambio_estado` \| `nueva_postulacion` \| `entrevista_agendada` \| `entrevista_cancelada` \| `recordatorio_entrevista` \| `empresa_validada` \| `empresa_rechazada` \| `vacante_suspendida` \| `vacante_actualizada` \| `reporte_resuelto` |  |
 | `titulo` | texto |  |
 | `mensaje` | texto |  |
 | `referencia` | objeto o null | Recurso al que lleva la notificación al tocarla. |
@@ -5644,7 +5681,7 @@ Elemento de un catálogo. Solo vienen los campos que aplican al tipo.
 
 | Campo | Tipo | Descripción |
 |---|---|---|
-| `tipo` | `cambio_estado` \| `nueva_postulacion` \| `entrevista_agendada` \| `entrevista_cancelada` \| `recordatorio_entrevista` \| `empresa_validada` \| `empresa_rechazada` \| `vacante_suspendida` \| `reporte_resuelto` |  |
+| `tipo` | `cambio_estado` \| `nueva_postulacion` \| `entrevista_agendada` \| `entrevista_cancelada` \| `recordatorio_entrevista` \| `empresa_validada` \| `empresa_rechazada` \| `vacante_suspendida` \| `vacante_actualizada` \| `reporte_resuelto` |  |
 | `push` | booleano |  |
 | `correo` | booleano |  |
 
@@ -5735,7 +5772,7 @@ Elemento de un catálogo. Solo vienen los campos que aplican al tipo.
 | `puesto` | texto | (máx. 100 car.) |
 | `empresa` | texto | (máx. 120 car.) |
 | `fecha_inicio` | fecha |  |
-| `fecha_fin` | fecha o null | Posterior a fecha_inicio; null si actual = true. |
+| `fecha_fin` | fecha o null | Igual o posterior a fecha_inicio; null si actual = true. |
 | `actual` | booleano |  |
 | `descripcion` | texto o null | (máx. 500 car.) |
 
@@ -5837,6 +5874,7 @@ CV tal como lo ve una empresa. No incluye necesidades de ajuste.
 | `estado` | `pendiente` \| `validada` \| `rechazada` \| `suspendida` |  |
 | `motivo_estado` | texto o null | Motivo del rechazo o la suspensión. |
 | `validada_en` | fecha-hora o null |  |
+| `puesto` | texto o null | Puesto del reclutador que consulta; null en las respuestas al administrador. |
 | `datos_fiscales_editables` | booleano | false cuando la empresa ya está validada. |
 
 <a id="obj-empresaentrada"></a>
@@ -5854,6 +5892,7 @@ CV tal como lo ve una empresa. No incluye necesidades de ajuste.
 | `practicas_inclusion` *(opcional)* | texto o null | (máx. 1000 car.) |
 | `razon_social` *(opcional)* | texto | Solo se acepta si la empresa no está validada. (máx. 200 car.) |
 | `rfc` *(opcional)* | texto | Solo se acepta si la empresa no está validada. (patrón `^[A-ZÑ&]{3,4}[0-9]{6}[A-Z0-9]{3}$`) |
+| `puesto` *(opcional)* | texto | Solo en `PUT /empresas/me`: puesto del reclutador que hace la petición. Los endpoints del administrador lo ignoran. (máx. 100 car.) |
 
 <a id="obj-empresaresumen"></a>
 ### EmpresaResumen
@@ -5937,7 +5976,7 @@ CV tal como lo ve una empresa. No incluye necesidades de ajuste.
 | `municipio` | [Municipio](#obj-municipio) |  |
 | `direccion` | texto o null |  |
 | `plazas` | entero |  |
-| `salario` | objeto o null | Para el candidato, null si mostrar_salario = false. |
+| `salario` | objeto o null | Siempre llega al reclutador dueño de la vacante y al administrador; solo es null para el candidato cuando mostrar_salario es false. |
 | `salario.min` | número o null |  |
 | `salario.max` | número o null |  |
 | `mostrar_salario` | booleano |  |
