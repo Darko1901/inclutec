@@ -76,7 +76,7 @@ class EmpresasMockTest extends TestCase
 
         $this->assertSame(['empresa', 'reclutadores', 'rfc_duplicado', 'reportes'], array_keys($detalle));
         $this->assertSame(
-            ['id', 'razon_social', 'nombre_comercial', 'rfc', 'sector', 'tamano_empresa', 'municipio', 'direccion', 'descripcion', 'sitio_web', 'logo_url', 'practicas_inclusion', 'documento_url', 'estado', 'motivo_estado', 'validada_en', 'datos_fiscales_editables'],
+            ['id', 'razon_social', 'nombre_comercial', 'rfc', 'sector', 'tamano_empresa', 'municipio', 'direccion', 'descripcion', 'sitio_web', 'logo_url', 'practicas_inclusion', 'documento_url', 'estado', 'motivo_estado', 'validada_en', 'puesto', 'datos_fiscales_editables'],
             array_keys($detalle['empresa']),
         );
         $this->assertSame(['id', 'nombre', 'entidad'], array_keys($detalle['empresa']['municipio']));

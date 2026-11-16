@@ -378,6 +378,8 @@ class GestionEmpresas
             'estado' => $e['estado'],
             'motivo_estado' => $e['motivo_estado'],
             'validada_en' => $e['validada_en'],
+            // El puesto es del reclutador que consulta; el administrador recibe null (contrato v1.2).
+            'puesto' => null,
             // El reclutador ya no puede cambiar razón social ni RFC cuando la empresa está validada.
             'datos_fiscales_editables' => $e['estado'] !== 'validada',
         ];

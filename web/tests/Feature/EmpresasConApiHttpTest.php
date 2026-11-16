@@ -31,7 +31,7 @@ class EmpresasConApiHttpTest extends TestCase
             'sitio_web' => 'https://tecnoqro.mx', 'logo_url' => '/archivos/logos/empresa-1.png',
             'practicas_inclusion' => 'Programa de inclusión laboral desde 2022; personal capacitado en LSM básica.',
             'documento_url' => '/archivos/documentos/empresa-1.pdf', 'estado' => 'validada', 'motivo_estado' => null,
-            'validada_en' => '2026-09-28T16:00:00Z', 'datos_fiscales_editables' => false,
+            'validada_en' => '2026-09-28T16:00:00Z', 'puesto' => null, 'datos_fiscales_editables' => false,
         ];
     }
 

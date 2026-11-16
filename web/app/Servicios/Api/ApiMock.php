@@ -304,13 +304,13 @@ class ApiMock implements ApiAdmin
         });
     }
 
-    public function reportes(?string $estado = null, ?string $tipo = null, ?int $motivoReporteId = null, string $orden = 'antiguos', int $page = 1, int $size = 25): array
+    public function reportes(?string $estado = null, ?string $tipo = null, ?int $motivoReporteId = null, string $orden = 'antiguos', int $page = 1, int $size = 25, ?int $vacanteId = null, ?int $empresaId = null, ?int $candidatoId = null): array
     {
         $this->simularLatencia();
         $datos = Almacen::leer();
         $this->exigirAdministrador($datos);
 
-        return GestionReportes::listar($datos, $estado, $tipo, $motivoReporteId, $orden, $page, $size);
+        return GestionReportes::listar($datos, $estado, $tipo, $motivoReporteId, $orden, $page, $size, $vacanteId, $empresaId, $candidatoId);
     }
 
     public function reporte(int $id): array
