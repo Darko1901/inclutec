@@ -6,6 +6,7 @@ from sqlalchemy import func, select
 from app.dependencias import Db, UsuarioActual, exigir_roles
 from app.errores import ApiError
 from app.esquemas.comunes import Pagina
+from app.esquemas.entrevista import Entrevista, ReservaEntrevista
 from app.esquemas.postulacion import (
     CambioEstadoPostulacion,
     Observacion,
@@ -19,6 +20,7 @@ from app.esquemas.postulacion import (
 from app.modelos import Postulacion
 from app.paginacion import PaginacionConsulta
 from app.servicios import entrevistas as servicio_entrevistas
+from app.servicios import horarios as servicio_horarios
 from app.servicios import postulaciones as servicio
 from app.servicios import vacantes as servicio_vacantes
 from app.servicios.reclutador import empresa_del_reclutador
@@ -135,6 +137,20 @@ def retirar(id: int, actual: Candidata, db: Db) -> PostulacionDetalle:
     servicio_entrevistas.retirar_postulacion(db, postulacion, actual.id)
     db.flush()
     return servicio.detalle_para_candidato(db, postulacion)
+
+
+@router.post(
+    "/{id}/entrevista",
+    response_model=Entrevista,
+    status_code=status.HTTP_201_CREATED,
+    summary="Agendar entrevista",
+    operation_id="post_postulaciones_id_entrevista",
+)
+def agendar_entrevista(id: int, datos: ReservaEntrevista, actual: Candidata, db: Db) -> Entrevista:
+    """Toma el horario con bloqueo; avisa al reclutador y confirma por correo a ambos."""
+    postulacion = servicio.postulacion_propia(db, actual.id, id)
+    entrevista = servicio_horarios.reservar(db, postulacion, datos.horario_id)
+    return servicio_entrevistas.vista_de(db, entrevista, para_candidato=True)
 
 
 # --- Reclutador ---------------------------------------------------------------------------------
