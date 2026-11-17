@@ -20,6 +20,7 @@ from app.modelos import (
     TamanoEmpresa,
     TipoContrato,
 )
+from app.paginacion import IdPequeno
 
 router = APIRouter(prefix="/catalogos", tags=["Catálogos"])
 
@@ -53,8 +54,8 @@ _MENSAJE_VALIDACION = "Revisa los datos marcados."
 def listar_catalogo(
     tipo: str,
     db: Db,
-    entidad_id: Annotated[int | None, Query(description="Solo `municipios`.")] = None,
-    categoria_id: Annotated[int | None, Query(description="Solo `habilidades`.")] = None,
+    entidad_id: Annotated[IdPequeno | None, Query(description="Solo `municipios`.")] = None,
+    categoria_id: Annotated[IdPequeno | None, Query(description="Solo `habilidades`.")] = None,
     q: Annotated[str | None, Query(description="Solo `habilidades`: autocompletado.")] = None,
     aplica_a: Annotated[str | None, Query(description="Solo `motivos-reporte`.")] = None,
 ) -> list[CatalogoItem]:

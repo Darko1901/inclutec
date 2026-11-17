@@ -17,7 +17,7 @@ from app.esquemas.vacante import (
     VacanteResumen,
 )
 from app.modelos import Empresa, Reclutador, Vacante, VacanteAjuste, VacanteHabilidad
-from app.paginacion import PaginacionConsulta
+from app.paginacion import IdPequeno, PaginacionConsulta
 from app.servicios import compatibilidad as motor
 from app.servicios import postulaciones as servicio_postulaciones
 from app.servicios import vacantes as servicio
@@ -115,18 +115,20 @@ def buscar(
     db: Db,
     pagina: PaginacionConsulta,
     q: Annotated[str | None, Query(description="Título, descripción o empresa (mín. 3).")] = None,
-    modalidad_id: int | None = None,
-    categoria_id: int | None = None,
-    entidad_id: int | None = None,
-    municipio_id: int | None = None,
-    jornada_id: int | None = None,
+    modalidad_id: IdPequeno | None = None,
+    categoria_id: IdPequeno | None = None,
+    entidad_id: IdPequeno | None = None,
+    municipio_id: IdPequeno | None = None,
+    jornada_id: IdPequeno | None = None,
     salario_min: Annotated[
         float | None, Query(description="Salario máximo publicado ≥ este valor.")
     ] = None,
     compatibilidad_min: Annotated[
         int | None, Query(description="Puntaje mínimo (0 a 100).")
     ] = None,
-    ajuste_id: Annotated[list[int] | None, Query(description="Se repite el parámetro.")] = None,
+    ajuste_id: Annotated[
+        list[IdPequeno] | None, Query(description="Se repite el parámetro.")
+    ] = None,
     cubre_mis_necesidades: bool | None = None,
     orden: Annotated[str, Query(description="`compatibilidad` o `recientes`.")] = "compatibilidad",
 ) -> Pagina[VacanteResumen]:
