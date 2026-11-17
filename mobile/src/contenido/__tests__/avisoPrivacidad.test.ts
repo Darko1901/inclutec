@@ -6,10 +6,11 @@ import { AVISO_PRIVACIDAD } from '../avisoPrivacidad';
 
 describe('aviso de privacidad', () => {
   it('es idéntico a docs/legal/aviso-privacidad.md', () => {
+    // En Windows Git puede dejar el archivo con saltos de línea CRLF; el contenido es el mismo.
     const original = readFileSync(
       join(__dirname, '../../../../docs/legal/aviso-privacidad.md'),
       'utf8',
-    );
+    ).replace(/\r\n/g, '\n');
     expect(AVISO_PRIVACIDAD).toBe(original);
   });
 
