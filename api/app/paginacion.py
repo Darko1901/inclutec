@@ -3,11 +3,14 @@
 from typing import Annotated
 
 from fastapi import Depends, Query
+from pydantic import Field
 
 from app.validaciones import lanzar_si_hay_campos
 
 TAMANO_MAXIMO = 100
 TAMANO_POR_OMISION = 20
+# Una página más allá de este tope ya no tiene datos y haría desbordar el OFFSET de la base.
+PAGINA_MAXIMA = 1_000_000
 
 
 class Paginacion:
@@ -27,6 +30,8 @@ def leer_paginacion(
     campos: dict[str, str] = {}
     if page < 1:
         campos["page"] = "La página empieza en 1."
+    elif page > PAGINA_MAXIMA:
+        campos["page"] = "La página es demasiado grande."
     if size < 1 or size > TAMANO_MAXIMO:
         campos["size"] = f"El tamaño de página va de 1 a {TAMANO_MAXIMO}."
     lanzar_si_hay_campos(campos)
@@ -34,3 +39,9 @@ def leer_paginacion(
 
 
 PaginacionConsulta = Annotated[Paginacion, Depends(leer_paginacion)]
+
+
+# Ids de filtro: acotados al tamaño de la columna para que un valor enorme dé 422 y nunca llegue
+# a la base de datos (ahí produciría un error interno).
+IdPequeno = Annotated[int, Field(ge=1, le=2**31 - 1)]
+IdGrande = Annotated[int, Field(ge=1, le=2**63 - 1)]

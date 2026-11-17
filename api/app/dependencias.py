@@ -13,7 +13,10 @@ from app.errores import ApiError
 from app.modelos import Rol, Usuario
 from app.seguridad import leer_token
 
-Db = Annotated[Session, Depends(obtener_db)]
+# scope="function": el commit (y el rollback) ocurren antes de mandar la respuesta. Con el valor por
+# omisión ("request") se hacían después de enviarla: el cliente podía leer datos viejos justo tras
+# escribir, y un fallo del commit ya no podía convertirse en un error de la respuesta.
+Db = Annotated[Session, Depends(obtener_db, scope="function")]
 
 _esquema = HTTPBearer(auto_error=False, description="JWT que devuelve POST /auth/login.")
 

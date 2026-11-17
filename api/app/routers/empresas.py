@@ -19,7 +19,7 @@ from app.esquemas.empresa import (
 from app.esquemas.vacante import VacanteReclutador
 from app.modelos import Empresa, Reclutador, Sector, Vacante
 from app.modelos import TamanoEmpresa as TamanoEmpresaTabla
-from app.paginacion import PaginacionConsulta
+from app.paginacion import IdPequeno, PaginacionConsulta
 from app.servicios import archivos
 from app.servicios import compatibilidad as motor
 from app.servicios import vacantes as servicio_vacantes
@@ -103,7 +103,7 @@ def directorio(
     db: Db,
     pagina: PaginacionConsulta,
     q: Annotated[str | None, Query(description="Busca en el nombre comercial.")] = None,
-    sector_id: Annotated[int | None, Query(description="Filtra por sector.")] = None,
+    sector_id: Annotated[IdPequeno | None, Query(description="Filtra por sector.")] = None,
 ) -> Pagina[EmpresaResumen]:
     """Solo empresas validadas, ordenadas por nombre comercial."""
     filtros = [Empresa.estado == "validada"]

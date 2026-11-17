@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from app.config import obtener_configuracion
+from app.config import Configuracion, obtener_configuracion
 from app.db import fabrica_de_sesiones
 from app.errores import instalar_manejadores
 from app.routers import (
@@ -45,7 +45,12 @@ async def _ciclo_de_recordatorios(cada_segundos: int) -> None:
 
 @asynccontextmanager
 async def _vida(_: FastAPI):
-    cada = obtener_configuracion().recordatorios_cada_segundos
+    config = obtener_configuracion()
+    if config.jwt_secret == Configuracion.model_fields["jwt_secret"].default:
+        registro.warning(
+            "JWT_SECRET usa el valor de ejemplo: cámbialo en el .env (cadena larga y aleatoria)."
+        )
+    cada = config.recordatorios_cada_segundos
     tarea = asyncio.create_task(_ciclo_de_recordatorios(cada)) if cada > 0 else None
     try:
         yield

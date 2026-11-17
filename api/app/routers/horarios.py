@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, Query, Response, status
 
 from app.dependencias import Db, UsuarioActual, exigir_roles
 from app.esquemas.entrevista import Horario, HorarioEntrada
+from app.paginacion import IdGrande
 from app.servicios import horarios as servicio
 from app.servicios.reclutador import empresa_del_reclutador
 
@@ -35,7 +36,7 @@ def publicar(datos: HorarioEntrada, actual: Reclutadora, db: Db) -> Horario:
 def disponibles(
     actual: Candidata,
     db: Db,
-    vacante_id: Annotated[int | None, Query(description="Vacante. Obligatorio.")] = None,
+    vacante_id: Annotated[IdGrande | None, Query(description="Vacante. Obligatorio.")] = None,
     disponible: Annotated[bool, Query(description="Siempre true para el candidato.")] = True,
 ) -> list[Horario]:
     """Solo si el candidato tiene una postulación en «entrevista» para esa vacante."""

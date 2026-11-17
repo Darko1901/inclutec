@@ -80,6 +80,9 @@ Después se quitan las líneas `relationship(...)` y su import, y se conserva el
 
 ## Decisiones
 
+- **La transacción termina antes de responder.** `Db` se declara con `scope="function"`: el commit (o el rollback) ocurre antes de mandar la respuesta. Con el valor por omisión de FastAPI la base se confirmaba *después* de enviarla, y un cliente que escribía y leía de inmediato podía ver datos viejos (por ejemplo, entrar con una cuenta recién eliminada). `tests/test_transaccion.py` lo comprueba con la dependencia real.
+- **Entradas extremas.** Los ids de filtro y la página están acotados (422), y `tests/test_seguridad.py` recorre todas las rutas con cada rol, ids enormes, cuerpos basura y parámetros de consulta raros para asegurar que nada responda 500; también comprueba que toda ruta protegida pida sesión y que la lista de rutas públicas sea exacta.
+
 - **Avisos después del commit y en otro hilo.** `notificaciones.crear` deja la entrega pendiente en la sesión (`db.info["entregas"]`); `obtener_db` la despacha solo si la transacción se confirmó, así que un error no manda avisos falsos y el correo o el push lentos no retrasan la respuesta. Sin Mailpit o sin red, el fallo solo se registra.
 - **Reservar un horario.** `SELECT … FOR UPDATE` sobre el horario más el índice único parcial de la base; hay una prueba con dos transacciones simultáneas y solo una gana. Quien pierde recibe `409 horario_ocupado`.
 - **Cancelar entrevistas.** Si cancela el candidato (o retira la postulación), el horario vuelve a `libre`; si cancela el reclutador, o la postulación pasa a `no_seleccionada`, queda `cancelado`. Un horario liberado que ya tuvo entrevistas canceladas no se borra con `DELETE /horarios-entrevista/{id}`: pasa a `cancelado` para conservar el historial.

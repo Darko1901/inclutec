@@ -15,6 +15,7 @@ from app.esquemas.entrevista import (
     Entrevista as EntrevistaSalida,
 )
 from app.modelos import Entrevista, HorarioEntrevista, Postulacion, Vacante
+from app.paginacion import IdGrande
 from app.servicios import entrevistas as servicio_entrevistas
 from app.servicios import horarios as servicio
 from app.servicios.reclutador import empresa_del_reclutador
@@ -47,7 +48,7 @@ def mi_agenda(
     db: Db,
     desde: Annotated[str | None, Query(description="Fecha AAAA-MM-DD.")] = None,
     hasta: Annotated[str | None, Query(description="Fecha AAAA-MM-DD.")] = None,
-    vacante_id: Annotated[int | None, Query(description="Filtra por vacante.")] = None,
+    vacante_id: Annotated[IdGrande | None, Query(description="Filtra por vacante.")] = None,
 ) -> list[DiaAgenda]:
     """Horarios libres y agendados por día; por omisión, desde hoy hasta 30 días después."""
     return servicio.agenda(db, actual.id, desde, hasta, vacante_id)
