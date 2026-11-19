@@ -17,6 +17,7 @@ from app.routers import (
     horarios,
     notificaciones,
     postulaciones,
+    reportes,
     vacantes,
 )
 from app.servicios.notificaciones import despachar_en_segundo_plano
@@ -82,6 +83,8 @@ def crear_app() -> FastAPI:
     app.include_router(entrevistas.router, prefix=PREFIJO)
     app.include_router(notificaciones.router, prefix=PREFIJO)
     app.include_router(notificaciones.router_dispositivos, prefix=PREFIJO)
+    app.include_router(reportes.router, prefix=PREFIJO)
+    app.include_router(reportes.router_admin, prefix=PREFIJO)
     # Los archivos se sirven fuera de /api/v1 (por ejemplo /archivos/fotos/candidato-3.jpg).
     app.include_router(archivos.router)
     return app

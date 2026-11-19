@@ -45,3 +45,17 @@ PaginacionConsulta = Annotated[Paginacion, Depends(leer_paginacion)]
 # a la base de datos (ahí produciría un error interno).
 IdPequeno = Annotated[int, Field(ge=1, le=2**31 - 1)]
 IdGrande = Annotated[int, Field(ge=1, le=2**63 - 1)]
+
+
+TAMANO_PANEL = 25
+
+
+def leer_paginacion_del_panel(
+    page: Annotated[int, Query(description="Página, desde 1.")] = 1,
+    size: Annotated[int, Query(description="Tamaño de página (máximo 100).")] = TAMANO_PANEL,
+) -> Paginacion:
+    """Igual que la paginación general, pero con 25 por omisión, como pide el panel web."""
+    return leer_paginacion(page, size)
+
+
+PaginacionPanel = Annotated[Paginacion, Depends(leer_paginacion_del_panel)]
