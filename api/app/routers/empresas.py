@@ -8,22 +8,21 @@ from sqlalchemy.orm import Session
 
 from app.dependencias import Db, SesionActual, UsuarioActual, exigir_roles
 from app.errores import ApiError
-from app.esquemas.comunes import Archivo, Pagina, Ref
+from app.esquemas.comunes import Archivo, Pagina
 from app.esquemas.empresa import (
     EmpresaEntrada,
     EmpresaPropia,
     EmpresaPublica,
     EmpresaResumen,
-    TamanoEmpresa,
 )
 from app.esquemas.vacante import VacanteReclutador
-from app.modelos import Empresa, Reclutador, Sector, Vacante
-from app.modelos import TamanoEmpresa as TamanoEmpresaTabla
+from app.modelos import Empresa, Reclutador, Vacante
 from app.paginacion import IdPequeno, PaginacionConsulta
 from app.servicios import archivos
 from app.servicios import compatibilidad as motor
 from app.servicios import vacantes as servicio_vacantes
 from app.servicios.candidato import municipio_de
+from app.servicios.empresas import empresa_propia_de, puesto_de, sector_de, tamano_de
 from app.validaciones import lanzar_si_hay_campos
 from app.validaciones_empresa import validar_empresa
 
@@ -35,44 +34,6 @@ _SIN_ACENTOS = "aeiouun"
 
 def _sin_acentos(texto: str) -> str:
     return texto.lower().translate(str.maketrans(_ACENTOS, _SIN_ACENTOS))
-
-
-def _tamano(db: Session, tamano_id: int) -> TamanoEmpresa:
-    fila = db.get(TamanoEmpresaTabla, tamano_id)
-    return TamanoEmpresa(id=fila.id, nombre=fila.nombre, rango=fila.rango)
-
-
-def _sector(db: Session, sector_id: int) -> Ref:
-    fila = db.get(Sector, sector_id)
-    return Ref(id=fila.id, nombre=fila.nombre)
-
-
-def _puesto_de(db: Session, usuario_id: int) -> str | None:
-    return db.scalar(select(Reclutador.puesto).where(Reclutador.usuario_id == usuario_id))
-
-
-def empresa_propia_de(db: Session, empresa: Empresa, puesto: str | None) -> EmpresaPropia:
-    """EmpresaPropia del contrato; `puesto` es el del reclutador que consulta (null: admin)."""
-    return EmpresaPropia(
-        id=empresa.id,
-        razon_social=empresa.razon_social,
-        nombre_comercial=empresa.nombre_comercial,
-        rfc=empresa.rfc,
-        sector=_sector(db, empresa.sector_id),
-        tamano_empresa=_tamano(db, empresa.tamano_empresa_id),
-        municipio=municipio_de(db, empresa.municipio_id),
-        direccion=empresa.direccion,
-        descripcion=empresa.descripcion,
-        sitio_web=empresa.sitio_web,
-        logo_url=empresa.logo_url,
-        practicas_inclusion=empresa.practicas_inclusion,
-        documento_url=empresa.documento_url,
-        estado=empresa.estado,
-        motivo_estado=empresa.motivo_estado,
-        validada_en=empresa.validada_en,
-        puesto=puesto,
-        datos_fiscales_editables=empresa.estado != "validada",
-    )
 
 
 def _empresa_del_reclutador(db: Session, actual: UsuarioActual) -> Empresa:
@@ -132,8 +93,8 @@ def directorio(
             id=empresa.id,
             nombre_comercial=empresa.nombre_comercial,
             logo_url=empresa.logo_url,
-            sector=_sector(db, empresa.sector_id),
-            tamano_empresa=_tamano(db, empresa.tamano_empresa_id),
+            sector=sector_de(db, empresa.sector_id),
+            tamano_empresa=tamano_de(db, empresa.tamano_empresa_id),
             municipio=municipio_de(db, empresa.municipio_id),
             vacantes_publicadas=vacantes,
         )
@@ -153,7 +114,7 @@ def directorio(
 )
 def mi_organizacion(actual: Reclutadora, db: Db) -> EmpresaPropia:
     empresa = _empresa_del_reclutador(db, actual)
-    return empresa_propia_de(db, empresa, _puesto_de(db, actual.id))
+    return empresa_propia_de(db, empresa, puesto_de(db, actual.id))
 
 
 def _rfc_duplicado() -> ApiError:
@@ -205,7 +166,7 @@ def actualizar_organizacion(datos: EmpresaEntrada, actual: Reclutadora, db: Db) 
     except IntegrityError as error:
         db.rollback()
         raise _rfc_duplicado() from error
-    return empresa_propia_de(db, empresa, _puesto_de(db, actual.id))
+    return empresa_propia_de(db, empresa, puesto_de(db, actual.id))
 
 
 @router.post(
@@ -339,8 +300,8 @@ def ficha(id: int, actual: SesionActual, db: Db) -> EmpresaPublica:
         id=empresa.id,
         nombre_comercial=empresa.nombre_comercial,
         logo_url=empresa.logo_url,
-        sector=_sector(db, empresa.sector_id),
-        tamano_empresa=_tamano(db, empresa.tamano_empresa_id),
+        sector=sector_de(db, empresa.sector_id),
+        tamano_empresa=tamano_de(db, empresa.tamano_empresa_id),
         municipio=municipio_de(db, empresa.municipio_id),
         descripcion=empresa.descripcion,
         sitio_web=empresa.sitio_web,
