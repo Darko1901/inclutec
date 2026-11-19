@@ -16,7 +16,7 @@ class UsuariosConApiHttpTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        config(['inclutec.mock' => false, 'inclutec.api_url' => 'http://localhost:8000/api/v1']);
+        config(['inclutec.mock' => false, 'inclutec.api_url' => 'http://127.0.0.1:9/api/v1']);
     }
 
     /** El ejemplo de UsuarioAdmin del contrato. */
@@ -65,7 +65,7 @@ class UsuariosConApiHttpTest extends TestCase
         $html = $this->conAdministrador(['*/admin/usuarios*' => Http::response(['items' => [$this->laura()], 'total' => 7, 'page' => 1, 'size' => 25])])
             ->get('/usuarios?q=laura&rol=reclutador&estado=activo&page=1')->assertOk()->getContent();
 
-        Http::assertSent(fn (Request $p) => str_starts_with($p->url(), 'http://localhost:8000/api/v1/admin/usuarios?') && $p->method() === 'GET'
+        Http::assertSent(fn (Request $p) => str_starts_with($p->url(), 'http://127.0.0.1:9/api/v1/admin/usuarios?') && $p->method() === 'GET'
             && $p->data() === ['q' => 'laura', 'rol' => 'reclutador', 'estado' => 'activo', 'page' => 1, 'size' => 25]
             && $p->hasHeader('Authorization', 'Bearer '.self::TOKEN));
         $this->assertSame(1, preg_match_all('/<h1[\s>]/', $html));
@@ -88,7 +88,7 @@ class UsuariosConApiHttpTest extends TestCase
     {
         $html = $this->conAdministrador(['*/admin/usuarios/2' => Http::response($this->detalleLaura())])->get('/usuarios/2')->assertOk()->getContent();
 
-        Http::assertSent(fn (Request $p) => $p->url() === 'http://localhost:8000/api/v1/admin/usuarios/2' && $p->method() === 'GET');
+        Http::assertSent(fn (Request $p) => $p->url() === 'http://127.0.0.1:9/api/v1/admin/usuarios/2' && $p->method() === 'GET');
         $this->assertStringContainsString('Coordinadora de Recursos Humanos', $html);
         $this->assertStringContainsString('Por privacidad, las necesidades de ajuste de los candidatos no se muestran en el panel.', $html);
         $this->assertMatchesRegularExpression('/<dt>Vacantes<\/dt><dd class="detalle-cifra">1<\/dd>/', $html);
@@ -102,7 +102,7 @@ class UsuariosConApiHttpTest extends TestCase
         $this->conAdministrador(['*/admin/usuarios' => Http::response($this->laura(['id' => 9, 'rol' => 'administrador', 'empresa' => null, 'nombre' => 'Isay', 'apellidos' => 'Guerra López']), 201)])
             ->post('/usuarios', $this->entrada())->assertRedirect('/usuarios/9');
 
-        Http::assertSent(fn (Request $p) => $p->url() === 'http://localhost:8000/api/v1/admin/usuarios' && $p->method() === 'POST'
+        Http::assertSent(fn (Request $p) => $p->url() === 'http://127.0.0.1:9/api/v1/admin/usuarios' && $p->method() === 'POST'
             && $p->data() === ['rol' => 'administrador', 'nombre' => 'Isay', 'apellidos' => 'Guerra López', 'correo' => 'isay@inclutec.mx', 'telefono' => null, 'empresa_id' => null, 'puesto' => null, 'contrasena' => 'Inclutec2026']);
     }
 
@@ -133,7 +133,7 @@ class UsuariosConApiHttpTest extends TestCase
         $this->conAdministrador(['*/admin/usuarios/2' => Http::response($this->laura())])
             ->put('/usuarios/2', $this->entrada(['rol' => 'reclutador', 'empresa_id' => '1', 'puesto' => 'RH', 'correo' => 'rh@tecnoqro.mx']))->assertRedirect('/usuarios/2');
 
-        Http::assertSent(fn (Request $p) => $p->url() === 'http://localhost:8000/api/v1/admin/usuarios/2' && $p->method() === 'PUT' && ! array_key_exists('contrasena', $p->data()));
+        Http::assertSent(fn (Request $p) => $p->url() === 'http://127.0.0.1:9/api/v1/admin/usuarios/2' && $p->method() === 'PUT' && ! array_key_exists('contrasena', $p->data()));
     }
 
     public function test_409_en_uso_al_cambiar_el_rol_se_marca_en_el_campo_rol(): void
@@ -148,7 +148,7 @@ class UsuariosConApiHttpTest extends TestCase
         $this->conAdministrador(['*/admin/usuarios/2/estado' => Http::response($this->laura(['estado' => 'suspendido']))])
             ->from('/usuarios')->patch('/usuarios/2/estado', ['estado' => 'suspendido', 'motivo' => 'Publicó información falsa en su perfil.'])->assertRedirect('/usuarios');
 
-        Http::assertSent(fn (Request $p) => $p->url() === 'http://localhost:8000/api/v1/admin/usuarios/2/estado' && $p->method() === 'PATCH'
+        Http::assertSent(fn (Request $p) => $p->url() === 'http://127.0.0.1:9/api/v1/admin/usuarios/2/estado' && $p->method() === 'PATCH'
             && $p->data() === ['estado' => 'suspendido', 'motivo' => 'Publicó información falsa en su perfil.']);
         $this->get('/usuarios')->assertSee($this->enAvisos('Se suspendió a Laura Hernández Ruiz.'), false);
     }

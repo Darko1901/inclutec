@@ -16,7 +16,7 @@ class DashboardConApiHttpTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        config(['inclutec.mock' => false, 'inclutec.api_url' => 'http://localhost:8000/api/v1']);
+        config(['inclutec.mock' => false, 'inclutec.api_url' => 'http://127.0.0.1:9/api/v1']);
         $this->travelTo('2026-10-03 12:00:00');
     }
 
@@ -65,7 +65,7 @@ class DashboardConApiHttpTest extends TestCase
         $this->assertInstanceOf(ApiHttp::class, app(ApiAdmin::class));
         $this->conAdministrador(['*/admin/estadisticas/resumen*' => Http::response($this->resumenDelContrato())])->get('/dashboard?periodo=7')->assertOk();
 
-        Http::assertSent(fn (Request $p) => str_starts_with($p->url(), 'http://localhost:8000/api/v1/admin/estadisticas/resumen')
+        Http::assertSent(fn (Request $p) => str_starts_with($p->url(), 'http://127.0.0.1:9/api/v1/admin/estadisticas/resumen')
             && $p->method() === 'GET'
             && $p->data() === ['desde' => '2026-09-26', 'hasta' => '2026-10-03']
             && $p->hasHeader('Authorization', 'Bearer '.self::TOKEN));
@@ -150,7 +150,7 @@ class DashboardConApiHttpTest extends TestCase
         $this->assertSame('application/pdf', $respuesta->headers->get('Content-Type'));
         $this->assertSame('attachment; filename="estadisticas_2026-09-26_2026-10-03.pdf"', $respuesta->headers->get('Content-Disposition'));
         $this->assertSame($pdf, $respuesta->getContent());
-        Http::assertSent(fn (Request $p) => str_starts_with($p->url(), 'http://localhost:8000/api/v1/admin/estadisticas/exportar')
+        Http::assertSent(fn (Request $p) => str_starts_with($p->url(), 'http://127.0.0.1:9/api/v1/admin/estadisticas/exportar')
             && $p->method() === 'GET'
             && $p->data() === ['formato' => 'pdf', 'desde' => '2026-09-26', 'hasta' => '2026-10-03']
             && $p->hasHeader('Authorization', 'Bearer '.self::TOKEN));

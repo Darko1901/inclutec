@@ -29,7 +29,7 @@ class ErroresDelApiTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        config(['inclutec.mock' => false, 'inclutec.api_url' => 'http://localhost:8000/api/v1']);
+        config(['inclutec.mock' => false, 'inclutec.api_url' => 'http://127.0.0.1:9/api/v1']);
     }
 
     private function administrador(): array
