@@ -129,3 +129,58 @@ class VacanteAdmin(Esquema):
     publicada_en: FechaHora | None
     postulados: int
     reportes_abiertos: int
+
+
+class CategoriaAdmin(Esquema):
+    id: int
+    nombre: str
+    descripcion: str | None
+    activo: bool
+    habilidades: int
+    vacantes: int
+
+
+class CategoriaEntrada(Esquema):
+    nombre: str | None = None
+    descripcion: str | None = None
+
+
+class HabilidadAdmin(Esquema):
+    id: int
+    nombre: str
+    categoria: Ref
+    activo: bool
+    candidatos: int
+    vacantes: int
+
+
+class HabilidadEntrada(Esquema):
+    nombre: str | None = None
+    categoria_id: int | None = None
+
+
+class Activacion(Esquema):
+    activo: bool | None = None
+
+
+class CatalogoAdmin(Esquema):
+    """Solo vienen los campos que aplican al tipo (se responde con exclude_unset)."""
+
+    id: int
+    nombre: str
+    activo: bool
+    en_uso: int
+    descripcion: str | None = None
+    categoria: str | None = None
+    orden: int | None = None
+    rango: str | None = None
+    aplica_a: str | None = None
+
+
+class CatalogoEntrada(Esquema):
+    nombre: str | None = None
+    descripcion: str | None = None
+    categoria: str | None = None
+    orden: int | None = None
+    rango: str | None = None
+    aplica_a: str | None = None
