@@ -117,3 +117,15 @@ class ResultadoEstadoEmpresa(Esquema):
     empresa: EmpresaPropia
     vacantes_suspendidas: int
     postulados_notificados: int
+
+
+class VacanteAdmin(Esquema):
+    id: int
+    titulo: str
+    empresa: EmpresaMini
+    categoria: Ref
+    modalidad: Ref
+    estado: Literal["borrador", "publicada", "pausada", "cerrada", "suspendida"]
+    publicada_en: FechaHora | None
+    postulados: int
+    reportes_abiertos: int

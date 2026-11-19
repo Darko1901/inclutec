@@ -10,6 +10,7 @@ from app.errores import instalar_manejadores
 from app.routers import (
     admin_empresas,
     admin_usuarios,
+    admin_vacantes,
     archivos,
     auth,
     candidatos,
@@ -89,6 +90,7 @@ def crear_app() -> FastAPI:
     app.include_router(reportes.router_admin, prefix=PREFIJO)
     app.include_router(admin_usuarios.router, prefix=PREFIJO)
     app.include_router(admin_empresas.router, prefix=PREFIJO)
+    app.include_router(admin_vacantes.router, prefix=PREFIJO)
     # Los archivos se sirven fuera de /api/v1 (por ejemplo /archivos/fotos/candidato-3.jpg).
     app.include_router(archivos.router)
     return app
