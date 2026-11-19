@@ -262,7 +262,9 @@ class TestDetalleYSeguimiento:
         )
         assert d["objeto_estado"] == "publicada"
         assert d["historial"][0]["estado_nuevo"] == "abierto"
-        assert d["historial"][0]["usuario"] == {"id": 4, "nombre": "Jorge"}
+        # Como en el ejemplo del contrato: el alta va sin usuario (el reportante ya viene aparte).
+        assert d["historial"][0]["usuario"] is None
+        assert d["reporte"]["reportante"]["id"] == 4
         assert [p["estado"] for p in d["reportes_previos"]] == ["abierto"]
         assert set(d["reportes_previos"][0]) == {"id", "motivo", "estado", "creado_en"}
 
@@ -298,6 +300,11 @@ class TestDetalleYSeguimiento:
             ("en_revision", "resuelto"),
         ]
         assert d["historial"][1]["comentario"] == "Lo reviso"
+        assert [h["usuario"] for h in d["historial"]] == [
+            None,
+            {"id": 1, "nombre": "Admin"},
+            {"id": 1, "nombre": "Admin"},
+        ]
         aviso = db.execute(
             text(
                 "SELECT mensaje, referencia_tipo, referencia_id FROM notificacion WHERE usuario_id = 4 AND tipo = 'reporte_resuelto'"
