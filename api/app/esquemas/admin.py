@@ -2,7 +2,8 @@
 
 from typing import Literal
 
-from app.esquemas.comunes import Esquema, FechaHora
+from app.esquemas.comunes import Esquema, FechaHora, Ref
+from app.esquemas.empresa import EmpresaPropia
 
 Rol = Literal["candidato", "reclutador", "administrador"]
 EstadoUsuario = Literal["activo", "suspendido", "eliminado"]
@@ -58,3 +59,61 @@ class UsuarioAdminEntrada(Esquema):
 class CambioEstado(Esquema):
     estado: str | None = None
     motivo: str | None = None
+
+
+EstadoEmpresa = Literal["pendiente", "validada", "rechazada", "suspendida"]
+
+
+class EmpresaAdmin(Esquema):
+    id: int
+    razon_social: str
+    nombre_comercial: str
+    rfc: str
+    sector: Ref
+    estado: EstadoEmpresa
+    reclutadores: int
+    vacantes_activas: int
+    documento: bool
+    creado_en: FechaHora
+
+
+class ReclutadorDeEmpresa(Esquema):
+    usuario_id: int
+    nombre: str
+    apellidos: str
+    correo: str
+    puesto: str
+    estado: EstadoUsuario
+
+
+class EmpresaAdminDetalle(Esquema):
+    empresa: EmpresaPropia
+    reclutadores: list[ReclutadorDeEmpresa]
+    rfc_duplicado: bool
+    reportes: int
+
+
+class EmpresaAdminEntrada(Esquema):
+    """Se valida a mano para dar los mensajes del contrato."""
+
+    razon_social: str | None = None
+    nombre_comercial: str | None = None
+    rfc: str | None = None
+    sector_id: int | None = None
+    tamano_empresa_id: int | None = None
+    municipio_id: int | None = None
+    direccion: str | None = None
+    descripcion: str | None = None
+    sitio_web: str | None = None
+    practicas_inclusion: str | None = None
+
+
+class Validacion(Esquema):
+    decision: str | None = None
+    motivo: str | None = None
+
+
+class ResultadoEstadoEmpresa(Esquema):
+    empresa: EmpresaPropia
+    vacantes_suspendidas: int
+    postulados_notificados: int
