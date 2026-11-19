@@ -14,7 +14,7 @@ class CambiarContrasenaConApiHttpTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        config(['inclutec.mock' => false, 'inclutec.api_url' => 'http://localhost:8000/api/v1']);
+        config(['inclutec.mock' => false, 'inclutec.api_url' => 'http://127.0.0.1:9/api/v1']);
     }
 
     private function conAdministrador(array $respuestas)
@@ -33,7 +33,7 @@ class CambiarContrasenaConApiHttpTest extends TestCase
     {
         $this->conAdministrador(['*/auth/password' => Http::response('', 204)])->from('/perfil')->put('/perfil', $this->datos())->assertRedirect('/perfil');
 
-        Http::assertSent(fn (Request $p) => $p->url() === 'http://localhost:8000/api/v1/auth/password'
+        Http::assertSent(fn (Request $p) => $p->url() === 'http://127.0.0.1:9/api/v1/auth/password'
             && $p->method() === 'PUT'
             && $p->data() === ['contrasena_actual' => 'Inclutec2026', 'contrasena_nueva' => 'NuevaClave2026']
             && $p->hasHeader('Authorization', 'Bearer '.self::TOKEN));

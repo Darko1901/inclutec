@@ -17,7 +17,7 @@ class InicioSesionConApiHttpTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        config(['inclutec.mock' => false, 'inclutec.api_url' => 'http://localhost:8000/api/v1']);
+        config(['inclutec.mock' => false, 'inclutec.api_url' => 'http://127.0.0.1:9/api/v1']);
     }
 
     private function sesion(string $rol, string $nombre = 'Admin'): array
@@ -53,7 +53,7 @@ class InicioSesionConApiHttpTest extends TestCase
         $this->entrar()->assertRedirect('/dashboard');
         $this->assertSame(self::TOKEN, session(ApiHttp::SESION_TOKEN));
 
-        Http::assertSent(fn (Request $p) => $p->url() === 'http://localhost:8000/api/v1/auth/login'
+        Http::assertSent(fn (Request $p) => $p->url() === 'http://127.0.0.1:9/api/v1/auth/login'
             && $p->method() === 'POST'
             && $p->data() === ['correo' => 'admin@inclutec.mx', 'contrasena' => 'Inclutec2026']
             && $p->hasHeader('Accept', 'application/json')

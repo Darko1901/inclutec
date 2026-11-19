@@ -16,7 +16,7 @@ class CatalogosConApiHttpTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        config(['inclutec.mock' => false, 'inclutec.api_url' => 'http://localhost:8000/api/v1']);
+        config(['inclutec.mock' => false, 'inclutec.api_url' => 'http://127.0.0.1:9/api/v1']);
     }
 
     /** El ejemplo de CategoriaAdmin del contrato. */
@@ -64,7 +64,7 @@ class CatalogosConApiHttpTest extends TestCase
             '*/admin/habilidades*' => Http::response($this->paginaHabilidades([], 15)),
         ])->get('/habilidades?q=tecno')->assertOk()->getContent();
 
-        Http::assertSent(fn (Request $p) => str_starts_with($p->url(), 'http://localhost:8000/api/v1/admin/categorias') && $p->method() === 'GET' && $p->data() === ['q' => 'tecno'] && $p->hasHeader('Authorization', 'Bearer '.self::TOKEN));
+        Http::assertSent(fn (Request $p) => str_starts_with($p->url(), 'http://127.0.0.1:9/api/v1/admin/categorias') && $p->method() === 'GET' && $p->data() === ['q' => 'tecno'] && $p->hasHeader('Authorization', 'Bearer '.self::TOKEN));
         $this->assertSame(1, preg_match_all('/<h1[\s>]/', $html));
         $this->assertStringContainsString('Tecnologías de la información', $html);
         $this->assertStringContainsString('5 habilidades · 1 vacante', $html);
@@ -88,32 +88,32 @@ class CatalogosConApiHttpTest extends TestCase
         $this->conAdministrador(['*/admin/categorias' => Http::response($this->categoria(['id' => 6, 'nombre' => 'Salud y bienestar', 'habilidades' => 0, 'vacantes' => 0]), 201)])
             ->post('/catalogo/categorias', ['nombre' => 'Salud y bienestar', 'descripcion' => 'Atención y apoyo en servicios de salud'])->assertRedirect();
 
-        Http::assertSent(fn (Request $p) => $p->url() === 'http://localhost:8000/api/v1/admin/categorias' && $p->method() === 'POST' && $p->data() === ['nombre' => 'Salud y bienestar', 'descripcion' => 'Atención y apoyo en servicios de salud']);
+        Http::assertSent(fn (Request $p) => $p->url() === 'http://127.0.0.1:9/api/v1/admin/categorias' && $p->method() === 'POST' && $p->data() === ['nombre' => 'Salud y bienestar', 'descripcion' => 'Atención y apoyo en servicios de salud']);
     }
 
     public function test_crear_y_editar_una_habilidad_envian_nombre_y_categoria(): void
     {
         $this->conAdministrador(['*/admin/habilidades*' => Http::response($this->habilidad(['id' => 16, 'nombre' => 'Power BI']), 201)])
             ->post('/catalogo/habilidades', ['nombre' => 'Power BI', 'categoria_id' => '1'])->assertRedirect();
-        Http::assertSent(fn (Request $p) => $p->url() === 'http://localhost:8000/api/v1/admin/habilidades' && $p->method() === 'POST' && $p->data() === ['nombre' => 'Power BI', 'categoria_id' => 1]);
+        Http::assertSent(fn (Request $p) => $p->url() === 'http://127.0.0.1:9/api/v1/admin/habilidades' && $p->method() === 'POST' && $p->data() === ['nombre' => 'Power BI', 'categoria_id' => 1]);
 
         $this->conAdministrador(['*/admin/habilidades/3' => Http::response($this->habilidad())])->put('/catalogo/habilidades/3', ['nombre' => 'SQL', 'categoria_id' => '1'])->assertRedirect();
-        Http::assertSent(fn (Request $p) => $p->url() === 'http://localhost:8000/api/v1/admin/habilidades/3' && $p->method() === 'PUT');
+        Http::assertSent(fn (Request $p) => $p->url() === 'http://127.0.0.1:9/api/v1/admin/habilidades/3' && $p->method() === 'PUT');
     }
 
     public function test_activar_y_desactivar_envian_patch_con_activo(): void
     {
         $this->conAdministrador(['*/admin/categorias/1' => Http::response($this->categoria(['activo' => false]))])->patch('/catalogo/categorias/1/activo', ['activo' => '0'])->assertRedirect();
-        Http::assertSent(fn (Request $p) => $p->url() === 'http://localhost:8000/api/v1/admin/categorias/1' && $p->method() === 'PATCH' && $p->data() === ['activo' => false]);
+        Http::assertSent(fn (Request $p) => $p->url() === 'http://127.0.0.1:9/api/v1/admin/categorias/1' && $p->method() === 'PATCH' && $p->data() === ['activo' => false]);
 
         $this->conAdministrador(['*/admin/habilidades/3' => Http::response($this->habilidad())])->patch('/catalogo/habilidades/3/activo', ['activo' => '1'])->assertRedirect();
-        Http::assertSent(fn (Request $p) => $p->url() === 'http://localhost:8000/api/v1/admin/habilidades/3' && $p->method() === 'PATCH' && $p->data() === ['activo' => true]);
+        Http::assertSent(fn (Request $p) => $p->url() === 'http://127.0.0.1:9/api/v1/admin/habilidades/3' && $p->method() === 'PATCH' && $p->data() === ['activo' => true]);
     }
 
     public function test_eliminar_envia_delete_y_el_204_no_trae_cuerpo(): void
     {
         $this->conAdministrador(['*/admin/categorias/6' => Http::response('', 204)])->delete('/catalogo/categorias/6', ['nombre' => 'Salud y bienestar'])->assertRedirect();
-        Http::assertSent(fn (Request $p) => $p->url() === 'http://localhost:8000/api/v1/admin/categorias/6' && $p->method() === 'DELETE');
+        Http::assertSent(fn (Request $p) => $p->url() === 'http://127.0.0.1:9/api/v1/admin/categorias/6' && $p->method() === 'DELETE');
 
         $this->get('/habilidades')->assertSee($this->enAvisos('Se eliminó «Salud y bienestar».'), false);
     }
@@ -125,7 +125,7 @@ class CatalogosConApiHttpTest extends TestCase
         $html = $this->conAdministrador(['*/admin/catalogos/ajustes' => Http::response([$this->ajuste(), $this->ajuste(['id' => 12, 'nombre' => 'Horario flexible', 'categoria' => 'general', 'descripcion' => 'Posibilidad de ajustar horarios de entrada y salida', 'en_uso' => 3])])])
             ->get('/catalogos?tipo=ajustes')->assertOk()->getContent();
 
-        Http::assertSent(fn (Request $p) => $p->url() === 'http://localhost:8000/api/v1/admin/catalogos/ajustes' && $p->method() === 'GET' && $p->hasHeader('Authorization', 'Bearer '.self::TOKEN));
+        Http::assertSent(fn (Request $p) => $p->url() === 'http://127.0.0.1:9/api/v1/admin/catalogos/ajustes' && $p->method() === 'GET' && $p->hasHeader('Authorization', 'Bearer '.self::TOKEN));
         $this->assertSame(1, preg_match_all('/<h1[\s>]/', $html));
         $this->assertMatchesRegularExpression('/<h3 id="grupo-auditiva".*?Intérprete de Lengua de Señas Mexicana.*?<h3 id="grupo-general".*?Horario flexible.*?3 registros/s', $html);
         $this->assertStringContainsString('Sin uso', $html);
@@ -136,7 +136,7 @@ class CatalogosConApiHttpTest extends TestCase
         foreach (['modalidades', 'jornadas', 'tipos-contrato', 'niveles-educativos', 'sectores', 'tamanos-empresa', 'motivos-reporte'] as $tipo) {
             $this->conAdministrador(["*/admin/catalogos/{$tipo}" => Http::response([['id' => 1, 'nombre' => 'Uno', 'activo' => true, 'en_uso' => 1, 'orden' => 1, 'rango' => '1 a 10', 'aplica_a' => 'todos']])])
                 ->get("/catalogos?tipo={$tipo}")->assertOk();
-            Http::assertSent(fn (Request $p) => $p->url() === "http://localhost:8000/api/v1/admin/catalogos/{$tipo}");
+            Http::assertSent(fn (Request $p) => $p->url() === "http://127.0.0.1:9/api/v1/admin/catalogos/{$tipo}");
         }
     }
 
@@ -145,7 +145,7 @@ class CatalogosConApiHttpTest extends TestCase
         $this->conAdministrador(['*/admin/catalogos/ajustes' => Http::response($this->ajuste(['id' => 14]), 201)])
             ->post('/catalogo/ajustes', ['nombre' => 'Lector de pantalla instalado', 'descripcion' => 'Equipos con NVDA o JAWS ya instalados', 'categoria' => 'visual'])->assertRedirect();
 
-        Http::assertSent(fn (Request $p) => $p->url() === 'http://localhost:8000/api/v1/admin/catalogos/ajustes' && $p->method() === 'POST'
+        Http::assertSent(fn (Request $p) => $p->url() === 'http://127.0.0.1:9/api/v1/admin/catalogos/ajustes' && $p->method() === 'POST'
             && $p->data() === ['nombre' => 'Lector de pantalla instalado', 'categoria' => 'visual', 'descripcion' => 'Equipos con NVDA o JAWS ya instalados']);
     }
 
@@ -157,7 +157,7 @@ class CatalogosConApiHttpTest extends TestCase
 
         $this->conAdministrador(['*/admin/catalogos/tamanos-empresa/2' => Http::response(['id' => 2, 'nombre' => 'Pequeña', 'activo' => true, 'en_uso' => 1, 'rango' => '11 a 50 trabajadores'])])
             ->put('/catalogo/tamanos-empresa/2', ['nombre' => 'Pequeña', 'rango' => '11 a 50 trabajadores']);
-        Http::assertSent(fn (Request $p) => $p->method() === 'PUT' && $p->url() === 'http://localhost:8000/api/v1/admin/catalogos/tamanos-empresa/2' && $p->data() === ['nombre' => 'Pequeña', 'rango' => '11 a 50 trabajadores']);
+        Http::assertSent(fn (Request $p) => $p->method() === 'PUT' && $p->url() === 'http://127.0.0.1:9/api/v1/admin/catalogos/tamanos-empresa/2' && $p->data() === ['nombre' => 'Pequeña', 'rango' => '11 a 50 trabajadores']);
 
         $this->conAdministrador(['*/admin/catalogos/motivos-reporte' => Http::response(['id' => 7, 'nombre' => 'Acoso', 'activo' => true, 'en_uso' => 0, 'aplica_a' => 'candidato'], 201)])
             ->post('/catalogo/motivos-reporte', ['nombre' => 'Acoso', 'aplica_a' => 'candidato']);
@@ -168,10 +168,10 @@ class CatalogosConApiHttpTest extends TestCase
     {
         $this->conAdministrador(['*/admin/catalogos/jornadas/2' => Http::response(['id' => 2, 'nombre' => 'Medio tiempo', 'activo' => false, 'en_uso' => 2])])
             ->patch('/catalogo/jornadas/2/activo', ['activo' => '0'])->assertRedirect();
-        Http::assertSent(fn (Request $p) => $p->url() === 'http://localhost:8000/api/v1/admin/catalogos/jornadas/2' && $p->method() === 'PATCH' && $p->data() === ['activo' => false]);
+        Http::assertSent(fn (Request $p) => $p->url() === 'http://127.0.0.1:9/api/v1/admin/catalogos/jornadas/2' && $p->method() === 'PATCH' && $p->data() === ['activo' => false]);
 
         $this->conAdministrador(['*/admin/catalogos/jornadas/2' => Http::response('', 204)])->delete('/catalogo/jornadas/2', ['nombre' => 'Medio tiempo'])->assertRedirect();
-        Http::assertSent(fn (Request $p) => $p->method() === 'DELETE' && $p->url() === 'http://localhost:8000/api/v1/admin/catalogos/jornadas/2');
+        Http::assertSent(fn (Request $p) => $p->method() === 'DELETE' && $p->url() === 'http://127.0.0.1:9/api/v1/admin/catalogos/jornadas/2');
     }
 
     // --- Errores del contrato ---

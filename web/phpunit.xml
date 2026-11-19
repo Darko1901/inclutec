@@ -25,7 +25,8 @@
         <env name="CACHE_STORE" value="array"/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="INCLUTEC_API_MOCK" value="true"/>
-        <env name="INCLUTEC_API_URL" value="http://localhost:8000/api/v1"/>
+        <!-- Un puerto donde nunca hay nada: si tienes el API corriendo en el 8000, las pruebas no lo tocan. -->
+        <env name="INCLUTEC_API_URL" value="http://127.0.0.1:9/api/v1"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="PULSE_ENABLED" value="false"/>

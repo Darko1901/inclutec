@@ -16,7 +16,7 @@ class ReportesConApiHttpTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        config(['inclutec.mock' => false, 'inclutec.api_url' => 'http://localhost:8000/api/v1']);
+        config(['inclutec.mock' => false, 'inclutec.api_url' => 'http://127.0.0.1:9/api/v1']);
     }
 
     /** El ejemplo de ReporteAdmin del contrato. */
@@ -66,7 +66,7 @@ class ReportesConApiHttpTest extends TestCase
         $html = $this->conAdministrador(['*/admin/reportes*' => Http::response($this->pagina([$this->fila()], 7))] + $this->motivos())
             ->get('/reportes?estado=abierto&tipo=vacante&motivo_reporte_id=2&orden=recientes&page=1')->assertOk()->getContent();
 
-        Http::assertSent(fn (Request $p) => str_starts_with($p->url(), 'http://localhost:8000/api/v1/admin/reportes?') && $p->method() === 'GET'
+        Http::assertSent(fn (Request $p) => str_starts_with($p->url(), 'http://127.0.0.1:9/api/v1/admin/reportes?') && $p->method() === 'GET'
             && $p->data() === ['estado' => 'abierto', 'tipo' => 'vacante', 'motivo_reporte_id' => 2, 'orden' => 'recientes', 'page' => 1, 'size' => 25]
             && $p->hasHeader('Authorization', 'Bearer '.self::TOKEN));
         foreach (['en_revision', 'resuelto', 'descartado'] as $estado) {
@@ -99,7 +99,7 @@ class ReportesConApiHttpTest extends TestCase
         ]);
         $html = $this->conAdministrador(['*/admin/reportes/1' => Http::response($detalle)])->get('/reportes/1')->assertOk()->getContent();
 
-        Http::assertSent(fn (Request $p) => $p->url() === 'http://localhost:8000/api/v1/admin/reportes/1' && $p->method() === 'GET');
+        Http::assertSent(fn (Request $p) => $p->url() === 'http://127.0.0.1:9/api/v1/admin/reportes/1' && $p->method() === 'GET');
         $this->assertStringContainsString('El salario publicado no coincide con lo que me dijeron por teléfono.', $html);
         $this->assertStringContainsString('Reportes anteriores contra este elemento: 1', $html);
         $this->assertMatchesRegularExpression('/<a href="[^"]*\/reportes\/9">#9<\/a>/', $html);
@@ -129,7 +129,7 @@ class ReportesConApiHttpTest extends TestCase
     {
         $this->conAdministrador(['*/admin/reportes/1' => Http::response($this->detalle(['estado' => 'en_revision']))])->patch('/reportes/1', ['estado' => 'en_revision'])->assertRedirect('/reportes/1');
 
-        Http::assertSent(fn (Request $p) => $p->url() === 'http://localhost:8000/api/v1/admin/reportes/1' && $p->method() === 'PATCH'
+        Http::assertSent(fn (Request $p) => $p->url() === 'http://127.0.0.1:9/api/v1/admin/reportes/1' && $p->method() === 'PATCH'
             && $p->data() === ['estado' => 'en_revision', 'comentario' => null, 'resolucion' => null, 'accion' => null]);
         $this->get('/reportes/1')->assertSee($this->enAvisos('El reporte #1 quedó en revisión.'), false);
     }
@@ -172,7 +172,7 @@ class ReportesConApiHttpTest extends TestCase
             '*/admin/vacantes/5/estado' => Http::response(['id' => 5, 'titulo' => 'Ejecutivo de atención telefónica'] + ['estado' => 'suspendida']),
         ])->patch('/reportes/1/suspension', ['motivo' => 'Solicita pagos a los candidatos.'])->assertRedirect('/reportes/1');
 
-        Http::assertSent(fn (Request $p) => $p->url() === 'http://localhost:8000/api/v1/admin/vacantes/5/estado' && $p->method() === 'PATCH' && $p->data() === ['estado' => 'suspendida', 'motivo' => 'Solicita pagos a los candidatos.']);
+        Http::assertSent(fn (Request $p) => $p->url() === 'http://127.0.0.1:9/api/v1/admin/vacantes/5/estado' && $p->method() === 'PATCH' && $p->data() === ['estado' => 'suspendida', 'motivo' => 'Solicita pagos a los candidatos.']);
     }
 
     public function test_suspender_la_empresa_usa_el_endpoint_de_empresas_y_avisa_cuantas_vacantes(): void
@@ -183,7 +183,7 @@ class ReportesConApiHttpTest extends TestCase
             '*/admin/empresas/1/estado' => Http::response(['empresa' => $empresa, 'vacantes_suspendidas' => 1, 'postulados_notificados' => 1]),
         ])->patch('/reportes/3/suspension', ['motivo' => 'Varias vacantes reportadas como engañosas.'])->assertRedirect('/reportes/3');
 
-        Http::assertSent(fn (Request $p) => $p->url() === 'http://localhost:8000/api/v1/admin/empresas/1/estado' && $p->data() === ['estado' => 'suspendida', 'motivo' => 'Varias vacantes reportadas como engañosas.']);
+        Http::assertSent(fn (Request $p) => $p->url() === 'http://127.0.0.1:9/api/v1/admin/empresas/1/estado' && $p->data() === ['estado' => 'suspendida', 'motivo' => 'Varias vacantes reportadas como engañosas.']);
         $this->get('/reportes/3')->assertSee($this->enAvisos('Se suspendió a TecnoQro: 1 vacante suspendida y 1 persona postulada notificada.'), false);
     }
 
@@ -194,7 +194,7 @@ class ReportesConApiHttpTest extends TestCase
             '*/admin/usuarios/3/estado' => Http::response(['id' => 3, 'nombre' => 'Mariana', 'apellidos' => 'López García', 'estado' => 'suspendido']),
         ])->patch('/reportes/4/suspension', ['motivo' => 'Comentarios discriminatorios.'])->assertRedirect('/reportes/4');
 
-        Http::assertSent(fn (Request $p) => $p->url() === 'http://localhost:8000/api/v1/admin/usuarios/3/estado' && $p->method() === 'PATCH' && $p->data() === ['estado' => 'suspendido', 'motivo' => 'Comentarios discriminatorios.']);
+        Http::assertSent(fn (Request $p) => $p->url() === 'http://127.0.0.1:9/api/v1/admin/usuarios/3/estado' && $p->method() === 'PATCH' && $p->data() === ['estado' => 'suspendido', 'motivo' => 'Comentarios discriminatorios.']);
         $this->get('/reportes/4')->assertSee($this->enAvisos('Se suspendió a Mariana López García.'), false);
     }
 

@@ -16,7 +16,7 @@ class VacantesConApiHttpTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        config(['inclutec.mock' => false, 'inclutec.api_url' => 'http://localhost:8000/api/v1']);
+        config(['inclutec.mock' => false, 'inclutec.api_url' => 'http://127.0.0.1:9/api/v1']);
     }
 
     /** El ejemplo de VacanteAdmin del contrato. */
@@ -81,7 +81,7 @@ class VacantesConApiHttpTest extends TestCase
         $html = $this->conAdministrador(['*/admin/vacantes*' => Http::response($this->pagina([$this->fila(['reportes_abiertos' => 2])], 8))] + $this->filtros())
             ->get('/vacantes?q=soporte&empresa_id=1&estado=publicada&categoria_id=1&modalidad_id=3&con_reportes=1&page=1')->assertOk()->getContent();
 
-        Http::assertSent(fn (Request $p) => str_starts_with($p->url(), 'http://localhost:8000/api/v1/admin/vacantes?') && $p->method() === 'GET'
+        Http::assertSent(fn (Request $p) => str_starts_with($p->url(), 'http://127.0.0.1:9/api/v1/admin/vacantes?') && $p->method() === 'GET'
             && $p->data() === ['q' => 'soporte', 'empresa_id' => 1, 'estado' => 'publicada', 'categoria_id' => 1, 'modalidad_id' => 3, 'con_reportes' => true, 'page' => 1, 'size' => 25]
             && $p->hasHeader('Authorization', 'Bearer '.self::TOKEN));
         $this->assertSame(1, preg_match_all('/<h1[\s>]/', $html));
@@ -109,7 +109,7 @@ class VacantesConApiHttpTest extends TestCase
     {
         $html = $this->conAdministrador(['*/vacantes/1' => Http::response($this->detalle())])->get('/vacantes/1')->assertOk()->getContent();
 
-        Http::assertSent(fn (Request $p) => $p->url() === 'http://localhost:8000/api/v1/vacantes/1' && $p->method() === 'GET' && $p->hasHeader('Authorization', 'Bearer '.self::TOKEN));
+        Http::assertSent(fn (Request $p) => $p->url() === 'http://127.0.0.1:9/api/v1/vacantes/1' && $p->method() === 'GET' && $p->hasHeader('Authorization', 'Bearer '.self::TOKEN));
         $this->assertStringContainsString('$14,000 a $18,000 MXN', $html);
         $this->assertMatchesRegularExpression('/El lugar cuenta con.*?Acceso con rampa.*?La empresa puede ofrecer bajo solicitud.*?Horario flexible/s', $html);
         $this->assertStringContainsString('>Suspender</button>', $html);
@@ -129,7 +129,7 @@ class VacantesConApiHttpTest extends TestCase
         $this->conAdministrador(['*/admin/vacantes/1/estado' => Http::response($this->detalle(['estado' => 'suspendida', 'motivo_estado' => 'Solicita pagos a los candidatos.']))])
             ->patch('/vacantes/1/estado', ['estado' => 'suspendida', 'motivo' => 'Solicita pagos a los candidatos.'])->assertRedirect('/vacantes/1');
 
-        Http::assertSent(fn (Request $p) => $p->url() === 'http://localhost:8000/api/v1/admin/vacantes/1/estado' && $p->method() === 'PATCH'
+        Http::assertSent(fn (Request $p) => $p->url() === 'http://127.0.0.1:9/api/v1/admin/vacantes/1/estado' && $p->method() === 'PATCH'
             && $p->data() === ['estado' => 'suspendida', 'motivo' => 'Solicita pagos a los candidatos.']);
         $this->get('/vacantes/1')->assertSee($this->enAvisos('Se suspendió la vacante «Técnico de soporte de TI». Se avisará al reclutador y a las personas postuladas.'), false);
     }

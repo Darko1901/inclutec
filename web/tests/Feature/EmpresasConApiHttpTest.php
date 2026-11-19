@@ -16,7 +16,7 @@ class EmpresasConApiHttpTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        config(['inclutec.mock' => false, 'inclutec.api_url' => 'http://localhost:8000/api/v1']);
+        config(['inclutec.mock' => false, 'inclutec.api_url' => 'http://127.0.0.1:9/api/v1']);
     }
 
     /** El ejemplo de EmpresaPropia del contrato. */
@@ -78,7 +78,7 @@ class EmpresasConApiHttpTest extends TestCase
         $html = $this->conAdministrador(['*/admin/empresas*' => Http::response($this->pagina([$this->fila()], 4))])
             ->get('/empresas?estado=validada&q=tecno&page=1')->assertOk()->getContent();
 
-        Http::assertSent(fn (Request $p) => str_starts_with($p->url(), 'http://localhost:8000/api/v1/admin/empresas?') && $p->method() === 'GET'
+        Http::assertSent(fn (Request $p) => str_starts_with($p->url(), 'http://127.0.0.1:9/api/v1/admin/empresas?') && $p->method() === 'GET'
             && $p->data() === ['q' => 'tecno', 'estado' => 'validada', 'page' => 1, 'size' => 25] && $p->hasHeader('Authorization', 'Bearer '.self::TOKEN));
         foreach (['pendiente', 'rechazada', 'suspendida'] as $estado) {
             Http::assertSent(fn (Request $p) => str_contains($p->url(), '/admin/empresas?') && ($p->data()['estado'] ?? null) === $estado && $p->data()['size'] === 1 && $p->data()['q'] === 'tecno');
@@ -100,7 +100,7 @@ class EmpresasConApiHttpTest extends TestCase
     {
         $html = $this->conAdministrador(['*/admin/empresas/1' => Http::response($this->detalle())])->get('/empresas/1')->assertOk()->getContent();
 
-        Http::assertSent(fn (Request $p) => $p->url() === 'http://localhost:8000/api/v1/admin/empresas/1' && $p->method() === 'GET');
+        Http::assertSent(fn (Request $p) => $p->url() === 'http://127.0.0.1:9/api/v1/admin/empresas/1' && $p->method() === 'GET');
         $this->assertStringContainsString('Mediana (51 a 250 trabajadores)', $html);
         $this->assertStringContainsString('Laura Hernández Ruiz', $html);
         $this->assertSame(2, substr_count($html, 'data-verificacion="ok"'));
@@ -122,7 +122,7 @@ class EmpresasConApiHttpTest extends TestCase
             '*/archivos/documentos/empresa-1.pdf' => Http::response($pdf, 200, ['Content-Type' => 'application/pdf']),
         ])->get('/empresas/1/constancia')->assertOk();
 
-        Http::assertSent(fn (Request $p) => $p->url() === 'http://localhost:8000/archivos/documentos/empresa-1.pdf' && $p->method() === 'GET' && $p->hasHeader('Authorization', 'Bearer '.self::TOKEN));
+        Http::assertSent(fn (Request $p) => $p->url() === 'http://127.0.0.1:9/archivos/documentos/empresa-1.pdf' && $p->method() === 'GET' && $p->hasHeader('Authorization', 'Bearer '.self::TOKEN));
         $this->assertSame('application/pdf', $respuesta->headers->get('Content-Type'));
         $this->assertSame($pdf, $respuesta->getContent());
     }
@@ -131,7 +131,7 @@ class EmpresasConApiHttpTest extends TestCase
     {
         $this->conAdministrador(['*/admin/empresas' => Http::response($this->empresa(['id' => 9]), 201)])->post('/empresas', $this->entrada())->assertRedirect('/empresas/9');
 
-        Http::assertSent(fn (Request $p) => $p->url() === 'http://localhost:8000/api/v1/admin/empresas' && $p->method() === 'POST' && $p->data() === [
+        Http::assertSent(fn (Request $p) => $p->url() === 'http://127.0.0.1:9/api/v1/admin/empresas' && $p->method() === 'POST' && $p->data() === [
             'razon_social' => 'Tecnologías Querétaro S.A. de C.V.', 'nombre_comercial' => 'TecnoQro', 'rfc' => 'TQU150312AB1', 'sector_id' => 4, 'tamano_empresa_id' => 3,
             'municipio_id' => 3, 'direccion' => null, 'descripcion' => null, 'sitio_web' => null, 'practicas_inclusion' => null,
         ]);
@@ -151,7 +151,7 @@ class EmpresasConApiHttpTest extends TestCase
     {
         $this->conAdministrador(['*/admin/empresas/1' => Http::response($this->empresa())])->put('/empresas/1', $this->entrada())->assertRedirect('/empresas/1');
 
-        Http::assertSent(fn (Request $p) => $p->url() === 'http://localhost:8000/api/v1/admin/empresas/1' && $p->method() === 'PUT' && $p['rfc'] === 'TQU150312AB1');
+        Http::assertSent(fn (Request $p) => $p->url() === 'http://127.0.0.1:9/api/v1/admin/empresas/1' && $p->method() === 'PUT' && $p['rfc'] === 'TQU150312AB1');
     }
 
     public function test_409_rfc_duplicado_se_marca_en_el_campo_rfc(): void
@@ -173,7 +173,7 @@ class EmpresasConApiHttpTest extends TestCase
         $this->conAdministrador(['*/admin/empresas/4/validacion' => Http::response($this->empresa(['id' => 4, 'nombre_comercial' => 'Estudio Trazo']))])
             ->patch('/empresas/4/validacion', ['decision' => 'validada'])->assertRedirect('/empresas/4');
 
-        Http::assertSent(fn (Request $p) => $p->url() === 'http://localhost:8000/api/v1/admin/empresas/4/validacion' && $p->method() === 'PATCH' && $p->data() === ['decision' => 'validada', 'motivo' => null]);
+        Http::assertSent(fn (Request $p) => $p->url() === 'http://127.0.0.1:9/api/v1/admin/empresas/4/validacion' && $p->method() === 'PATCH' && $p->data() === ['decision' => 'validada', 'motivo' => null]);
         $this->get('/empresas/4')->assertSee($this->enAvisos('Se validó a Estudio Trazo. Ya puede publicar vacantes.'), false);
     }
 
@@ -205,7 +205,7 @@ class EmpresasConApiHttpTest extends TestCase
         $this->conAdministrador(['*/admin/empresas/1/estado' => Http::response(['empresa' => $this->empresa(['estado' => 'suspendida', 'motivo_estado' => 'Varias vacantes reportadas como engañosas.']), 'vacantes_suspendidas' => 1, 'postulados_notificados' => 1])])
             ->patch('/empresas/1/estado', ['estado' => 'suspendida', 'motivo' => 'Varias vacantes reportadas como engañosas.'])->assertRedirect('/empresas/1');
 
-        Http::assertSent(fn (Request $p) => $p->url() === 'http://localhost:8000/api/v1/admin/empresas/1/estado' && $p->method() === 'PATCH'
+        Http::assertSent(fn (Request $p) => $p->url() === 'http://127.0.0.1:9/api/v1/admin/empresas/1/estado' && $p->method() === 'PATCH'
             && $p->data() === ['estado' => 'suspendida', 'motivo' => 'Varias vacantes reportadas como engañosas.']);
         $this->get('/empresas/1')->assertSee($this->enAvisos('Se suspendió a TecnoQro: 1 vacante suspendida y 1 persona postulada notificada.'), false);
     }

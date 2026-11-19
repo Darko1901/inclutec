@@ -122,7 +122,7 @@ class ApiServiciosTest extends TestCase
 
     public function test_api_http_convierte_las_respuestas_de_error_del_contrato(): void
     {
-        config(['inclutec.mock' => false, 'inclutec.api_url' => 'http://localhost:8000/api/v1/']);
+        config(['inclutec.mock' => false, 'inclutec.api_url' => 'http://127.0.0.1:9/api/v1/']);
         Http::fake([
             '*/auth/login' => Http::response(
                 ['detail' => 'Revisa los datos marcados.', 'codigo' => 'validacion', 'campos' => ['telefono' => 'Debe tener 10 dígitos.']],
