@@ -8,6 +8,7 @@ from app.config import Configuracion, obtener_configuracion
 from app.db import fabrica_de_sesiones
 from app.errores import instalar_manejadores
 from app.routers import (
+    admin_usuarios,
     archivos,
     auth,
     candidatos,
@@ -85,6 +86,7 @@ def crear_app() -> FastAPI:
     app.include_router(notificaciones.router_dispositivos, prefix=PREFIJO)
     app.include_router(reportes.router, prefix=PREFIJO)
     app.include_router(reportes.router_admin, prefix=PREFIJO)
+    app.include_router(admin_usuarios.router, prefix=PREFIJO)
     # Los archivos se sirven fuera de /api/v1 (por ejemplo /archivos/fotos/candidato-3.jpg).
     app.include_router(archivos.router)
     return app
