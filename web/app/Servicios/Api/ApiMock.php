@@ -122,7 +122,7 @@ class ApiMock implements ApiAdmin
             foreach ($estado['usuarios'] as &$cuenta) {
                 if ($cuenta['usuario']['id'] === $usuario['id']) {
                     if ($cuenta['contrasena'] !== $contrasenaActual) {
-                        return new ApiError(400, 'contrasena_incorrecta', 'La contraseña actual no es correcta.');
+                        return new ApiError(400, 'contrasena_incorrecta', 'La contraseña actual no coincide.');
                     }
                     $cuenta['contrasena'] = $contrasenaNueva;
                 }

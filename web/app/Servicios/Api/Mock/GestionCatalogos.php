@@ -196,7 +196,7 @@ class GestionCatalogos
     public static function crearElemento(array &$estado, string $tipo, array $datos): array
     {
         self::exigirTipo($tipo);
-        $limpios = self::validarElemento($tipo, $datos);
+        $limpios = self::validarElemento($estado, $tipo, $datos, null);
         self::exigirNombreLibre($estado, $tipo, $limpios['nombre'], null, 'Ya existe un elemento con ese nombre en el catálogo.');
         $registro = ['id' => self::siguienteId($estado, $tipo), 'activo' => true] + $limpios;
         $estado['catalogos_admin'][$tipo][] = $registro;
@@ -214,7 +214,7 @@ class GestionCatalogos
     {
         self::exigirTipo($tipo);
         $indice = self::indice($estado, $tipo, $id, 'El elemento no existe.');
-        $limpios = self::validarElemento($tipo, $datos);
+        $limpios = self::validarElemento($estado, $tipo, $datos, $id);
         self::exigirNombreLibre($estado, $tipo, $limpios['nombre'], $id, 'Ya existe un elemento con ese nombre en el catálogo.');
         $estado['catalogos_admin'][$tipo][$indice] = $limpios + $estado['catalogos_admin'][$tipo][$indice];
         self::reconstruir($estado);
@@ -406,12 +406,14 @@ class GestionCatalogos
     }
 
     /**
-     * Valida un CatalogoEntrada según el tipo y devuelve solo los campos que ese tipo guarda.
+     * Valida un CatalogoEntrada según el tipo y devuelve solo los campos que ese tipo guarda. En niveles
+     * educativos el orden no se repite (la columna es UNIQUE en la base, igual que en el API).
      *
+     * @param  array<string, mixed>  $estado
      * @param  array<string, mixed>  $datos
      * @return array<string, mixed>
      */
-    private static function validarElemento(string $tipo, array $datos): array
+    private static function validarElemento(array $estado, string $tipo, array $datos, ?int $exceptoId): array
     {
         $nombre = self::texto($datos, 'nombre');
         $descripcion = self::texto($datos, 'descripcion');
@@ -434,6 +436,12 @@ class GestionCatalogos
         }
         if ($tipo === 'niveles-educativos' && $orden === null) {
             $campos['orden'] = 'Escribe el orden como un número entero.';
+        } elseif ($tipo === 'niveles-educativos') {
+            foreach ($estado['catalogos_admin'][$tipo] as $nivel) {
+                if ($nivel['orden'] === $orden && $nivel['id'] !== $exceptoId) {
+                    $campos['orden'] = 'Ya hay un nivel con ese orden.';
+                }
+            }
         }
         if ($tipo === 'tamanos-empresa' && ($rango === '' || mb_strlen($rango) > 40)) {
             $campos['rango'] = $rango === '' ? 'Escribe el rango de trabajadores.' : 'Debe tener máximo 40 caracteres.';

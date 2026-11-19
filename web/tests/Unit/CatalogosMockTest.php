@@ -158,6 +158,17 @@ class CatalogosMockTest extends TestCase
         $this->assertArrayNotHasKey('rango', $api->crearElementoCatalogo('jornadas', ['nombre' => 'Turno rotativo', 'rango' => 'x']));
     }
 
+    public function test_el_orden_de_un_nivel_educativo_no_se_repite(): void
+    {
+        $api = $this->api();
+
+        // La columna orden es UNIQUE en la base; el API responde lo mismo.
+        $this->assertSame(['orden' => 'Ya hay un nivel con ese orden.'], $this->error(fn () => $api->crearElementoCatalogo('niveles-educativos', ['nombre' => 'Maestría', 'orden' => 6]))->campos);
+        $doctorado = $api->crearElementoCatalogo('niveles-educativos', ['nombre' => 'Doctorado', 'orden' => 7]);
+        // Conservar su propio orden al editar sí se puede.
+        $this->assertSame(7, $api->editarElementoCatalogo('niveles-educativos', $doctorado['id'], ['nombre' => 'Doctorado (PhD)', 'orden' => 7])['orden']);
+    }
+
     public function test_un_error_no_deja_cambios_a_medias(): void
     {
         $api = $this->api();
