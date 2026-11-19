@@ -2,7 +2,7 @@
 
 Único componente que se conecta a la base de datos. Implementa el contrato de [`docs/api/contrato.md`](../docs/api/contrato.md) (versión 1.2): las rutas, los campos, los estados y los códigos de error se copian de ahí, y si algo no alcanza se cambia primero el contrato.
 
-**Estado:** pasos 1 a 4 de [la guía de la etapa 3](../docs/api/README.md). Ya responden 67 de los 101 endpoints del contrato (más la descarga de archivos): autenticación y cuenta, catálogos, perfil y CV del candidato, empresas, vacantes con el motor de compatibilidad, postulaciones, horarios y entrevistas, y notificaciones. Faltan los 34 de administración (paso 5).
+**Estado:** pasos 1 a 5 de [la guía de la etapa 3](../docs/api/README.md). Responden los 101 endpoints del contrato (más la descarga de archivos): autenticación y cuenta, catálogos, perfil y CV del candidato, empresas, vacantes con el motor de compatibilidad, postulaciones, horarios y entrevistas, notificaciones, reportes y todo el panel de administración (estadísticas con exportación a PDF y XLSX, usuarios, empresas, vacantes, reportes, categorías, habilidades y catálogos). Rutas, parámetros, cuerpos y respuestas se compararon contra `docs/api/openapi.yaml`.
 
 ## Qué trae la base
 
@@ -16,8 +16,9 @@
 | `app/seguridad.py` | bcrypt (cost 12 por omisión, mínimo 10) y JWT HS256 de 8 horas con `{"sub", "rol", "exp"}`. |
 | `app/dependencias.py` | `usuario_actual` (401 `no_autenticado`, 423 `cuenta_suspendida`) y `exigir_roles(...)` (403 `sin_permiso`). |
 | `app/esquemas/` | Cuerpos y respuestas. Las fechas-hora salen en UTC con `Z`; `Pagina[T]` es `{items, total, page, size}`. |
-| `app/routers/` | Un archivo por grupo del contrato (`auth`, `catalogos`, `candidatos`, `empresas`) y `archivos` para descargar fotos, logotipos y constancias. |
-| `app/servicios/` | Reglas que comparten varios endpoints: archivos, correo, recuperación de contraseña, completitud, perfil y CV, y límite de intentos de login. |
+| `app/routers/` | Un archivo por grupo del contrato (`auth`, `catalogos`, `candidatos`, `empresas`, `vacantes`, …, `admin_*` para el panel) y `archivos` para descargar fotos, logotipos y constancias. |
+| `app/servicios/` | Reglas que comparten varios endpoints: archivos, correo, recuperación de contraseña, completitud, perfil y CV, límite de intentos de login, reportes, bitácora y la gestión del panel. |
+| `app/servicios/estadisticas.py` | Indicadores y gráficas del panel, solo agregados; `exportar_estadisticas.py` arma el PDF (fpdf2) y el XLSX (openpyxl). |
 | `app/servicios/compatibilidad.py` | Motor de compatibilidad (H, A, M y F) con fracciones exactas; guarda y recalcula la tabla `compatibilidad`. |
 | `app/servicios/notificaciones.py` | Crea el aviso en la app y programa el push (Expo) y el correo según las preferencias; los manda en otro hilo y solo después del commit. |
 | `app/servicios/recordatorios.py` | Recordatorio 24 horas antes de cada entrevista; lo corre un ciclo que arranca con el API. |
@@ -104,3 +105,15 @@ Después se quitan las líneas `relationship(...)` y su import, y se conserva el
 - **Contraseña incorrecta antes que cuenta suspendida.** Una cuenta suspendida con contraseña mala recibe 401, no 423, para no revelar el estado de cuentas ajenas.
 - **Comparación bcrypt aun sin correo.** Cuando el correo no existe se compara contra un hash falso, para que el tiempo de respuesta no delate qué correos están registrados.
 - **Modelos sin relaciones.** El generador creaba herencia entre `usuario`, `candidato` y `reclutador` y relaciones ambiguas; se prefirieron modelos planos y consultas con JOIN.
+
+### Panel de administración
+
+- **Bitácora.** Cada acción del administrador sobre usuarios, empresas, vacantes y reportes (crear, editar, validar, rechazar, suspender, reactivar, atender) deja un renglón en `bitacora` con el valor anterior y el nuevo.
+- **Estados de usuario.** Se aplican las transiciones del contrato: `eliminado` es final (409 `transicion_invalida`), no se cambia al mismo estado y el administrador no se suspende a sí mismo (409 `estado_invalido`). El mock del panel permitía cualquier cambio; el contrato manda.
+- **Cambio de rol** solo si la cuenta aún no tiene postulaciones, vacantes ni observaciones (409 `en_uso`); se borra el perfil del rol anterior y se crea el del nuevo.
+- **Suspender una empresa** suspende sus vacantes publicadas y avisa a los postulados activos; al reactivarla, las vacantes siguen suspendidas hasta reactivarlas una por una (como el mock).
+- **«En uso»** cuenta todas las filas que apuntan al elemento (vacantes, candidatos, empresas, reportes…), no solo las vacantes, así que `DELETE` responde 409 `en_uso` en lugar de violar una llave foránea. Lo desactivado deja de ofrecerse en los catálogos públicos; lo ya guardado no cambia.
+- **Nombres duplicados** en categorías, habilidades y catálogos se comparan sin distinguir mayúsculas (409 `nombre_duplicado`); en niveles educativos tampoco se repite el `orden`.
+- **Estadísticas.** Las fechas del periodo son días de la Ciudad de México; por omisión, los últimos 30 días hasta hoy. Un periodo de más de 10 años se rechaza (422), para que la evolución mensual no crezca sin límite. Candidatos, empresas, vacantes, pendientes y brechas son el estado actual.
+- **Privacidad en `brecha_ajustes`.** Solo cuentan las necesidades de candidatos activos con consentimiento. Si 5 o más candidatos registraron necesidades, cada ajuste pedido por menos de 5 se suma en «Otros»; con menos (los datos de prueba) se muestran tal cual, como dice el contrato. El administrador nunca ve las necesidades de una persona.
+- **Exportación.** Mismas tablas y orden que el mock del panel. En el XLSX los textos siempre se guardan como texto (un nombre que empiece con `=` no se vuelve fórmula); en el PDF, lo que no cabe en Latin-1 se aproxima y las etiquetas largas se recortan.
