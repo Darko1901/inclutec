@@ -116,4 +116,15 @@ Después se quitan las líneas `relationship(...)` y su import, y se conserva el
 - **Nombres duplicados** en categorías, habilidades y catálogos se comparan sin distinguir mayúsculas (409 `nombre_duplicado`); en niveles educativos tampoco se repite el `orden`.
 - **Estadísticas.** Las fechas del periodo son días de la Ciudad de México; por omisión, los últimos 30 días hasta hoy. Un periodo de más de 10 años se rechaza (422), para que la evolución mensual no crezca sin límite. Candidatos, empresas, vacantes, pendientes y brechas son el estado actual.
 - **Privacidad en `brecha_ajustes`.** Solo cuentan las necesidades de candidatos activos con consentimiento. Si 5 o más candidatos registraron necesidades, cada ajuste pedido por menos de 5 se suma en «Otros»; con menos (los datos de prueba) se muestran tal cual, como dice el contrato. El administrador nunca ve las necesidades de una persona.
+- **Historial de un reporte.** `historial[].usuario` es el administrador que lo movió; el renglón de alta va con `usuario: null`, como en el ejemplo del contrato (quien reportó ya viene en `reporte.reportante`). El panel lo muestra como «Quien reportó».
 - **Exportación.** Mismas tablas y orden que el mock del panel. En el XLSX los textos siempre se guardan como texto (un nombre que empiece con `=` no se vuelve fórmula); en el PDF, lo que no cabe en Latin-1 se aproxima y las etiquetas largas se recortan.
+
+## Integración con la app y el panel (paso 6)
+
+Se compararon los servicios simulados de la app (`mobile/src/api/mock`) y del panel (`web/app/Servicios/Api/ApiMock.php`) contra este API, llamada por llamada y con los mismos datos de S002, y se recorrieron las 50 pantallas del panel con `INCLUTEC_API_MOCK=false`. Las diferencias que quedan son de datos: los dos mocks traen registros de ejemplo que S002 no tiene (más candidatos, postulaciones, reportes, logotipos y habilidades). Lo que se corrigió:
+
+- En el API: el renglón de alta del historial de un reporte (ver «Decisiones»).
+- En el mock del panel: el mensaje de `contrasena_incorrecta` («La contraseña actual no coincide.», como el contrato) y el orden repetido de un nivel educativo, que la base rechaza por ser `UNIQUE`.
+- En las pruebas del panel: las que simulan el API usaban `localhost:8000`; con el API corriendo, las peticiones no simuladas le llegaban de verdad y fallaban. Ahora usan `http://127.0.0.1:9`, donde nunca hay nada.
+
+Falta probar en el teléfono lo que no se puede desde Node: subir foto, logotipo y constancia (el `FormData` de React Native) y las notificaciones push.
