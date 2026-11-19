@@ -198,7 +198,11 @@ def detalle(db: Session, r: Reporte) -> ReporteAdminDetalle:
     )
     eventos = []
     for h in historial:
-        usuario = db.get(Usuario, h.usuario_id) if h.usuario_id is not None else None
+        # `usuario` es el administrador que movió el reporte. El renglón de alta (sin estado
+        # anterior) va con `usuario: null`, como en el ejemplo del contrato: quien reportó ya
+        # viene en `reporte.reportante`.
+        alta = h.estado_anterior is None
+        usuario = db.get(Usuario, h.usuario_id) if h.usuario_id is not None and not alta else None
         eventos.append(
             EventoReporte(
                 estado_anterior=h.estado_anterior,
