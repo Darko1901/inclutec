@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from app.config import Configuracion, obtener_configuracion
+from app.config import JWT_SECRET_DE_EJEMPLO, Configuracion, obtener_configuracion
 from app.db import fabrica_de_sesiones
 from app.errores import instalar_manejadores
 from app.routers import (
@@ -52,9 +52,11 @@ async def _ciclo_de_recordatorios(cada_segundos: int) -> None:
 @asynccontextmanager
 async def _vida(_: FastAPI):
     config = obtener_configuracion()
-    if config.jwt_secret == Configuracion.model_fields["jwt_secret"].default:
+    if Configuracion().jwt_secret == JWT_SECRET_DE_EJEMPLO:
         registro.warning(
-            "JWT_SECRET usa el valor de ejemplo: cámbialo en el .env (cadena larga y aleatoria)."
+            "JWT_SECRET usa el valor de ejemplo, que es público: los tokens se firman con una "
+            "clave aleatoria de esta computadora (api/.jwt_secreto). Para fijar la tuya, ponla "
+            "en el .env."
         )
     cada = config.recordatorios_cada_segundos
     tarea = asyncio.create_task(_ciclo_de_recordatorios(cada)) if cada > 0 else None

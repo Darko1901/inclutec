@@ -32,8 +32,9 @@ venv/
 .coverage
 htmlcov/
 
-# Archivos subidos en desarrollo
+# Archivos subidos en desarrollo y clave JWT local (ver api/app/config.py)
 /api/uploads/
+/api/.jwt_secreto
 
 # Editor y sistema
 .vscode/
