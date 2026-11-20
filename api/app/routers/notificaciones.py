@@ -2,6 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query, Response, status
 from sqlalchemy import delete, func, select, update
+from sqlalchemy.dialects.postgresql import insert as insertar
 
 from app.dependencias import Db, UsuarioActual, exigir_roles
 from app.errores import ApiError
@@ -59,20 +60,20 @@ def registrar_dispositivo(datos: Dispositivo, actual: Usuario, db: Db) -> Respon
         campos["plataforma"] = "La plataforma debe ser android o ios."
     lanzar_si_hay_campos(campos)
 
-    existente = db.scalar(
-        select(DispositivoTabla).where(DispositivoTabla.expo_push_token == datos.expo_push_token)
-    )
-    if existente is None:
-        db.add(
-            DispositivoTabla(
-                usuario_id=actual.id,
-                expo_push_token=datos.expo_push_token,
-                plataforma=datos.plataforma,
-            )
+    # Un solo INSERT … ON CONFLICT: si la app registra el mismo token dos veces a la vez (al
+    # iniciar sesión y al abrirse), la segunda reasigna en lugar de chocar con la llave única.
+    db.execute(
+        insertar(DispositivoTabla)
+        .values(
+            usuario_id=actual.id,
+            expo_push_token=datos.expo_push_token,
+            plataforma=datos.plataforma,
         )
-    else:
-        existente.usuario_id = actual.id
-        existente.plataforma = datos.plataforma
+        .on_conflict_do_update(
+            index_elements=["expo_push_token"],
+            set_={"usuario_id": actual.id, "plataforma": datos.plataforma},
+        )
+    )
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 

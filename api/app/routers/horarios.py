@@ -52,5 +52,5 @@ def disponibles(
 def eliminar(id: int, actual: Reclutadora, db: Db) -> Response:
     """Para un horario agendado se usa `PATCH /entrevistas/{id}` con estado «cancelada»."""
     empresa = empresa_del_reclutador(db, actual)
-    servicio.eliminar(db, servicio.horario_propio(db, empresa.id, id))
+    servicio.eliminar(db, servicio.horario_propio(db, empresa.id, id, bloquear=True))
     return Response(status_code=status.HTTP_204_NO_CONTENT)

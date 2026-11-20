@@ -18,6 +18,7 @@ from app.modelos import Entrevista, HorarioEntrevista, Postulacion, Vacante
 from app.paginacion import IdGrande
 from app.servicios import entrevistas as servicio_entrevistas
 from app.servicios import horarios as servicio
+from app.servicios import postulaciones as servicio_postulaciones
 from app.servicios.reclutador import empresa_del_reclutador
 from app.validaciones import lanzar_si_hay_campos
 
@@ -70,6 +71,11 @@ def registrar_resultado(
     vacante = db.get(Vacante, horario.vacante_id) if horario else None
     if entrevista is None or vacante is None or vacante.empresa_id != empresa.id:
         raise ApiError(404, "no_encontrado", "Esa entrevista no existe.")
+    # Se bloquea su postulación y se releen la entrevista y el horario: un doble toque (o el
+    # candidato cancelando a la vez) espera y decide con el estado ya actualizado.
+    servicio_postulaciones.bloquear(db, entrevista.postulacion_id)
+    db.refresh(entrevista)
+    db.refresh(horario)
 
     campos: dict[str, str] = {}
     if datos.estado not in RESULTADOS:
@@ -131,6 +137,8 @@ def cancelar_mi_entrevista(
     )
     if not propia:
         raise _no_encontrada()
+    servicio_postulaciones.bloquear(db, entrevista.postulacion_id)
+    db.refresh(entrevista)
 
     motivo = datos.motivo if datos else None
     if motivo is not None and len(motivo) > servicio.MAX_MOTIVO:
