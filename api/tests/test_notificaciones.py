@@ -456,6 +456,25 @@ class TestEntrega:
         assert entrega.correo == MARIANA
         assert entrega.referencia == {"tipo": "postulacion", "id": 1}
 
+    def test_una_cuenta_eliminada_ya_no_recibe_push_ni_correo(self, db: Session) -> None:
+        """Por ejemplo, el reporte que hizo antes de darse de baja y que se resuelve después."""
+        db.execute(
+            text(
+                "INSERT INTO dispositivo (usuario_id, expo_push_token, plataforma) VALUES (4, 'ExponentPushToken[j]', 'ios')"
+            )
+        )
+        db.execute(text("UPDATE usuario SET estado = 'eliminado' WHERE id = 4"))
+
+        servicio.crear(db, 4, "reporte_resuelto", "Título", "Mensaje")
+
+        assert "entregas" not in db.info
+        assert (
+            db.scalar(
+                text("SELECT count(*) FROM notificacion WHERE usuario_id = 4 AND titulo = 'Título'")
+            )
+            == 1
+        )
+
     def test_con_ambos_canales_apagados_solo_queda_el_aviso_en_la_app(self, db: Session) -> None:
         db.execute(
             text(

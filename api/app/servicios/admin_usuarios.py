@@ -9,6 +9,7 @@ from app.errores import ApiError
 from app.esquemas.admin import EmpresaMini, TotalesUsuario, UsuarioAdmin, UsuarioAdminDetalle
 from app.modelos import (
     Candidato,
+    Dispositivo,
     Empresa,
     Observacion,
     Postulacion,
@@ -19,6 +20,7 @@ from app.modelos import (
     Vacante,
 )
 from app.seguridad import hashear_contrasena
+from app.servicios.postulaciones import retirar_activas_de_candidato
 from app.validaciones import es_correo_valido, es_telefono_valido, existe, lanzar_si_hay_campos
 
 ROLES = ("candidato", "reclutador", "administrador")
@@ -298,5 +300,13 @@ def cambiar_estado(
     usuario.estado = nuevo
     usuario.motivo_estado = None if nuevo == "activo" else motivo
     usuario.actualizado_en = datetime.now(UTC)
+    if nuevo == "eliminado":
+        # Igual que la baja que hace el propio candidato (DELETE /candidatos/me): sus
+        # postulaciones en curso pasan a «retirada» (y su entrevista agendada se cancela), así
+        # ninguna empresa sigue moviendo el proceso de una cuenta dada de baja. Sus equipos dejan
+        # de recibir push. Los datos no se borran: el contrato pide nunca borrar físicamente.
+        if rol_de(db, usuario) == "candidato":
+            retirar_activas_de_candidato(db, usuario.id, administrador_id)
+        db.execute(delete(Dispositivo).where(Dispositivo.usuario_id == usuario.id))
     db.flush()
     return usuario

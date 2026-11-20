@@ -111,6 +111,10 @@ def crear(
 
     quiere_push, quiere_correo = _preferencia(db, usuario_id, tipo)
     usuario = db.get(Usuario, usuario_id)
+    if usuario is None or usuario.estado == "eliminado":
+        # Una cuenta dada de baja conserva el aviso en la base, pero ya no recibe push ni
+        # correo (por ejemplo, el reporte que hizo antes de irse y que se resuelve después).
+        return notificacion
     entrega = Entrega(
         tipo=tipo,
         titulo=titulo,
