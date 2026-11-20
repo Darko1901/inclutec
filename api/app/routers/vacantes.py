@@ -292,9 +292,21 @@ def detalle(id: int, actual: SesionActual, db: Db) -> VacanteDetalle:
     operation_id="get_vacantes_id_compatibilidad",
 )
 def desglose(id: int, actual: Candidata, db: Db) -> CompatibilidadDesglose:
-    """Se calcula al momento (y se guarda) para que nunca esté desactualizado."""
+    """Se calcula al momento (y se guarda) para que nunca esté desactualizado.
+
+    Misma visibilidad que el detalle: una vacante publicada de una empresa validada, o una a la
+    que ya se postuló. El desglose trae los requisitos: una vacante suspendida, pausada o
+    cerrada no debe asomarse por aquí.
+    """
     vacante = servicio.vacante_por_id(db, id)
-    if vacante is None or vacante.estado == "borrador":
+    if (
+        vacante is None
+        or vacante.estado == "borrador"
+        or not (
+            servicio.es_visible_para_candidato(db, vacante)
+            or servicio.postulacion_de(db, actual.id, vacante.id) is not None
+        )
+    ):
         raise servicio.no_encontrada()
     return servicio.desglose_de(db, vacante, actual.id)
 
