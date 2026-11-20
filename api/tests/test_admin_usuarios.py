@@ -384,6 +384,40 @@ class TestEstado:
     def test_el_mismo_estado_no_es_una_transicion(self, cliente: TestClient) -> None:
         assert self._estado(cliente, 4, "activo").status_code == 409
 
+    def test_dar_de_baja_a_un_candidato_retira_sus_postulaciones(
+        self, cliente: TestClient, db: Session
+    ) -> None:
+        """Igual que cuando él mismo se da de baja: ninguna empresa sigue con su proceso."""
+        db.execute(
+            text(
+                "INSERT INTO dispositivo (usuario_id, expo_push_token, plataforma) VALUES (3, 'ExponentPushToken[baja]', 'android')"
+            )
+        )
+        # S002: Mariana (3) está en «entrevista» en la vacante 1, con la entrevista agendada.
+
+        assert self._estado(cliente, 3, "eliminado", "Lo pidió por correo").status_code == 200
+
+        assert db.scalar(text("SELECT estado FROM postulacion WHERE id = 1")) == "retirada"
+        assert (
+            db.scalar(
+                text(
+                    "SELECT usuario_id FROM historial_postulacion WHERE postulacion_id = 1 AND estado_nuevo = 'retirada'"
+                )
+            )
+            == 1
+        )
+        assert db.scalar(text("SELECT estado FROM entrevista WHERE postulacion_id = 1")) == (
+            "cancelada"
+        )
+        assert db.scalar(text("SELECT count(*) FROM dispositivo WHERE usuario_id = 3")) == 0
+        # Sus datos no se borran: el contrato pide nunca borrar físicamente.
+        assert db.scalar(text("SELECT count(*) FROM candidato_habilidad WHERE candidato_id = 3"))
+
+    def test_suspender_no_toca_sus_postulaciones(self, cliente: TestClient, db: Session) -> None:
+        self._estado(cliente, 3, "suspendido", "Revisión")
+
+        assert db.scalar(text("SELECT estado FROM postulacion WHERE id = 1")) == "entrevista"
+
     def test_el_administrador_no_se_suspende_a_si_mismo(self, cliente: TestClient) -> None:
         respuesta = self._estado(cliente, 1, "suspendido", "Prueba")
 
