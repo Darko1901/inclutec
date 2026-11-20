@@ -338,7 +338,7 @@ export default function REC06Agenda({ route, navigation: tab }: Props) {
                 testID="ver-mas-dias"
               />
             </View>
-          ) : null
+          ) : undefined
         }
         refreshControl={
           <RefreshControl refreshing={refrescando} onRefresh={() => void refrescar()} />

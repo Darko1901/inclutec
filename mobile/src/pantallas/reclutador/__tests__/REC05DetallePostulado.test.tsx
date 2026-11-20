@@ -54,7 +54,7 @@ describe('REC-05 · Detalle del postulado', () => {
   beforeEach(() => {
     navegar.mockClear();
     volver.mockClear();
-    jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
+    jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
   });
   afterEach(() => jest.restoreAllMocks());
 

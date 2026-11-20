@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View, type ViewInstance } from 'react-native';
 
 import type { VacanteReclutador } from '../../../api';
 import { ChipEstado, Texto } from '../../../componentes';
@@ -17,7 +17,7 @@ interface Props {
   /** Abre los postulados (REC-04). */
   onPress: () => void;
   onMenu: () => void;
-  refMenu?: (nodo: View | null) => void;
+  refMenu?: (nodo: ViewInstance | null) => void;
 }
 
 const ocultar = { accessibilityElementsHidden: true, importantForAccessibility: 'no' } as const;
