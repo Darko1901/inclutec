@@ -1,6 +1,7 @@
 """Reglas de postulaciones: candidato (CU-07, CU-10, CU-11) y reclutador (CU-16, CU-17)."""
 
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.errores import ApiError
@@ -76,9 +77,11 @@ MAX_OBSERVACION = 1000
 def retirar_activas_de_candidato(db: Session, candidato_id: int, usuario_id: int) -> int:
     """Pasa a `retirada` las postulaciones en curso del candidato (baja de cuenta)."""
     activas = db.scalars(
-        select(Postulacion).where(
-            Postulacion.candidato_id == candidato_id, Postulacion.estado.in_(ESTADOS_ACTIVOS)
-        )
+        select(Postulacion)
+        .where(Postulacion.candidato_id == candidato_id, Postulacion.estado.in_(ESTADOS_ACTIVOS))
+        .order_by(Postulacion.id)
+        .with_for_update()
+        .execution_options(populate_existing=True)
     ).all()
     for postulacion in activas:
         servicio_entrevistas.retirar_postulacion(db, postulacion, usuario_id)
@@ -93,8 +96,28 @@ def no_encontrada() -> ApiError:
     return ApiError(404, "no_encontrado", "No encontramos esa postulación.")
 
 
+def postulacion_duplicada() -> ApiError:
+    return ApiError(409, "postulacion_duplicada", "Ya te postulaste a esta vacante.")
+
+
 def _id_valido(id_: int) -> bool:
     return 1 <= id_ <= 2**63 - 1
+
+
+def _obtener(db: Session, id_: int, bloquear: bool) -> Postulacion | None:
+    """`bloquear` toma la fila con SELECT … FOR UPDATE y la relee: quien cambia el estado de una
+    postulación (o de su entrevista) espera a que termine el otro y decide con el estado ya
+    actualizado. Así un doble toque no duplica el historial ni las notificaciones."""
+    if not _id_valido(id_):
+        return None
+    if bloquear:
+        return db.get(Postulacion, id_, with_for_update=True, populate_existing=True)
+    return db.get(Postulacion, id_)
+
+
+def bloquear(db: Session, postulacion_id: int) -> Postulacion:
+    """Bloquea la postulación (ver `_obtener`); para operaciones que llegan por su entrevista."""
+    return db.get(Postulacion, postulacion_id, with_for_update=True, populate_existing=True)
 
 
 def historial_de(db: Session, postulacion_id: int) -> list[EventoHistorial]:
@@ -118,9 +141,11 @@ def _vacante_mini(db: Session, vacante: Vacante) -> VacanteDePostulacion:
     )
 
 
-def postulacion_propia(db: Session, candidato_id: int, id_: int) -> Postulacion:
+def postulacion_propia(
+    db: Session, candidato_id: int, id_: int, *, bloquear: bool = False
+) -> Postulacion:
     """Una postulación ajena responde como si no existiera."""
-    postulacion = db.get(Postulacion, id_) if _id_valido(id_) else None
+    postulacion = _obtener(db, id_, bloquear)
     if postulacion is None or postulacion.candidato_id != candidato_id:
         raise no_encontrada()
     return postulacion
@@ -198,8 +223,14 @@ def crear(
         # Sin consentimiento vigente no hay necesidades que compartir.
         comparte_ajustes=compartir_ajustes and candidato.consentimiento_sensibles_en is not None,
     )
-    db.add(postulacion)
-    db.flush()
+    try:
+        # Dos «Postularme» casi simultáneos pasan los dos la revisión previa: el segundo choca
+        # con uq_postulacion y responde lo mismo que si ya existiera, no un 500.
+        with db.begin_nested():
+            db.add(postulacion)
+            db.flush()
+    except IntegrityError as error:
+        raise postulacion_duplicada() from error
     db.add(
         HistorialPostulacion(
             postulacion_id=postulacion.id,
@@ -237,9 +268,11 @@ def sin_permiso() -> ApiError:
     return ApiError(403, "sin_permiso", "Esta vacante o postulación no es de tu empresa.")
 
 
-def postulacion_de_mi_empresa(db: Session, empresa_id: int, id_: int) -> Postulacion:
+def postulacion_de_mi_empresa(
+    db: Session, empresa_id: int, id_: int, *, bloquear: bool = False
+) -> Postulacion:
     """Inexistente → 404; de una vacante de otra empresa → 403 (como dice el contrato)."""
-    postulacion = db.get(Postulacion, id_) if _id_valido(id_) else None
+    postulacion = _obtener(db, id_, bloquear)
     if postulacion is None:
         raise ApiError(404, "no_encontrado", "La postulación no existe.")
     vacante = db.get(Vacante, postulacion.vacante_id)

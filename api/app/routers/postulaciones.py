@@ -60,7 +60,7 @@ def postularme(datos: PostulacionEntrada, actual: Candidata, db: Db) -> Postulac
     if vacante is None or vacante.estado == "borrador":
         raise servicio_vacantes.no_encontrada()
     if servicio_vacantes.postulacion_de(db, actual.id, vacante.id) is not None:
-        raise ApiError(409, "postulacion_duplicada", "Ya te postulaste a esta vacante.")
+        raise servicio.postulacion_duplicada()
     if not servicio_vacantes.es_visible_para_candidato(db, vacante):
         raise ApiError(409, "vacante_no_disponible", "Esta vacante ya no está disponible.")
     faltantes = servicio.faltantes_para_postularse(db, actual.id)
@@ -131,7 +131,7 @@ def detalle(id: int, actual: Candidata, db: Db) -> PostulacionDetalle:
 )
 def retirar(id: int, actual: Candidata, db: Db) -> PostulacionDetalle:
     """Si tenía una entrevista agendada, se cancela y el horario vuelve a quedar libre."""
-    postulacion = servicio.postulacion_propia(db, actual.id, id)
+    postulacion = servicio.postulacion_propia(db, actual.id, id, bloquear=True)
     if postulacion.estado not in servicio.ESTADOS_ACTIVOS:
         raise ApiError(409, "transicion_invalida", "Esta postulación ya está finalizada.")
     servicio_entrevistas.retirar_postulacion(db, postulacion, actual.id)
@@ -148,7 +148,9 @@ def retirar(id: int, actual: Candidata, db: Db) -> PostulacionDetalle:
 )
 def agendar_entrevista(id: int, datos: ReservaEntrevista, actual: Candidata, db: Db) -> Entrevista:
     """Toma el horario con bloqueo; avisa al reclutador y confirma por correo a ambos."""
-    postulacion = servicio.postulacion_propia(db, actual.id, id)
+    # También se bloquea la postulación: dos reservas a la vez de la misma persona (en horarios
+    # distintos) dejarían dos entrevistas vigentes en una sola postulación.
+    postulacion = servicio.postulacion_propia(db, actual.id, id, bloquear=True)
     entrevista = servicio_horarios.reservar(db, postulacion, datos.horario_id)
     return servicio_entrevistas.vista_de(db, entrevista, para_candidato=True)
 
@@ -180,7 +182,7 @@ def cambiar_estado(
 ) -> ResultadoCambioEstado:
     """Registra el historial y notifica al candidato por app, push y correo."""
     empresa = empresa_del_reclutador(db, actual)
-    postulacion = servicio.postulacion_de_mi_empresa(db, empresa.id, id)
+    postulacion = servicio.postulacion_de_mi_empresa(db, empresa.id, id, bloquear=True)
     campos: dict[str, str] = {}
     if datos.estado not in ESTADOS_NUEVOS:
         campos["estado"] = "Elige el estado al que pasa la postulación."

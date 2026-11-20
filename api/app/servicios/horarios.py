@@ -60,9 +60,20 @@ def _id_valido(id_: int) -> bool:
     return 1 <= id_ <= 2**63 - 1
 
 
-def horario_propio(db: Session, empresa_id: int, id_: int) -> HorarioEntrevista:
-    """Un horario de otra empresa responde como si no existiera."""
-    horario = db.get(HorarioEntrevista, id_) if _id_valido(id_) else None
+def horario_propio(
+    db: Session, empresa_id: int, id_: int, *, bloquear: bool = False
+) -> HorarioEntrevista:
+    """Un horario de otra empresa responde como si no existiera.
+
+    `bloquear` lo toma con SELECT … FOR UPDATE: al eliminarlo, una reserva que llega al mismo
+    tiempo termina primero y el horario ya no está libre.
+    """
+    if not _id_valido(id_):
+        horario = None
+    elif bloquear:
+        horario = db.get(HorarioEntrevista, id_, with_for_update=True, populate_existing=True)
+    else:
+        horario = db.get(HorarioEntrevista, id_)
     vacante = db.get(Vacante, horario.vacante_id) if horario else None
     if horario is None or vacante is None or vacante.empresa_id != empresa_id:
         raise no_encontrado()
