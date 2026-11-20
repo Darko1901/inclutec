@@ -222,6 +222,18 @@ describe('vacantes mock · detalle y compatibilidad', () => {
     await expect(vacantes.compatibilidad(8)).rejects.toMatchObject({ status: 404 });
   });
 
+  it('una vacante que ya no ve tampoco tiene desglose, salvo que se haya postulado', async () => {
+    conSesion(MARIANA);
+    // Como en el API: el desglose trae los requisitos, así que sigue la visibilidad del detalle.
+    for (const vacante of obtenerEstado().vacantes.filter((v) => v.id === 1 || v.id === 5)) {
+      vacante.estado = 'suspendida';
+    }
+    // A la 5 no se postuló: ya no la ve. A la 1 sí: la sigue viendo.
+    await expect(vacantes.compatibilidad(5)).rejects.toMatchObject({ status: 404 });
+    await expect(vacantes.detalle(5)).rejects.toMatchObject({ status: 404 });
+    expect((await vacantes.compatibilidad(1)).puntaje).toBe(88);
+  });
+
   it('desglose de Mariana con la vacante 1, como el ejemplo del contrato', async () => {
     conSesion(MARIANA);
     const desglose = await vacantes.compatibilidad(1);

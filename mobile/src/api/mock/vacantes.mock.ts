@@ -228,7 +228,13 @@ export class VacantesMock implements VacantesServicio {
     return simular(() => {
       const candidato = candidatoDe(exigirSesion(['candidato']));
       const vacante = obtenerEstado().vacantes.find((v) => v.id === id);
+      // Misma visibilidad que el detalle (el desglose trae los requisitos): las publicadas y
+      // aquellas a las que ya se postuló; una suspendida, pausada o cerrada ajena, no.
+      const postulada = obtenerEstado().postulaciones.some(
+        (p) => p.candidato_id === candidato.usuario_id && p.vacante_id === id,
+      );
       if (!vacante || vacante.estado === 'borrador') throw noEncontrada();
+      if (!esVisibleParaCandidato(vacante) && !postulada) throw noEncontrada();
       return desgloseDeCompatibilidad(vacante, candidato);
     });
   }
