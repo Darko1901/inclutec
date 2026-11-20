@@ -149,7 +149,7 @@ describe('CAN-06 · Detalle de postulación y entrevista', () => {
     });
 
     it('«Abrir liga» abre la liga y «Copiar liga» la copia con aviso', async () => {
-      const abrirUrl = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
+      const abrirUrl = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
       await abrir(1);
 
       await fireEvent.press(boton('Abrir liga'));

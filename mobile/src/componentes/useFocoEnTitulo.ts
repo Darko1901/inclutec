@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { AccessibilityInfo, findNodeHandle, type Text } from 'react-native';
+import { AccessibilityInfo, findNodeHandle, type TextInstance } from 'react-native';
 
 const ESPERA_ANIMACION_MS = 350;
 
@@ -8,12 +8,12 @@ const ESPERA_ANIMACION_MS = 350;
  * termina la animación de apertura. Así, al abrir una ventana lo primero que se lee es su título.
  */
 export function useFocoEnTitulo() {
-  const referencia = useRef<Text>(null);
+  const referencia = useRef<TextInstance>(null);
 
   useEffect(() => {
     const espera = setTimeout(() => {
       const nodo = findNodeHandle(referencia.current);
-      if (nodo !== null) AccessibilityInfo.setAccessibilityFocus(nodo);
+      if (nodo != null) AccessibilityInfo.setAccessibilityFocus(nodo);
     }, ESPERA_ANIMACION_MS);
     return () => clearTimeout(espera);
   }, []);

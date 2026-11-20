@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import type { Ref } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, type ViewInstance } from 'react-native';
 
 import type { EventoHistorial } from '../../../api';
 import { ESTADOS, ResaltadoNotificacion, Texto } from '../../../componentes';
@@ -12,7 +12,7 @@ interface Props {
   historial: EventoHistorial[];
   /** Resalta el último paso («Desde tu notificación»); `refMarca` recibe el foco del lector. */
   destacarUltimo?: boolean;
-  refMarca?: Ref<View>;
+  refMarca?: Ref<ViewInstance>;
 }
 
 const ocultar = { accessibilityElementsHidden: true, importantForAccessibility: 'no' } as const;
