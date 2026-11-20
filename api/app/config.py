@@ -1,9 +1,16 @@
+import secrets
 from functools import lru_cache
 from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 RAIZ_API = Path(__file__).resolve().parent.parent
+
+#: La clave de ejemplo de `.env.example` (y el valor por omisión). Es pública: está en el
+#: repositorio, así que nunca se usa para firmar tokens.
+JWT_SECRET_DE_EJEMPLO = "cambia-esta-clave-por-una-cadena-larga-y-aleatoria"
+#: Clave aleatoria de esta instalación, creada la primera vez (fuera de Git).
+ARCHIVO_SECRETO_LOCAL = RAIZ_API / ".jwt_secreto"
 
 
 class Configuracion(BaseSettings):
@@ -15,7 +22,7 @@ class Configuracion(BaseSettings):
     test_database_url: str = (
         "postgresql+psycopg://inclutec:inclutec_dev@localhost:5432/inclutec_pruebas"
     )
-    jwt_secret: str = "cambia-esta-clave-por-una-cadena-larga-y-aleatoria"
+    jwt_secret: str = JWT_SECRET_DE_EJEMPLO
     jwt_horas: int = 8
     bcrypt_cost: int = 12
     archivos_dir: str = "uploads"
@@ -40,6 +47,29 @@ class Configuracion(BaseSettings):
     login_bloqueo_segundos: int = 15 * 60
 
 
+def secreto_local() -> str:
+    """Lee la clave aleatoria de esta instalación o la crea la primera vez.
+
+    Se guarda en un archivo para que sobreviva a los reinicios (y a `--reload`): con una clave
+    nueva en cada arranque, todas las sesiones se cerrarían cada vez.
+    """
+    try:
+        guardada = ARCHIVO_SECRETO_LOCAL.read_text(encoding="utf-8").strip()
+    except FileNotFoundError:
+        guardada = ""
+    if guardada:
+        return guardada
+    nueva = secrets.token_urlsafe(48)
+    ARCHIVO_SECRETO_LOCAL.write_text(nueva, encoding="utf-8")
+    return nueva
+
+
 @lru_cache
 def obtener_configuracion() -> Configuracion:
-    return Configuracion()
+    config = Configuracion()
+    if config.jwt_secret == JWT_SECRET_DE_EJEMPLO:
+        # Con la clave pública cualquiera en la misma red podría fabricarse un token de
+        # administrador (el API escucha en la red local para el teléfono). Se usa una clave
+        # aleatoria propia de esta computadora; main.py avisa al arrancar.
+        config.jwt_secret = secreto_local()
+    return config
