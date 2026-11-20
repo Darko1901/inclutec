@@ -423,6 +423,18 @@ class TestDesglose:
             == 403
         )
 
+    def test_una_vacante_que_ya_no_ve_tampoco_tiene_desglose(
+        self, cliente: TestClient, db: Session
+    ) -> None:
+        """Misma visibilidad que el detalle: el desglose trae los requisitos de la vacante."""
+        db.execute(text("UPDATE vacante SET estado = 'suspendida' WHERE id IN (1, 3)"))
+        mariana = _como(cliente, MARIANA)
+
+        # A la 3 no se postuló: ya no la ve. A la 1 sí: la sigue viendo, como en el detalle.
+        assert cliente.get(f"{VACANTES}/3/compatibilidad", headers=mariana).status_code == 404
+        assert cliente.get(f"{VACANTES}/3", headers=mariana).status_code == 404
+        assert cliente.get(f"{VACANTES}/1/compatibilidad", headers=mariana).status_code == 200
+
     def test_se_guarda_en_la_tabla(self, cliente: TestClient, db: Session) -> None:
         db.execute(text("DELETE FROM compatibilidad WHERE candidato_id = 3 AND vacante_id = 1"))
 
