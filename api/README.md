@@ -55,7 +55,7 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 `--host 0.0.0.0` hace que el API escuche en la red local y no solo en tu computadora; sin él, el teléfono no lo alcanza. La documentación interactiva queda en <http://localhost:8000/docs> (desde otro equipo de la misma red, `http://<IP de tu computadora>:8000/docs`). Con el API corriendo, la app y el panel dejan de usar el mock:
 
-- Móvil (`mobile/.env`): `EXPO_PUBLIC_USE_MOCK=false` y `EXPO_PUBLIC_API_URL=http://<IP de tu computadora>:8000/api/v1`. La IP sale de `ipconfig` (Windows) o `ip addr` (Linux); después de cambiar el `.env`, arranca con `npx expo start -c` para que Expo no use los valores viejos.
+- Móvil (`mobile/.env`): `EXPO_PUBLIC_USE_MOCK=false` y `EXPO_PUBLIC_API_URL` vacía: la app usa la IP de la computadora desde la que Expo la sirvió, con el puerto 8000, y la sigue aunque el módem te la cambie. Pon una URL solo si el API corre en otra máquina o usas `expo start --tunnel`. Después de cambiar el `.env`, arranca con `npx expo start -c` para que Expo no use los valores viejos.
 - Web (`web/.env`): `INCLUTEC_API_MOCK=false` y `INCLUTEC_API_URL=http://localhost:8000/api/v1`.
 
 Si el teléfono no llega al API (la app dice que el servicio no está disponible):
@@ -63,7 +63,7 @@ Si el teléfono no llega al API (la app dice que el servicio no está disponible
 - El teléfono y la computadora deben estar en la misma red Wi-Fi; las redes de invitados suelen aislar a los equipos entre sí.
 - En Windows, la primera vez que corre Python aparece el aviso del firewall: permite el acceso. Si la red está marcada como «Pública», el aviso debe incluir redes públicas, o cambia la red a «Privada» en Configuración › Red e Internet › Wi-Fi.
 - Abre `http://<IP de tu computadora>:8000/docs` en el navegador del teléfono: si carga, el problema está en la URL de `mobile/.env`.
-- La IP cambia si te conectas a otra red o el módem la reasigna: revísala antes de cada sesión.
+- Si dejaste `EXPO_PUBLIC_API_URL` vacía, un cambio de IP no afecta a la app. Si pusiste una URL fija, revísala con `ipconfig` cuando cambies de red o el módem te reasigne la IP.
 
 ## Pruebas y estilo
 
