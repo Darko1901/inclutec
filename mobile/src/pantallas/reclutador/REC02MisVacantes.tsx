@@ -261,7 +261,7 @@ export default function REC02MisVacantes(_: Props) {
                 onPress={lista.reintentarMas}
               />
             </View>
-          ) : undefined
+          ) : null
         }
         refreshControl={
           <RefreshControl

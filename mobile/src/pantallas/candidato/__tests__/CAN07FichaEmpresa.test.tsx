@@ -109,7 +109,7 @@ describe('CAN-07 · Ficha de empresa', () => {
   });
 
   it('el sitio web abre el navegador; sin sitio web no hay enlace', async () => {
-    const abrirUrl = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
+    const abrirUrl = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
     await abrir(1);
 
     await fireEvent.press(screen.getByRole('link', { name: 'Sitio web, tecnoqro.mx' }));

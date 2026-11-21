@@ -176,7 +176,7 @@ export default function CAN05Postulaciones() {
                 onPress={lista.reintentarMas}
               />
             </View>
-          ) : undefined
+          ) : null
         }
         refreshControl={
           <RefreshControl
