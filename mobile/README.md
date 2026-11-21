@@ -60,10 +60,10 @@ Los errores de red y los 5xx se convierten en `error_interno` con el mensaje «E
 
 Se leen del archivo `.env` (no se sube a git; la plantilla es `.env.example`). Después de cambiarlas, reinicia con `npx expo start -c`.
 
-| Variable               | Por omisión                    | Para qué sirve                                                                                                                                         |
-| ---------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `EXPO_PUBLIC_USE_MOCK` | `true`                         | `true` usa los datos simulados; `false` llama al API real.                                                                                             |
-| `EXPO_PUBLIC_API_URL`  | `http://localhost:8000/api/v1` | URL base del API. En un teléfono físico `localhost` es el propio teléfono: usa la IP de tu computadora, por ejemplo `http://192.168.1.20:8000/api/v1`. |
+| Variable               | Por omisión | Para qué sirve                                                                                                                                                                                                |
+| ---------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `EXPO_PUBLIC_USE_MOCK` | `true`      | `true` usa los datos simulados; `false` llama al API real.                                                                                                                                                    |
+| `EXPO_PUBLIC_API_URL`  | (vacía)     | URL base del API. Vacía, la app usa la IP de la computadora desde la que Expo la sirvió (`http://<IP>:8000/api/v1`) y la sigue si cambia. Pon una URL solo si el API corre en otra máquina o usas `--tunnel`. |
 
 Para pasar al API real: `EXPO_PUBLIC_USE_MOCK=false`, la URL de tu computadora y `npx expo start -c`. Las fotos y los logotipos se sirven fuera de `/api/v1` (`http://…:8000/archivos/…`); `urlArchivo()` arma la dirección completa.
 
