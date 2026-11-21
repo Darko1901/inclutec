@@ -201,7 +201,7 @@ export default function REC04Postulados({ route, navigation }: Props) {
                 onPress={lista.reintentarMas}
               />
             </View>
-          ) : undefined
+          ) : null
         }
         refreshControl={
           <RefreshControl

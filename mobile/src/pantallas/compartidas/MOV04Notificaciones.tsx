@@ -234,7 +234,7 @@ export default function MOV04Notificaciones() {
                   }}
                 />
               </View>
-            ) : undefined
+            ) : null
           }
           contentContainerStyle={carga.items.length === 0 ? estilos.vacio : undefined}
         />

@@ -7,7 +7,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  type ScrollViewInstance,
   StyleSheet,
   View,
 } from 'react-native';
@@ -65,7 +64,7 @@ function Asistente({ navigation, vacante }: AsistenteProps) {
   const [confirmandoPublicar, setConfirmandoPublicar] = useState(false);
   const [descartar, setDescartar] = useState<NavigationAction | null>(null);
   const [resultado, setResultado] = useState<Resultado | null>(null);
-  const scrollRef = useRef<ScrollViewInstance>(null);
+  const scrollRef = useRef<ScrollView>(null);
   const permitirSalir = useRef(false);
 
   const empresa = useCarga(cargarEmpresa);

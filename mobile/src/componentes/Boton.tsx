@@ -3,10 +3,9 @@ import type { Ref } from 'react';
 import {
   ActivityIndicator,
   Pressable,
-  type StyleProp,
   StyleSheet,
   View,
-  type ViewInstance,
+  type StyleProp,
   type ViewStyle,
 } from 'react-native';
 
@@ -17,7 +16,7 @@ type VarianteBoton = 'primario' | 'secundario' | 'texto' | 'peligro';
 
 interface BotonProps {
   /** Para devolver el foco del lector de pantalla al botón (ver useRetornoFoco). */
-  ref?: Ref<ViewInstance>;
+  ref?: Ref<View>;
   titulo: string;
   onPress: () => void;
   variante?: VarianteBoton;
