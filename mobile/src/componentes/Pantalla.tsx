@@ -1,5 +1,12 @@
 import type { ReactNode, RefObject } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
+import {
+  View,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  type ScrollViewInstance,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { colores, espaciado } from '../tema';
@@ -10,7 +17,7 @@ interface PantallaProps {
   desplazable?: boolean;
   centrado?: boolean;
   /** Para volver al inicio de la pantalla, por ejemplo al mostrar errores de un formulario. */
-  scrollRef?: RefObject<ScrollView | null>;
+  scrollRef?: RefObject<ScrollViewInstance | null>;
 }
 
 /** Deja libre el indicador de inicio del iPhone solo cuando nada más (barra de pestañas) lo cubre. */
