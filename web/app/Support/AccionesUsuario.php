@@ -35,8 +35,10 @@ class AccionesUsuario
     }
 
     /**
-     * Acciones disponibles según el estado actual: un usuario activo se suspende o se da de baja, uno
-     * suspendido se reactiva o se da de baja y uno dado de baja solo se puede reactivar.
+     * Acciones disponibles según el estado actual (sección 2 del contrato: activo ↔ suspendido;
+     * activo o suspendido → eliminado): un usuario activo se suspende o se da de baja y uno
+     * suspendido se reactiva o se da de baja. La baja es definitiva: no ofrece ninguna acción,
+     * porque el API respondería 409 `transicion_invalida`.
      *
      * @return list<string>
      */
@@ -45,7 +47,6 @@ class AccionesUsuario
         return match ($estado) {
             'activo' => ['suspender', 'baja'],
             'suspendido' => ['reactivar', 'baja'],
-            'eliminado' => ['reactivar'],
             default => [],
         };
     }

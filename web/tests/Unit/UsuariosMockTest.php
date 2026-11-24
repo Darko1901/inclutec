@@ -95,7 +95,7 @@ class UsuariosMockTest extends TestCase
         $this->assertSame('activo', $mock->cambiarEstadoUsuario(100, 'activo', null)['estado']);
     }
 
-    public function test_un_administrador_no_puede_suspenderse_ni_darse_de_baja_pero_si_reactivarse(): void
+    public function test_un_administrador_no_puede_suspenderse_ni_darse_de_baja(): void
     {
         $mock = $this->api();
 
@@ -103,7 +103,22 @@ class UsuariosMockTest extends TestCase
             $error = $this->error(fn () => $mock->cambiarEstadoUsuario(1, $estado, 'Prueba'));
             $this->assertSame([409, 'estado_invalido'], [$error->status, $error->codigo]);
         }
-        $this->assertSame('activo', $mock->cambiarEstadoUsuario(1, 'activo')['estado']);
+    }
+
+    public function test_las_transiciones_son_las_del_contrato(): void
+    {
+        $mock = $this->api();
+
+        // Cambiar al mismo estado no es una transición.
+        $mismo = $this->error(fn () => $mock->cambiarEstadoUsuario(2, 'activo'));
+        $this->assertSame([409, 'transicion_invalida'], [$mismo->status, $mismo->codigo]);
+        // La baja es definitiva: la 115 está dada de baja en los datos de prueba.
+        $this->assertSame('eliminado', $mock->usuario(115)['usuario']['estado']);
+        foreach (['activo', 'suspendido'] as $estado) {
+            $error = $this->error(fn () => $mock->cambiarEstadoUsuario(115, $estado, 'Prueba'));
+            $this->assertSame([409, 'transicion_invalida'], [$error->status, $error->codigo]);
+        }
+        $this->assertSame('eliminado', $mock->usuario(115)['usuario']['estado']);
     }
 
     public function test_un_error_no_deja_cambios_a_medias(): void

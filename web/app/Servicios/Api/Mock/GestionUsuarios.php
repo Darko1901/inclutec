@@ -181,6 +181,14 @@ class GestionUsuarios
         if ($id === $administradorId && $nuevo !== 'activo') {
             throw new ApiError(409, 'estado_invalido', 'Un administrador no puede suspenderse a sí mismo.');
         }
+        // Sección 2 del contrato, como el API: activo ↔ suspendido; activo o suspendido → eliminado.
+        $actual = $estado['usuarios'][$indice]['usuario']['estado'];
+        if ($actual === 'eliminado') {
+            throw new ApiError(409, 'transicion_invalida', 'Una cuenta eliminada ya no cambia de estado.');
+        }
+        if ($actual === $nuevo) {
+            throw new ApiError(409, 'transicion_invalida', "La cuenta ya está en «{$actual}».");
+        }
 
         $cuenta = &$estado['usuarios'][$indice];
         $cuenta['usuario']['estado'] = $nuevo;
