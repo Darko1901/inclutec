@@ -100,8 +100,9 @@ class UsuarioController extends Controller
             $usuario = $this->api->cambiarEstadoUsuario($id, $request->input('estado'), $motivo === '' ? null : $motivo);
         } catch (ApiError $error) {
             return match ($error->codigo) {
-                // Un administrador no puede suspenderse a sí mismo.
-                'estado_invalido' => back()->with('error', $error->detail),
+                // Un administrador no puede suspenderse a sí mismo; una cuenta dada de baja ya no
+                // cambia, y otra persona pudo cambiar el estado mientras tanto.
+                'estado_invalido', 'transicion_invalida' => back()->with('error', $error->detail),
                 'validacion' => $this->conModalAbierto(back()->withErrors($error->campos ?: ['motivo' => $error->detail])->withInput(), $request),
                 default => throw $error,
             };

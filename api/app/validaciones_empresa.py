@@ -5,14 +5,22 @@ import re
 from sqlalchemy.orm import Session
 
 from app.esquemas.empresa import EmpresaEntrada
-from app.modelos import Municipio, Sector, TamanoEmpresa
+from app.modelos import Empresa, Municipio, Sector, TamanoEmpresa
 from app.validaciones import MENSAJE_RFC, Campos, es_rfc_valido, existe, texto_valido
 from app.validaciones_candidato import texto_opcional
 
 _SITIO = re.compile(r"https?://\S+\.\S+")
 
 
-def validar_empresa(db: Session, datos: EmpresaEntrada, campos_enviados: set[str]) -> Campos:
+def guardados_de(empresa: Empresa | None, campo: str) -> set[int]:
+    """Lo que la empresa ya tenía: se acepta aunque el catálogo se haya desactivado después."""
+    valor = getattr(empresa, campo) if empresa is not None else None
+    return {valor} if valor is not None else set()
+
+
+def validar_empresa(
+    db: Session, datos: EmpresaEntrada, campos_enviados: set[str], empresa: Empresa | None = None
+) -> Campos:
     """`campos_enviados` distingue «no vino» de «vino vacío» en razon_social, rfc y puesto."""
     campos: Campos = {}
     nombre = datos.nombre_comercial
@@ -20,11 +28,13 @@ def validar_empresa(db: Session, datos: EmpresaEntrada, campos_enviados: set[str
         campos["nombre_comercial"] = "Escribe el nombre comercial."
     elif len(nombre) > 150:
         campos["nombre_comercial"] = "Usa máximo 150 caracteres."
-    if not existe(db, Sector, datos.sector_id):
+    if not existe(db, Sector, datos.sector_id, guardados_de(empresa, "sector_id")):
         campos["sector_id"] = "Elige un sector."
-    if not existe(db, TamanoEmpresa, datos.tamano_empresa_id):
+    if not existe(
+        db, TamanoEmpresa, datos.tamano_empresa_id, guardados_de(empresa, "tamano_empresa_id")
+    ):
         campos["tamano_empresa_id"] = "Elige el tamaño de la empresa."
-    if not existe(db, Municipio, datos.municipio_id):
+    if not existe(db, Municipio, datos.municipio_id, guardados_de(empresa, "municipio_id")):
         campos["municipio_id"] = "Elige el municipio."
     if not texto_opcional(datos.direccion, 255):
         campos["direccion"] = "Usa máximo 255 caracteres."

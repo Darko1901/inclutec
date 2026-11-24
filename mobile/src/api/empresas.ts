@@ -1,5 +1,6 @@
 import type { ArchivoLocal } from './candidatos';
 import { cliente } from './cliente';
+import { marcarArchivoNuevo } from './config';
 import type {
   Archivo,
   ConsultaEmpresas,
@@ -62,8 +63,11 @@ export class EmpresasHttp implements EmpresasServicio {
   }
 
   async subirLogo(archivo: ArchivoLocal) {
-    return (await cliente.post<Archivo>('/empresas/me/logo', comoFormulario(archivo), MULTIPART))
-      .data;
+    const logo = (
+      await cliente.post<Archivo>('/empresas/me/logo', comoFormulario(archivo), MULTIPART)
+    ).data;
+    marcarArchivoNuevo(logo.url);
+    return logo;
   }
 
   async quitarLogo() {

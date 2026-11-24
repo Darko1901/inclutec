@@ -483,3 +483,50 @@ class TestConstancia:
         # Una constancia ajena no se distingue de una que no existe.
         assert ajena.status_code == 404
         assert candidata.status_code == 403
+
+
+class TestCatalogosDesactivados:
+    """Lo desactivado deja de ofrecerse en registros nuevos, pero lo ya guardado no cambia."""
+
+    def test_volver_a_guardar_la_organizacion_con_su_sector_desactivado(
+        self, cliente: TestClient, db: Session
+    ) -> None:
+        db.execute(text("UPDATE sector SET activo = false WHERE id = 4"))
+        db.execute(text("UPDATE tamano_empresa SET activo = false WHERE id = 3"))
+
+        respuesta = cliente.put(f"{EMPRESAS}/me", headers=_como(cliente, LAURA), json=DATOS)
+
+        assert respuesta.status_code == 200, respuesta.json()
+
+    def test_no_se_cambia_a_un_sector_desactivado(self, cliente: TestClient, db: Session) -> None:
+        db.execute(text("UPDATE sector SET activo = false WHERE id = 5"))
+
+        respuesta = cliente.put(
+            f"{EMPRESAS}/me", headers=_como(cliente, LAURA), json=DATOS | {"sector_id": 5}
+        )
+
+        assert respuesta.status_code == 422
+        assert "sector_id" in respuesta.json()["campos"]
+
+    def test_el_administrador_edita_una_empresa_con_su_sector_desactivado(
+        self, cliente: TestClient, db: Session
+    ) -> None:
+        db.execute(text("UPDATE sector SET activo = false WHERE id = 4"))
+        admin = _como(cliente, "admin@inclutec.mx")
+        empresa = cliente.get("/api/v1/admin/empresas/1", headers=admin).json()["empresa"]
+        datos = {
+            campo: empresa[campo]
+            for campo in (
+                "razon_social",
+                "nombre_comercial",
+                "rfc",
+                "direccion",
+                "sitio_web",
+                "descripcion",
+                "practicas_inclusion",
+            )
+        } | {"sector_id": 4, "tamano_empresa_id": 3, "municipio_id": 3}
+
+        respuesta = cliente.put("/api/v1/admin/empresas/1", headers=admin, json=datos)
+
+        assert respuesta.status_code == 200, respuesta.json()

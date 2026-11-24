@@ -71,7 +71,9 @@ class EmpresaController extends Controller
 
     public function edit(int $id): View
     {
-        return view('admin.WEB04_EmpresaFormulario', ['empresa' => $this->api->empresa($id)['empresa']] + $this->catalogos());
+        $empresa = $this->api->empresa($id)['empresa'];
+
+        return view('admin.WEB04_EmpresaFormulario', ['empresa' => $empresa] + $this->catalogos($empresa));
     }
 
     public function store(Request $request): RedirectResponse
@@ -248,20 +250,27 @@ class EmpresaController extends Controller
     /**
      * Listas del formulario (GET /catalogos/sectores, tamanos-empresa, entidades y municipios).
      *
+     * Los catálogos solo traen lo activo. Al editar, el sector y el tamaño que la empresa ya tenía
+     * se agregan aunque se hayan desactivado: lo ya guardado no cambia y se puede conservar.
+     *
+     * @param  array<string, mixed>|null  $empresa
      * @return array{sectores: array<int, string>, tamanos: array<int, string>, municipios: array<int, string>}
      */
-    private function catalogos(): array
+    private function catalogos(?array $empresa = null): array
     {
         $entidades = array_column($this->api->catalogo('entidades'), 'nombre', 'id');
         $municipios = [];
         foreach ($this->api->catalogo('municipios') as $municipio) {
             $municipios[$municipio['id']] = $municipio['nombre'].', '.($entidades[$municipio['entidad_federativa_id']] ?? '');
         }
+        $tamano = fn (array $t) => $t['nombre'].' · '.$t['rango'];
+        $sectores = array_column($this->api->catalogo('sectores'), 'nombre', 'id');
+        $tamanos = array_column(array_map(fn (array $t) => ['id' => $t['id'], 'nombre' => $tamano($t)], $this->api->catalogo('tamanos-empresa')), 'nombre', 'id');
+        if ($empresa !== null) {
+            $sectores += [$empresa['sector']['id'] => $empresa['sector']['nombre'].' (desactivado)'];
+            $tamanos += [$empresa['tamano_empresa']['id'] => $tamano($empresa['tamano_empresa']).' (desactivado)'];
+        }
 
-        return [
-            'sectores' => array_column($this->api->catalogo('sectores'), 'nombre', 'id'),
-            'tamanos' => array_column(array_map(fn (array $t) => ['id' => $t['id'], 'nombre' => $t['nombre'].' · '.$t['rango']], $this->api->catalogo('tamanos-empresa')), 'nombre', 'id'),
-            'municipios' => $municipios,
-        ];
+        return ['sectores' => $sectores, 'tamanos' => $tamanos, 'municipios' => $municipios];
     }
 }

@@ -1,7 +1,8 @@
 import { renderHook, waitFor, act } from '@testing-library/react-native';
 
+import { ApiError } from '../errores';
 import { catalogos } from '../servicios';
-import { useCatalogo } from '../useCatalogo';
+import { conGuardados, useCatalogo } from '../useCatalogo';
 
 describe('useCatalogo', () => {
   afterEach(() => jest.restoreAllMocks());
@@ -58,5 +59,45 @@ describe('useCatalogo', () => {
 
     await waitFor(() => expect(result.current.datos).toHaveLength(4));
     expect(result.current.error).toBeNull();
+  });
+});
+
+describe('conGuardados', () => {
+  const activos = [
+    { id: 1, nombre: 'Presencial' },
+    { id: 2, nombre: 'Remoto' },
+  ];
+  const listo = { datos: activos, cargando: false, error: null };
+
+  it('agrega lo guardado que ya no se ofrece, una sola vez y marcado', () => {
+    const lista = conGuardados(listo, [
+      { id: 2, nombre: 'Remoto' },
+      { id: 3, nombre: 'Híbrido' },
+      { id: 3, nombre: 'Híbrido' },
+      null,
+      undefined,
+    ]);
+
+    expect(lista.map((m) => m.nombre)).toEqual([
+      'Presencial',
+      'Remoto',
+      'Híbrido (ya no se ofrece)',
+    ]);
+  });
+
+  it('sin nada desactivado devuelve la misma lista', () => {
+    expect(conGuardados(listo, [{ id: 1, nombre: 'Presencial' }])).toBe(activos);
+  });
+
+  it('mientras carga o si falló no agrega nada', () => {
+    const guardados = [{ id: 3, nombre: 'Híbrido' }];
+
+    expect(conGuardados({ datos: [], cargando: true, error: null }, guardados)).toEqual([]);
+    expect(
+      conGuardados(
+        { datos: [], cargando: false, error: ApiError.servicioNoDisponible() },
+        guardados,
+      ),
+    ).toEqual([]);
   });
 });

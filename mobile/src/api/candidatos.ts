@@ -1,4 +1,5 @@
 import { cliente } from './cliente';
+import { marcarArchivoNuevo } from './config';
 import type {
   Archivo,
   CV,
@@ -86,11 +87,13 @@ export class CandidatosHttp implements CandidatosServicio {
       name: archivo.nombre,
       type: archivo.tipo,
     } as unknown as Blob);
-    return (
+    const foto = (
       await cliente.post<Archivo>('/candidatos/me/foto', formulario, {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
     ).data;
+    marcarArchivoNuevo(foto.url);
+    return foto;
   }
 
   async quitarFoto() {

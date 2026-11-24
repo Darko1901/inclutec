@@ -328,7 +328,7 @@ def editar(id: int, datos: VacanteEntrada, actual: Reclutadora, db: Db) -> Vacan
             if vacante.estado == "suspendida"
             else "La vacante está cerrada y no se puede editar. Puedes duplicarla como borrador.",
         )
-    lanzar_si_vacante_invalida(db, datos)
+    lanzar_si_vacante_invalida(db, datos, vacante)
     # Una vacante ya publicada o pausada se valida como publicable aunque llegue como borrador.
     if vacante.estado != "borrador" or datos.estado == "publicada":
         _exigir_publicable(db, empresa, datos)

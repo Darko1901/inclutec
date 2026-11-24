@@ -349,7 +349,7 @@ Todo lo de arriba son pruebas automáticas sobre el árbol de accesibilidad; **f
 - **Foco al abrir desde una notificación** (`AccessibilityInfo.setAccessibilityFocus` tras el desplazamiento, 600 ms): se comprueba que se pide el foco, no que el lector lo respete en cada versión del sistema.
 - **Notificaciones push** reales (necesitan una _development build_), **cámara** y **galería** con los permisos reales, y **abrir la liga** de Meet o Teams.
 - **Orientación horizontal** (`app.json` la permite) y **tabletas** (`supportsTablet`): no se han revisado.
-- **API real:** nada se ha probado contra el API (aún no existe); con `EXPO_PUBLIC_USE_MOCK=false` los servicios HTTP solo tienen pruebas con respuestas del contrato.
+- **API real:** las pruebas automáticas usan el mock y, para los servicios HTTP, respuestas del contrato. Con `EXPO_PUBLIC_USE_MOCK=false` el recorrido contra el API se revisa a mano en el teléfono.
 
 ## Calidad
 
@@ -396,4 +396,7 @@ Las pruebas cubren los servicios (mock y HTTP), cada pantalla, los componentes b
 - **Texto que crece y cajas que no lo cortan.** Nada de alto fijo con texto adentro; la barra inferior no tiene alto fijo y la insignia de «sin leer» es propia (la de React Navigation tiene alto fijo y cortaría el número al 200 %). Las iniciales decorativas de avatares y logos no se escalan.
 - **Los mismos textos para lo mismo:** «Reintentar» (error), «Quitar filtros» (lista sin resultados por filtros), «Liga copiada.» y los formatos de fecha, hora, porcentaje y duración salen de utilidades comunes.
 - **Sin push en Expo Go.** El registro del dispositivo se omite ahí; se prueba en una _development build_.
+- **Cuenta suspendida con la app abierta.** Un `423 cuenta_suspendida` en cualquier llamada cierra la sesión y MOV-01 muestra el mensaje del API, igual que al abrir la app. El 401 o 423 del logout no cambia el aviso que se pidió (por ejemplo, el de cuenta eliminada).
+- **Fotos y logotipos con versión en la URL.** Al reemplazarlos, el API conserva la ruta (`/archivos/fotos/candidato-3.jpg`) y el teléfono guarda las imágenes por URL; por eso `urlArchivo` agrega `?v=` (la del arranque de la app o la de la subida) y no se ve la imagen anterior. Si una imagen no se descarga, se muestran las iniciales.
+- **Lo guardado se ve aunque ya no se ofrezca.** Los catálogos solo traen lo activo; al editar, `conGuardados` agrega lo que el registro ya tenía, marcado «(ya no se ofrece)», para que se vea y se pueda quitar. El API lo acepta al volver a guardar.
 - **Sin `overrides` en las dependencias** (ver arriba) y sin `npm audit fix --force`.

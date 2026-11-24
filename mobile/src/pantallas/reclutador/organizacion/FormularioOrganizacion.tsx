@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 
 import {
   ApiError,
+  conGuardados,
   empresas,
   useCatalogo,
   type EmpresaEntrada,
@@ -156,7 +157,10 @@ export function FormularioOrganizacion({ empresa, onGuardada }: Props) {
       />
       <Selector
         etiqueta="Sector"
-        opciones={sectores.datos.map(({ id, nombre: n }) => ({ id, nombre: n }))}
+        opciones={conGuardados(sectores, [empresa.sector]).map(({ id, nombre: n }) => ({
+          id,
+          nombre: n,
+        }))}
         valor={sectorId}
         cargando={sectores.cargando}
         onChange={(id) => {
@@ -169,11 +173,13 @@ export function FormularioOrganizacion({ empresa, onGuardada }: Props) {
       />
       <Selector
         etiqueta="Tamaño de la empresa"
-        opciones={tamanos.datos.map(({ id, nombre: n, rango }) => ({
-          id,
-          nombre: n,
-          detalle: rango ?? undefined,
-        }))}
+        opciones={conGuardados(tamanos, [empresa.tamano_empresa]).map(
+          ({ id, nombre: n, rango }) => ({
+            id,
+            nombre: n,
+            detalle: rango ?? undefined,
+          }),
+        )}
         valor={tamanoId}
         cargando={tamanos.cargando}
         onChange={(id) => {

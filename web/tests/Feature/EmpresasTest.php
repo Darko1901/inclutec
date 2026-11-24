@@ -539,6 +539,24 @@ class EmpresasTest extends TestCase
         $this->put('/empresas/1', $this->entrada(['rfc' => 'TQU150312AB1']))->assertRedirect('/empresas/1');
     }
 
+    public function test_al_editar_se_conservan_el_sector_y_el_tamano_aunque_ya_se_hayan_desactivado(): void
+    {
+        // TecnoQro tiene el sector 4 (Tecnologías de la información) y el tamaño 3 (Mediana).
+        $this->patch('/catalogo/sectores/4/activo', ['activo' => '0'])->assertRedirect();
+        $this->patch('/catalogo/tamanos-empresa/3/activo', ['activo' => '0'])->assertRedirect();
+
+        $html = $this->get('/empresas/1/editar')->assertOk()->getContent();
+        $this->assertStringContainsString('<option value="4" selected>Tecnologías de la información (desactivado)</option>', $html);
+        $this->assertStringContainsString('<option value="3" selected>Mediana · 51 a 250 trabajadores (desactivado)</option>', $html);
+        $this->put('/empresas/1', $this->entrada(['rfc' => 'TQU150312AB1', 'sector_id' => '4', 'tamano_empresa_id' => '3']))->assertRedirect('/empresas/1');
+        $this->assertSame([4, 3], [$this->empresa(1)['sector_id'], $this->empresa(1)['tamano_empresa_id']]);
+
+        // En una empresa nueva ya no se ofrecen ni se aceptan.
+        $this->assertStringNotContainsString('Tecnologías de la información', $this->get('/empresas/nueva')->getContent());
+        $this->from('/empresas/nueva')->post('/empresas', $this->entrada(['sector_id' => '4', 'tamano_empresa_id' => '3']))
+            ->assertRedirect('/empresas/nueva')->assertSessionHasErrors(['sector_id', 'tamano_empresa_id']);
+    }
+
     private function conteoPublicadas(): int
     {
         return count(array_filter(Almacen::leer()['vacantes'], fn ($v) => $v['estado'] === 'publicada'));

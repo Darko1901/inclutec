@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { useCatalogo } from '../../../api';
+import { conGuardados, useCatalogo } from '../../../api';
 import { CampoTexto, Cargando, ErrorCatalogo, Texto } from '../../../componentes';
 import { AREA_TACTIL_MINIMA, colores, espaciado, radio } from '../../../tema';
 import { MAX_DIRECCION, TITULOS_PASO } from './formulario';
@@ -21,9 +21,20 @@ const DETALLE: Record<string, { icono: keyof typeof Ionicons.glyphMap; texto: st
 };
 
 /** Paso 3: modalidad en tarjetas seleccionables y la dirección si hay que ir a la empresa. */
-export function PasoModalidad({ formulario: f, cambiar, errores, limpiar }: PropiedadesPaso) {
+export function PasoModalidad({
+  formulario: f,
+  cambiar,
+  errores,
+  limpiar,
+  guardada,
+}: PropiedadesPaso) {
   const modalidades = useCatalogo('modalidades');
-  const nombreElegida = modalidades.datos.find((m) => m.id === f.modalidadId)?.nombre;
+  const lista = conGuardados(modalidades, [guardada?.modalidad]);
+  // Nombre sin «(ya no se ofrece)»: decide el ícono, la explicación y si se pide la dirección.
+  const nombreDe = (id: number | null) =>
+    modalidades.datos.find((m) => m.id === id)?.nombre ??
+    (guardada && guardada.modalidad.id === id ? guardada.modalidad.nombre : undefined);
+  const nombreElegida = nombreDe(f.modalidadId);
   const requiereDireccion = nombreElegida === 'Presencial' || nombreElegida === 'Híbrido';
 
   return (
@@ -39,9 +50,9 @@ export function PasoModalidad({ formulario: f, cambiar, errores, limpiar }: Prop
           style={estilos.grupo}
           testID="grupo-modalidad"
         >
-          {modalidades.datos.map(({ id, nombre }) => {
+          {lista.map(({ id, nombre }) => {
             const elegida = f.modalidadId === id;
-            const detalle = DETALLE[nombre];
+            const detalle = DETALLE[nombreDe(id) ?? nombre];
             return (
               <Pressable
                 key={id}

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { ApiError, candidatos, useCatalogo, type Formacion } from '../../../api';
+import { ApiError, candidatos, conGuardados, useCatalogo, type Formacion } from '../../../api';
 import {
   Aviso,
   CampoTexto,
@@ -77,7 +77,10 @@ export function ModalFormacion({ item, onCerrar, onGuardado }: PropiedadesModalC
       <ErrorCatalogo catalogos={[niveles]} />
       <Selector
         etiqueta="Nivel educativo"
-        opciones={niveles.datos.map(({ id, nombre }) => ({ id, nombre }))}
+        opciones={conGuardados(niveles, [item?.nivel_educativo]).map(({ id, nombre }) => ({
+          id,
+          nombre,
+        }))}
         valor={datos.nivelId}
         onChange={(nivelId) => cambiar({ nivelId }, 'nivel_educativo_id')}
         cargando={niveles.cargando}
