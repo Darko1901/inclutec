@@ -406,6 +406,15 @@ class UsuariosTest extends TestCase
         $this->assertStringContainsString('data-modal="estado-100-reactivar"', $html);
     }
 
+    public function test_una_cuenta_dada_de_baja_no_ofrece_acciones(): void
+    {
+        // La baja es definitiva en el contrato: reactivarla daría 409 transicion_invalida.
+        $html = $this->get('/usuarios/115')->getContent();
+
+        $this->assertStringContainsString('data-estado="eliminado"', $html);
+        $this->assertStringNotContainsString('data-modal="estado-115-', $html);
+    }
+
     public function test_un_detalle_inexistente_muestra_404(): void
     {
         $this->get('/usuarios/9999')->assertStatus(404)->assertSee('El usuario no existe.');
@@ -449,8 +458,8 @@ class UsuariosTest extends TestCase
         $this->assertSame(60, count(Almacen::leer()['usuarios']));
         $html = $this->get('/usuarios/4')->getContent();
         $this->assertStringContainsString('Baja solicitada.', $html);
-        $this->assertStringContainsString('data-modal="estado-4-reactivar"', $html);
-        $this->assertStringNotContainsString('estado-4-baja', $html);
+        // La baja es definitiva (contrato): ya no se ofrece reactivar ni ninguna otra acción.
+        $this->assertStringNotContainsString('data-modal="estado-4-', $html);
     }
 
     #[DataProvider('estadosQuePidenMotivo')]

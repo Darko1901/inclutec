@@ -169,6 +169,15 @@ class UsuariosConApiHttpTest extends TestCase
         $this->get('/usuarios/1')->assertSee($this->enAvisos('Un administrador no puede suspenderse a sí mismo.'), false);
     }
 
+    public function test_409_transicion_invalida_se_muestra_como_aviso(): void
+    {
+        // Por ejemplo, otra persona dio de baja la cuenta mientras tanto.
+        $this->conAdministrador(['*/admin/usuarios/2/estado' => Http::response($this->error('transicion_invalida', 'Una cuenta eliminada ya no cambia de estado.'), 409)])
+            ->from('/usuarios/2')->patch('/usuarios/2/estado', ['estado' => 'suspendido', 'motivo' => 'Prueba'])->assertRedirect('/usuarios/2');
+
+        $this->get('/usuarios/2')->assertSee($this->enAvisos('Una cuenta eliminada ya no cambia de estado.'), false);
+    }
+
     public function test_422_del_motivo_vuelve_a_abrir_la_confirmacion(): void
     {
         $this->conAdministrador(['*/admin/usuarios/2/estado' => Http::response($this->error('validacion', 'Falta el motivo.', ['motivo' => 'Escribe el motivo.']), 422)])
