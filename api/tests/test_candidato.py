@@ -861,3 +861,59 @@ class TestIdsFueraDeRango:
 
         assert respuesta.status_code == 422
         assert set(respuesta.json()["campos"]) == {"municipio_id", "modalidad_ids"}
+
+
+class TestCatalogosDesactivados:
+    """Lo desactivado deja de ofrecerse en registros nuevos, pero lo ya guardado no cambia."""
+
+    def test_volver_a_guardar_el_perfil_con_lo_ya_elegido(
+        self, cliente: TestClient, db: Session
+    ) -> None:
+        # Mariana ya tenía la jornada 1, las modalidades 2 y 3 y la categoría 1.
+        for tabla, id_ in (("jornada", 1), ("modalidad", 2), ("categoria", 1)):
+            db.execute(text(f"UPDATE {tabla} SET activo = false WHERE id = {id_}"))
+
+        respuesta = cliente.put(ME, headers=iniciar_sesion(cliente, MARIANA), json=PERFIL_ENTRADA)
+
+        assert respuesta.status_code == 200, respuesta.json()
+
+    def test_no_se_elige_una_opcion_nueva_desactivada(
+        self, cliente: TestClient, db: Session
+    ) -> None:
+        db.execute(text("UPDATE modalidad SET activo = false WHERE id = 1"))
+
+        respuesta = cliente.put(
+            ME,
+            headers=iniciar_sesion(cliente, MARIANA),
+            json=PERFIL_ENTRADA | {"modalidad_ids": [1, 2, 3]},
+        )
+
+        assert respuesta.status_code == 422
+        assert "modalidad_ids" in respuesta.json()["campos"]
+
+    def test_habilidades_y_necesidades_ya_guardadas(self, cliente: TestClient, db: Session) -> None:
+        mariana = iniciar_sesion(cliente, MARIANA)
+        habilidades = cliente.get(f"{ME}/habilidades", headers=mariana).json()
+        db.execute(text(f"UPDATE habilidad SET activo = false WHERE id = {habilidades[0]['id']}"))
+        # Mariana ya tenía las necesidades 1 y 3; la 12 sería nueva.
+        db.execute(text("UPDATE ajuste SET activo = false WHERE id IN (1, 12)"))
+
+        mismas = cliente.put(
+            f"{ME}/habilidades",
+            headers=mariana,
+            json={
+                "habilidades": [{"habilidad_id": h["id"], "nivel": h["nivel"]} for h in habilidades]
+            },
+        )
+        necesidades = cliente.put(
+            f"{ME}/necesidades", headers=mariana, json={"ajuste_ids": [1, 3], "nota_ajustes": None}
+        )
+        nueva = cliente.put(
+            f"{ME}/necesidades",
+            headers=mariana,
+            json={"ajuste_ids": [1, 3, 12], "nota_ajustes": None},
+        )
+
+        assert mismas.status_code == 200, mismas.json()
+        assert necesidades.status_code == 200, necesidades.json()
+        assert nueva.status_code == 422

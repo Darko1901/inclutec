@@ -1060,3 +1060,41 @@ class TestFichaDeEmpresa:
 
         assert respuesta.status_code == 200
         assert "razon_social" in respuesta.json()
+
+
+class TestCatalogosDesactivados:
+    """Lo desactivado deja de ofrecerse en registros nuevos, pero lo ya guardado no cambia."""
+
+    def test_volver_a_guardar_una_vacante_con_elementos_ya_desactivados(
+        self, cliente: TestClient, db: Session
+    ) -> None:
+        # La vacante 1 ya tenía la habilidad 4, el ajuste 1, la categoría 1 y la modalidad 3.
+        for tabla, id_ in (("habilidad", 4), ("ajuste", 1), ("categoria", 1), ("modalidad", 3)):
+            db.execute(text(f"UPDATE {tabla} SET activo = false WHERE id = {id_}"))
+        laura = _como(cliente, LAURA)
+        datos = _entrada_de(cliente.get(f"{VACANTES}/1", headers=laura).json())
+
+        respuesta = cliente.put(f"{VACANTES}/1", headers=laura, json=datos)
+
+        assert respuesta.status_code == 200, respuesta.json()
+
+    def test_no_se_agrega_un_elemento_desactivado(self, cliente: TestClient, db: Session) -> None:
+        db.execute(text("UPDATE habilidad SET activo = false WHERE id = 15"))
+        laura = _como(cliente, LAURA)
+        datos = _entrada_de(cliente.get(f"{VACANTES}/1", headers=laura).json())
+        datos["habilidades"].append({"habilidad_id": 15, "obligatoria": False})
+
+        respuesta = cliente.put(f"{VACANTES}/1", headers=laura, json=datos)
+
+        assert respuesta.status_code == 422
+        assert "habilidades" in respuesta.json()["campos"]
+
+    def test_una_vacante_nueva_no_usa_elementos_desactivados(
+        self, cliente: TestClient, db: Session
+    ) -> None:
+        db.execute(text("UPDATE categoria SET activo = false WHERE id = 1"))
+
+        respuesta = cliente.post(VACANTES, headers=_como(cliente, LAURA), json=ENTRADA)
+
+        assert respuesta.status_code == 422
+        assert "categoria_id" in respuesta.json()["campos"]

@@ -86,7 +86,7 @@ def mi_perfil(actual: Actual, db: Db) -> PerfilCandidato:
 )
 def actualizar_perfil(datos: PerfilCandidatoEntrada, actual: Actual, db: Db) -> PerfilCandidato:
     candidato = servicio.candidato_de(db, actual.id)
-    lanzar_si_hay_campos(validar_perfil(db, datos))
+    lanzar_si_hay_campos(validar_perfil(db, datos, actual.id))
 
     actual.usuario.nombre = datos.nombre.strip()
     actual.usuario.apellidos = datos.apellidos.strip()
@@ -178,7 +178,7 @@ def guardar_necesidades(datos: NecesidadesEntrada, actual: Actual, db: Db) -> Ne
             "sin_consentimiento",
             "Para registrar tus necesidades de ajuste, primero da tu consentimiento.",
         )
-    lanzar_si_hay_campos(validar_necesidades(db, datos))
+    lanzar_si_hay_campos(validar_necesidades(db, datos, actual.id))
 
     db.execute(
         delete(t_candidato_necesidad).where(t_candidato_necesidad.c.candidato_id == actual.id)
@@ -374,7 +374,7 @@ def agregar_formacion(datos: FormacionEntrada, actual: Actual, db: Db) -> Formac
 )
 def editar_formacion(id: int, datos: FormacionEntrada, actual: Actual, db: Db) -> Formacion:
     fila = _formacion_propia(db, actual, id)
-    lanzar_si_hay_campos(validar_formacion(db, datos))
+    lanzar_si_hay_campos(validar_formacion(db, datos, fila.nivel_educativo_id))
     for campo, valor in _datos_formacion(datos).items():
         setattr(fila, campo, valor)
     servicio.tocar(db, servicio.candidato_de(db, actual.id))
@@ -418,7 +418,7 @@ def guardar_habilidades(
     datos: HabilidadesEntrada, actual: Actual, db: Db
 ) -> list[HabilidadCandidato]:
     candidato = servicio.candidato_de(db, actual.id)
-    validar_habilidades(db, datos)
+    validar_habilidades(db, datos, actual.id)
     db.execute(delete(CandidatoHabilidad).where(CandidatoHabilidad.candidato_id == actual.id))
     db.add_all(
         CandidatoHabilidad(candidato_id=actual.id, habilidad_id=h.habilidad_id, nivel=h.nivel)
