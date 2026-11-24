@@ -83,7 +83,7 @@ def crear(datos: EmpresaAdminEntrada, actual: Administrador, db: Db) -> EmpresaP
 def editar(id: int, datos: EmpresaAdminEntrada, actual: Administrador, db: Db) -> EmpresaPropia:
     """El administrador sí puede corregir razón social y RFC de una empresa validada."""
     empresa = servicio.empresa_por_id(db, id)
-    limpios = servicio.validar_entrada(db, datos)
+    limpios = servicio.validar_entrada(db, datos, empresa)
     return empresa_propia_de(db, servicio.editar(db, empresa, limpios, actual.id), None)
 
 

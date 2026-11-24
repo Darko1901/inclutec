@@ -132,7 +132,7 @@ def actualizar_organizacion(datos: EmpresaEntrada, actual: Reclutadora, db: Db) 
     """`razon_social` y `rfc` solo se aceptan mientras la empresa no esté validada."""
     empresa = _empresa_del_reclutador(db, actual)
     enviados = datos.model_fields_set
-    lanzar_si_hay_campos(validar_empresa(db, datos, enviados))
+    lanzar_si_hay_campos(validar_empresa(db, datos, enviados, empresa))
 
     cambia_razon = "razon_social" in enviados and datos.razon_social.strip() != empresa.razon_social
     cambia_rfc = "rfc" in enviados and datos.rfc != empresa.rfc

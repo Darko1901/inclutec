@@ -1,6 +1,7 @@
 """Validaciones de los cuerpos, con los mismos mensajes que el mock de la app móvil."""
 
 import re
+from collections.abc import Collection
 from typing import Any
 
 from sqlalchemy import BigInteger, Integer, SmallInteger, select
@@ -100,10 +101,17 @@ def id_en_rango(modelo: Any, valor: Any) -> bool:
     return True
 
 
-def existe(db: Session, modelo: Any, valor: Any) -> bool:
-    """El id existe en la tabla y, si tiene la columna `activo`, está activo."""
+def existe(db: Session, modelo: Any, valor: Any, guardados: Collection[int] = ()) -> bool:
+    """El id existe en la tabla y, si tiene la columna `activo`, está activo.
+
+    `guardados` son los ids que ya tenía el registro que se edita. Un elemento de catálogo
+    desactivado deja de ofrecerse en registros nuevos, pero «lo ya guardado no cambia» (contrato,
+    catálogos del panel): volver a guardar una vacante o un perfil que ya lo tenía es válido.
+    """
     if not id_en_rango(modelo, valor):
         return False
+    if valor in guardados:
+        return True
     consulta = select(modelo.id).where(modelo.id == valor)
     if hasattr(modelo, "activo"):
         consulta = consulta.where(modelo.activo.is_(True))
