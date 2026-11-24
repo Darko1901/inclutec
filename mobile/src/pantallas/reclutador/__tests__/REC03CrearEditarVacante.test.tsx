@@ -2,6 +2,7 @@ import { act, fireEvent, screen, waitFor, within } from '@testing-library/react-
 import type { ComponentProps } from 'react';
 import { AccessibilityInfo } from 'react-native';
 
+import { catalogos } from '../../../api';
 import { obtenerEstado } from '../../../api/mock/datos';
 import { CUENTAS, renderizarComo } from '../ayudasPrueba';
 import REC03CrearEditarVacante from '../REC03CrearEditarVacante';
@@ -413,6 +414,37 @@ describe('REC-03 · Crear o editar vacante', () => {
           .vacantes.find((v) => v.id === 1)!
           .habilidades.find((h) => h.habilidad_id === 3),
       ).toMatchObject({ obligatoria: false });
+    });
+
+    it('muestra la categoría y la modalidad guardadas aunque ya no se ofrezcan, y las conserva', async () => {
+      // El administrador desactivó la categoría 1 y la modalidad 3 (Híbrido): el catálogo ya no las trae.
+      const listar = catalogos.listar.bind(catalogos);
+      jest.spyOn(catalogos, 'listar').mockImplementation(async (tipo, filtros) => {
+        const datos = await listar(tipo, filtros);
+        if (tipo === 'categorias') return datos.filter((c) => c.id !== 1);
+        if (tipo === 'modalidades') return datos.filter((m) => m.id !== 3);
+        return datos;
+      });
+      await abrir(CUENTAS.laura, 1);
+      await waitFor(() =>
+        expect(screen.getByTestId('selector-categoria').props.accessibilityLabel).toMatch(
+          /, Tecnologías de la información \(ya no se ofrece\)$/,
+        ),
+      );
+
+      await siguiente();
+      await siguiente();
+      expect(await screen.findByRole('radio', { name: 'Híbrido (ya no se ofrece)' })).toBeChecked();
+      // Sigue siendo híbrida: la dirección se pide para publicar.
+      expect(screen.getByLabelText('Dirección (obligatoria para publicar)')).toBeOnTheScreen();
+      await siguiente();
+      await fireEvent.press(await screen.findByRole('button', { name: 'Guardar cambios' }));
+
+      await screen.findByTestId('resultado-guardado');
+      expect(obtenerEstado().vacantes.find((v) => v.id === 1)).toMatchObject({
+        categoria_id: 1,
+        modalidad_id: 3,
+      });
     });
 
     it('una vacante cerrada no se edita y lo explica', async () => {
