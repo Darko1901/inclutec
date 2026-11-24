@@ -2,7 +2,9 @@ import { act, renderHook, waitFor } from '@testing-library/react-native';
 import * as SecureStore from 'expo-secure-store';
 import type { ReactNode } from 'react';
 
-import { auth } from '../../api';
+import { auth, candidatos } from '../../api';
+import { obtenerEstado } from '../../api/mock/datos';
+import { crearToken } from '../../api/mock/tokens';
 import * as dispositivoPush from '../dispositivoPush';
 import { MENSAJE_ADMINISTRADOR, MENSAJE_SESION_VENCIDA, SesionProvider, useSesion } from '..';
 
@@ -64,6 +66,59 @@ describe('sesión', () => {
     await waitFor(() => expect(result.current.estado).toBe('sin_sesion'));
     expect(result.current.aviso).toBe(MENSAJE_SESION_VENCIDA);
     expect(await SecureStore.getItemAsync('inclutec_token')).toBeNull();
+  });
+
+  it('al abrir la app con la cuenta suspendida (423) cierra la sesión con el aviso del API', async () => {
+    await SecureStore.setItemAsync('inclutec_token', crearToken(100, 'candidato').token);
+
+    const { result } = await iniciar();
+    await act(() => result.current.restaurarSesion());
+
+    await waitFor(() => expect(result.current.aviso).toBe('Tu cuenta está suspendida.'));
+    expect(result.current.estado).toBe('sin_sesion');
+    expect(await SecureStore.getItemAsync('inclutec_token')).toBeNull();
+  });
+
+  it('si el administrador suspende la cuenta con la app abierta, la siguiente llamada cierra la sesión', async () => {
+    const { result } = await iniciar();
+    const sesion = await login('mariana.lopez@correo.mx');
+    await act(async () => {
+      await result.current.iniciarSesion(sesion);
+    });
+    const mariana = obtenerEstado().usuarios.find((u) => u.usuario.id === 3);
+    if (mariana) mariana.usuario.estado = 'suspendido';
+
+    await act(async () => {
+      await expect(candidatos.obtenerPerfil()).rejects.toMatchObject({ status: 423 });
+    });
+
+    await waitFor(() => expect(result.current.estado).toBe('sin_sesion'));
+    expect(result.current.aviso).toBe('Tu cuenta está suspendida.');
+    expect(result.current.usuario).toBeNull();
+    expect(await SecureStore.getItemAsync('inclutec_token')).toBeNull();
+  });
+
+  it('al eliminar la cuenta, el 423 del logout no cambia el aviso pedido', async () => {
+    const avisos: (string | null)[] = [];
+    const { result } = await renderHook(
+      () => {
+        const sesion = useSesion();
+        avisos.push(sesion.aviso);
+        return sesion;
+      },
+      { wrapper: envoltorio },
+    );
+    const sesion = await login('mariana.lopez@correo.mx');
+    await act(async () => {
+      await result.current.iniciarSesion(sesion);
+    });
+    await candidatos.eliminarCuenta({ contrasena: 'Inclutec2026' });
+
+    await act(() => result.current.cerrarSesion('Tu cuenta se eliminó.'));
+
+    expect(result.current.estado).toBe('sin_sesion');
+    expect(result.current.aviso).toBe('Tu cuenta se eliminó.');
+    expect(avisos).not.toContain('Tu cuenta está suspendida.');
   });
 
   it('no deja entrar al administrador: avisa que usa el panel web y cierra la sesión', async () => {
