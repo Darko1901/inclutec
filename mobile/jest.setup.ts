@@ -51,5 +51,9 @@ beforeEach(async () => {
   configurarLatencia(0, 0);
   reiniciarMock();
   limpiarCatalogosGuardados();
-  configurarSesionApi({ obtenerToken: () => null, alNoAutenticado: () => undefined });
+  configurarSesionApi({
+    obtenerToken: () => null,
+    alNoAutenticado: () => undefined,
+    alCuentaSuspendida: () => undefined,
+  });
 });

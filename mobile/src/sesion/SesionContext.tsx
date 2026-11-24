@@ -29,7 +29,7 @@ export const TIEMPO_MAXIMO_SPLASH_MS = 3000;
 interface ValorSesion {
   estado: EstadoSesion;
   usuario: Usuario | null;
-  /** Aviso para MOV-01 (administrador rechazado o sesión vencida). */
+  /** Aviso para MOV-01 (administrador rechazado, sesión vencida o cuenta suspendida). */
   aviso: string | null;
   limpiarAviso: () => void;
   /** MOV-00: valida el token guardado con auth.me. */
@@ -50,6 +50,9 @@ export function SesionProvider({ children }: { children: ReactNode }) {
   const [aviso, setAviso] = useState<string | null>(null);
   const [pantallaInicial, setPantallaInicial] = useState<PantallaInicial | null>(null);
   const tokenRef = useRef<string | null>(null);
+  // Mientras se cierra la sesión, el 401 o 423 que responda el logout no cambia el aviso pedido
+  // (por ejemplo, el de cuenta eliminada).
+  const cerrandoRef = useRef(false);
 
   const terminarSesionLocal = useCallback(async (mensaje: string | null = null) => {
     tokenRef.current = null;
@@ -62,12 +65,16 @@ export function SesionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    const cerrarPorElApi = (mensaje: string) => {
+      if (tokenRef.current !== null && !cerrandoRef.current) void terminarSesionLocal(mensaje);
+    };
     configurarSesionApi({
       obtenerToken: () => tokenRef.current,
-      // El API respondió 401 no_autenticado: el token venció o ya no sirve.
-      alNoAutenticado: () => {
-        if (tokenRef.current !== null) void terminarSesionLocal(MENSAJE_SESION_VENCIDA);
-      },
+      // 401 no_autenticado: el token venció o ya no sirve.
+      alNoAutenticado: () => cerrarPorElApi(MENSAJE_SESION_VENCIDA),
+      // 423 cuenta_suspendida: el administrador suspendió o dio de baja la cuenta con la app
+      // abierta; MOV-01 muestra el mensaje del API, igual que al abrir la app.
+      alCuentaSuspendida: cerrarPorElApi,
     });
   }, [terminarSesionLocal]);
 
@@ -107,11 +114,9 @@ export function SesionProvider({ children }: { children: ReactNode }) {
         setEstado('activa');
         return 'ok';
       } catch (error) {
-        // 401: el cliente ya cerró la sesión local (alNoAutenticado). 423: la cuenta se suspendió
-        // después de emitir el token. Un fallo de red conserva el token para el próximo intento.
-        if (error instanceof ApiError && error.status === 423) {
-          await terminarSesionLocal(error.detail);
-        } else if (!(error instanceof ApiError && error.status === 401)) {
+        // 401 y 423 (la cuenta se suspendió después de emitir el token): manejarError ya cerró la
+        // sesión local con su aviso. Un fallo de red conserva el token para el próximo intento.
+        if (!(error instanceof ApiError && (error.status === 401 || error.status === 423))) {
           tokenRef.current = null;
         }
         return 'sin_sesion';
@@ -128,10 +133,13 @@ export function SesionProvider({ children }: { children: ReactNode }) {
 
   const cerrarSesion = useCallback(
     async (mensaje?: string) => {
+      cerrandoRef.current = true;
       try {
         await auth.logout({ expo_push_token: obtenerTokenPush() ?? undefined });
       } catch {
         // El JWT no se revoca en el servidor; basta con borrarlo aquí.
+      } finally {
+        cerrandoRef.current = false;
       }
       await terminarSesionLocal(mensaje ?? null);
     },
