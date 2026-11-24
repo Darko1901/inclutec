@@ -57,3 +57,28 @@ export function useCatalogo(tipo: TipoCatalogo, filtros?: ConsultaCatalogo, habi
     },
   };
 }
+
+/** Se agrega al nombre de una opción guardada que el administrador ya desactivó. */
+export const SUFIJO_YA_NO_SE_OFRECE = ' (ya no se ofrece)';
+
+type Guardado = Pick<CatalogoItem, 'id' | 'nombre'> & Partial<CatalogoItem>;
+
+/**
+ * El catálogo solo trae lo activo. Lo que el registro ya tenía se agrega aunque el administrador lo
+ * haya desactivado, para que se vea y se pueda quitar: lo ya guardado no cambia. Mientras el
+ * catálogo carga, o si falló, se devuelve tal cual.
+ */
+export function conGuardados(
+  catalogo: { datos: CatalogoItem[]; cargando: boolean; error: ApiError | null },
+  guardados: readonly (Guardado | null | undefined)[],
+): CatalogoItem[] {
+  if (catalogo.cargando || catalogo.error) return catalogo.datos;
+  const ids = new Set(catalogo.datos.map((item) => item.id));
+  const faltantes: CatalogoItem[] = [];
+  for (const guardado of guardados) {
+    if (!guardado || ids.has(guardado.id)) continue;
+    ids.add(guardado.id);
+    faltantes.push({ ...guardado, nombre: `${guardado.nombre}${SUFIJO_YA_NO_SE_OFRECE}` });
+  }
+  return faltantes.length > 0 ? [...catalogo.datos, ...faltantes] : catalogo.datos;
+}

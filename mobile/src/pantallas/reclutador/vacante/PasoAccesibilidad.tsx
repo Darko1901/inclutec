@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { AccessibilityInfo, StyleSheet, View } from 'react-native';
 
-import { useCatalogo, type CatalogoItem } from '../../../api';
+import { conGuardados, useCatalogo, type CatalogoItem } from '../../../api';
 import { Aviso, CampoTexto, Cargando, Casilla, ErrorCatalogo, Texto } from '../../../componentes';
 import { colores, espaciado, radio } from '../../../tema';
 import { CATEGORIAS_AJUSTE, ICONO_CATEGORIA } from '../../candidato/vacantes/categoriasAjuste';
@@ -27,8 +27,15 @@ const BLOQUES: { clave: Bloque; titulo: string; otro: Bloque; tituloOtro: string
 ];
 
 /** Paso 4 (obligatorio para publicar): ajustes en dos bloques, notas y declaración de «sin condiciones». */
-export function PasoAccesibilidad({ formulario: f, cambiar, errores, limpiar }: PropiedadesPaso) {
-  const ajustes = useCatalogo('ajustes');
+export function PasoAccesibilidad({
+  formulario: f,
+  cambiar,
+  errores,
+  limpiar,
+  guardada,
+}: PropiedadesPaso) {
+  const catalogo = useCatalogo('ajustes');
+  const ajustes = { ...catalogo, datos: conGuardados(catalogo, guardada?.ajustes ?? []) };
 
   function alternar(bloque: Bloque, otro: Bloque, id: number, marcada: boolean) {
     // Un mismo ajuste no puede estar en los dos bloques: la casilla del otro bloque se deshabilita.
