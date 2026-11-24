@@ -27,8 +27,10 @@ function inicialesDeEmpresa(nombre: string): string {
  * nombre de la empresa siempre aparece como texto junto a él, así que el lector de pantalla lo omite.
  */
 export function LogoEmpresa({ logoUrl, nombre, tamano = 48, testID }: LogoEmpresaProps) {
-  const [fallo, setFallo] = useState(false);
+  // Se recuerda qué URL falló: si llega otra (por ejemplo, tras subir un logotipo nuevo), se reintenta.
+  const [urlFallida, setUrlFallida] = useState<string | null>(null);
   const caja = { width: tamano, height: tamano, borderRadius: radio.sm };
+  const uri = logoUrl ? urlArchivo(logoUrl) : null;
 
   return (
     <View
@@ -37,12 +39,13 @@ export function LogoEmpresa({ logoUrl, nombre, tamano = 48, testID }: LogoEmpres
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
     >
-      {logoUrl && !fallo ? (
+      {uri && uri !== urlFallida ? (
         <Image
-          source={{ uri: urlArchivo(logoUrl) }}
+          testID={testID ? `${testID}-imagen` : undefined}
+          source={{ uri }}
           style={caja}
           resizeMode="contain"
-          onError={() => setFallo(true)}
+          onError={() => setUrlFallida(uri)}
         />
       ) : (
         <Texto

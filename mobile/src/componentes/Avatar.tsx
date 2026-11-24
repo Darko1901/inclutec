@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 
 import { urlArchivo } from '../api';
@@ -5,7 +6,7 @@ import { colores } from '../tema';
 import { Texto } from './Texto';
 
 interface AvatarProps {
-  /** Ruta de la foto (la del API o una local); sin ella se muestran las iniciales. */
+  /** Ruta de la foto (la del API o una local); sin ella, o si no se descarga, se muestran las iniciales. */
   fotoUrl: string | null;
   nombre: string;
   apellidos: string;
@@ -25,13 +26,17 @@ export function Avatar({
   descripcion,
   testID,
 }: AvatarProps) {
+  // Se recuerda qué URL falló: si llega otra (por ejemplo, tras subir una foto nueva), se reintenta.
+  const [urlFallida, setUrlFallida] = useState<string | null>(null);
   const caja = { width: tamano, height: tamano, borderRadius: tamano / 2 };
-  if (fotoUrl) {
+  const uri = fotoUrl ? urlArchivo(fotoUrl) : null;
+  if (uri && uri !== urlFallida) {
     return (
       <Image
         testID={testID}
-        source={{ uri: urlArchivo(fotoUrl) }}
+        source={{ uri }}
         style={[estilos.foto, caja]}
+        onError={() => setUrlFallida(uri)}
         accessible={Boolean(descripcion)}
         accessibilityRole={descripcion ? 'image' : undefined}
         accessibilityLabel={descripcion}
