@@ -21,6 +21,7 @@ from app.modelos import (
 from app.servicios import bitacora, notificaciones
 from app.servicios.empresas import sector_de
 from app.validaciones import existe, lanzar_si_hay_campos
+from app.validaciones_empresa import guardados_de
 
 ESTADOS = ("pendiente", "validada", "rechazada", "suspendida")
 ESTADOS_ACTIVOS = ("postulada", "en_revision", "entrevista")
@@ -132,7 +133,7 @@ def detalle(db: Session, empresa: Empresa) -> dict:
     }
 
 
-def validar_entrada(db: Session, datos) -> dict:
+def validar_entrada(db: Session, datos, actual: Empresa | None = None) -> dict:
     """Mismas reglas que el mock del panel. El RFC se pasa a mayúsculas."""
 
     def texto(valor) -> str:
@@ -155,11 +156,14 @@ def validar_entrada(db: Session, datos) -> dict:
         campos["rfc"] = (
             "El RFC debe tener 3 o 4 letras, 6 dígitos de fecha y 3 caracteres de homoclave."
         )
-    if not existe(db, Sector, datos.sector_id):
+    # Lo que la empresa ya tenía se acepta aunque su catálogo se haya desactivado después.
+    if not existe(db, Sector, datos.sector_id, guardados_de(actual, "sector_id")):
         campos["sector_id"] = "Elige un sector de la lista."
-    if not existe(db, TamanoEmpresa, datos.tamano_empresa_id):
+    if not existe(
+        db, TamanoEmpresa, datos.tamano_empresa_id, guardados_de(actual, "tamano_empresa_id")
+    ):
         campos["tamano_empresa_id"] = "Elige un tamaño de la lista."
-    if not existe(db, Municipio, datos.municipio_id):
+    if not existe(db, Municipio, datos.municipio_id, guardados_de(actual, "municipio_id")):
         campos["municipio_id"] = "Elige un municipio de la lista."
     if len(texto(datos.direccion)) > 255:
         campos["direccion"] = "Debe tener máximo 255 caracteres."

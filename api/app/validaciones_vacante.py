@@ -20,6 +20,9 @@ from app.modelos import (
     Municipio,
     NivelEducativo,
     TipoContrato,
+    Vacante,
+    VacanteAjuste,
+    VacanteHabilidad,
 )
 from app.validaciones import Campos, existe, lanzar_si_hay_campos
 
@@ -38,29 +41,48 @@ def es_presencial_o_hibrida(db: Session, modalidad_id: Any) -> bool:
     return nombre in ("Presencial", "Híbrido")
 
 
-def validar_vacante(db: Session, datos: VacanteEntrada) -> Campos:
+def _guardado(actual: Vacante | None, campo: str) -> set[int]:
+    valor = getattr(actual, campo) if actual is not None else None
+    return {valor} if valor is not None else set()
+
+
+def validar_vacante(db: Session, datos: VacanteEntrada, actual: Vacante | None = None) -> Campos:
+    """`actual` es la vacante que se edita: lo que ya tenía se acepta aunque se haya desactivado."""
+    habilidades_guardadas: set[int] = set()
+    ajustes_guardados: set[int] = set()
+    if actual is not None:
+        habilidades_guardadas = set(
+            db.scalars(
+                select(VacanteHabilidad.habilidad_id).where(
+                    VacanteHabilidad.vacante_id == actual.id
+                )
+            )
+        )
+        ajustes_guardados = set(
+            db.scalars(select(VacanteAjuste.ajuste_id).where(VacanteAjuste.vacante_id == actual.id))
+        )
     campos: Campos = {}
     if not isinstance(datos.titulo, str) or not datos.titulo.strip():
         campos["titulo"] = "Escribe el título de la vacante."
     elif len(datos.titulo) > 120:
         campos["titulo"] = "Usa máximo 120 caracteres."
-    if not existe(db, Categoria, datos.categoria_id):
+    if not existe(db, Categoria, datos.categoria_id, _guardado(actual, "categoria_id")):
         campos["categoria_id"] = "Elige una categoría."
     if not isinstance(datos.descripcion, str) or not datos.descripcion.strip():
         campos["descripcion"] = "Describe la vacante."
     elif len(datos.descripcion) > 2000:
         campos["descripcion"] = "Usa máximo 2000 caracteres."
-    if not existe(db, Jornada, datos.jornada_id):
+    if not existe(db, Jornada, datos.jornada_id, _guardado(actual, "jornada_id")):
         campos["jornada_id"] = "Elige la jornada."
-    if not existe(db, TipoContrato, datos.tipo_contrato_id):
+    if not existe(db, TipoContrato, datos.tipo_contrato_id, _guardado(actual, "tipo_contrato_id")):
         campos["tipo_contrato_id"] = "Elige el tipo de contrato."
     if datos.plazas is None or datos.plazas < 1:
         campos["plazas"] = "Escribe cuántas plazas hay (mínimo 1)."
     elif datos.plazas > 32767:
         campos["plazas"] = "Escribe un número de plazas menor."
-    if not existe(db, Modalidad, datos.modalidad_id):
+    if not existe(db, Modalidad, datos.modalidad_id, _guardado(actual, "modalidad_id")):
         campos["modalidad_id"] = "Elige la modalidad."
-    if not existe(db, Municipio, datos.municipio_id):
+    if not existe(db, Municipio, datos.municipio_id, _guardado(actual, "municipio_id")):
         campos["municipio_id"] = "Elige el municipio."
     if datos.direccion is not None and len(datos.direccion) > 255:
         campos["direccion"] = "Usa máximo 255 caracteres."
@@ -80,7 +102,7 @@ def validar_vacante(db: Session, datos: VacanteEntrada) -> Campos:
     if datos.mostrar_salario is None:
         campos["mostrar_salario"] = "Indica si se muestra el salario."
     if datos.nivel_educativo_id is not None and not existe(
-        db, NivelEducativo, datos.nivel_educativo_id
+        db, NivelEducativo, datos.nivel_educativo_id, _guardado(actual, "nivel_educativo_id")
     ):
         campos["nivel_educativo_id"] = "Elige una formación válida."
     if datos.experiencia_anios is None or not 0 <= datos.experiencia_anios <= 50:
@@ -91,7 +113,8 @@ def validar_vacante(db: Session, datos: VacanteEntrada) -> Campos:
     else:
         ids = [h.habilidad_id for h in datos.habilidades]
         if any(
-            not existe(db, Habilidad, h.habilidad_id) or h.obligatoria is None
+            not existe(db, Habilidad, h.habilidad_id, habilidades_guardadas)
+            or h.obligatoria is None
             for h in datos.habilidades
         ) or len(set(ids)) != len(ids):
             campos["habilidades"] = "Hay habilidades que no existen o están repetidas."
@@ -101,7 +124,8 @@ def validar_vacante(db: Session, datos: VacanteEntrada) -> Campos:
     else:
         ids = [a.ajuste_id for a in datos.ajustes]
         if any(
-            not existe(db, Ajuste, a.ajuste_id) or a.tipo not in TIPOS_AJUSTE for a in datos.ajustes
+            not existe(db, Ajuste, a.ajuste_id, ajustes_guardados) or a.tipo not in TIPOS_AJUSTE
+            for a in datos.ajustes
         ) or len(set(ids)) != len(ids):
             campos["ajustes"] = "Hay ajustes que no existen o están en los dos grupos."
         elif datos.sin_condiciones_accesibilidad is True and datos.ajustes:
@@ -119,8 +143,10 @@ def validar_vacante(db: Session, datos: VacanteEntrada) -> Campos:
     return campos
 
 
-def lanzar_si_vacante_invalida(db: Session, datos: VacanteEntrada) -> None:
-    lanzar_si_hay_campos(validar_vacante(db, datos))
+def lanzar_si_vacante_invalida(
+    db: Session, datos: VacanteEntrada, actual: Vacante | None = None
+) -> None:
+    lanzar_si_hay_campos(validar_vacante(db, datos, actual))
 
 
 def campos_faltantes_para_publicar(
