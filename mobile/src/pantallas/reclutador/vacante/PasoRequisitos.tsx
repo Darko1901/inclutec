@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { AccessibilityInfo, Pressable, StyleSheet, View } from 'react-native';
 
-import { useCatalogo } from '../../../api';
+import { conGuardados, useCatalogo } from '../../../api';
 import {
   BuscadorHabilidades,
   CampoTexto,
@@ -22,7 +22,13 @@ const SIN_REQUISITO = 0;
 type Tipo = 'obligatoria' | 'deseable';
 
 /** Paso 2: habilidades obligatorias o deseables, formación mínima y años de experiencia. */
-export function PasoRequisitos({ formulario: f, cambiar, errores, limpiar }: PropiedadesPaso) {
+export function PasoRequisitos({
+  formulario: f,
+  cambiar,
+  errores,
+  limpiar,
+  guardada,
+}: PropiedadesPaso) {
   const niveles = useCatalogo('niveles-educativos');
 
   function agregar(id: number, nombre: string) {
@@ -114,7 +120,10 @@ export function PasoRequisitos({ formulario: f, cambiar, errores, limpiar }: Pro
         etiqueta="Formación mínima"
         opciones={[
           { id: SIN_REQUISITO, nombre: 'No se requiere' },
-          ...niveles.datos.map(({ id, nombre }) => ({ id, nombre })),
+          ...conGuardados(niveles, [guardada?.nivel_educativo]).map(({ id, nombre }) => ({
+            id,
+            nombre,
+          })),
         ]}
         valor={f.nivelEducativoId ?? SIN_REQUISITO}
         cargando={niveles.cargando}

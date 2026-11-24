@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 
-import { useCatalogo } from '../../../api';
+import { conGuardados, useCatalogo } from '../../../api';
 import {
   CampoTexto,
   Casilla,
@@ -22,7 +22,14 @@ const opciones = (datos: { id: number; nombre: string }[]) =>
   datos.map(({ id, nombre }) => ({ id, nombre }));
 
 /** Paso 1: título, categoría, descripción, jornada, contrato, plazas, ubicación y salario. */
-export function PasoDatos({ formulario: f, cambiar, errores, limpiar, entidadInicial }: Props) {
+export function PasoDatos({
+  formulario: f,
+  cambiar,
+  errores,
+  limpiar,
+  guardada,
+  entidadInicial,
+}: Props) {
   const categorias = useCatalogo('categorias');
   const jornadas = useCatalogo('jornadas');
   const contratos = useCatalogo('tipos-contrato');
@@ -44,7 +51,7 @@ export function PasoDatos({ formulario: f, cambiar, errores, limpiar, entidadIni
       />
       <Selector
         etiqueta="Categoría"
-        opciones={opciones(categorias.datos)}
+        opciones={opciones(conGuardados(categorias, [guardada?.categoria]))}
         valor={f.categoriaId}
         cargando={categorias.cargando}
         onChange={(categoriaId) => {
@@ -71,7 +78,7 @@ export function PasoDatos({ formulario: f, cambiar, errores, limpiar, entidadIni
       />
       <Selector
         etiqueta="Jornada"
-        opciones={opciones(jornadas.datos)}
+        opciones={opciones(conGuardados(jornadas, [guardada?.jornada]))}
         valor={f.jornadaId}
         cargando={jornadas.cargando}
         onChange={(jornadaId) => {
@@ -84,7 +91,7 @@ export function PasoDatos({ formulario: f, cambiar, errores, limpiar, entidadIni
       />
       <Selector
         etiqueta="Tipo de contrato"
-        opciones={opciones(contratos.datos)}
+        opciones={opciones(conGuardados(contratos, [guardada?.tipo_contrato]))}
         valor={f.tipoContratoId}
         cargando={contratos.cargando}
         onChange={(tipoContratoId) => {

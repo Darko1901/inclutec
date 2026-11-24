@@ -200,7 +200,7 @@ function Asistente({ navigation, vacante }: AsistenteProps) {
     );
   }
 
-  const propiedades = { formulario, cambiar, errores, limpiar };
+  const propiedades = { formulario, cambiar, errores, limpiar, guardada: vacante };
   const ultimo = paso === TOTAL_PASOS;
   const bloqueadaPublicacion = empresaNoValidada;
 

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { ApiError, candidatos, useCatalogo } from '../../../api';
+import { ApiError, candidatos, conGuardados, useCatalogo } from '../../../api';
 import {
   Aviso,
   Boton,
@@ -75,7 +75,7 @@ export function SeccionPreferencias({
       <Texto variante="etiqueta" accessibilityRole="header">
         Modalidades de interés
       </Texto>
-      {modalidades.datos.map((modalidad) => (
+      {conGuardados(modalidades, perfil.modalidades).map((modalidad) => (
         <Casilla
           key={modalidad.id}
           texto={modalidad.nombre}
@@ -89,7 +89,7 @@ export function SeccionPreferencias({
       <Texto variante="etiqueta" accessibilityRole="header">
         Categorías de interés
       </Texto>
-      {categorias.datos.map((categoria) => (
+      {conGuardados(categorias, perfil.categorias).map((categoria) => (
         <Casilla
           key={categoria.id}
           texto={categoria.nombre}
@@ -103,7 +103,10 @@ export function SeccionPreferencias({
 
       <Selector
         etiqueta="Jornada deseada"
-        opciones={jornadas.datos.map(({ id, nombre }) => ({ id, nombre }))}
+        opciones={conGuardados(jornadas, [perfil.jornada]).map(({ id, nombre }) => ({
+          id,
+          nombre,
+        }))}
         valor={jornadaId}
         cargando={jornadas.cargando}
         onChange={setJornadaId}

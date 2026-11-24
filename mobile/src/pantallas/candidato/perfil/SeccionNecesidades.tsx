@@ -6,6 +6,7 @@ import { StyleSheet, View } from 'react-native';
 import {
   ApiError,
   candidatos,
+  conGuardados,
   useCatalogo,
   type CompartirAjustes,
   type PerfilCandidato,
@@ -120,7 +121,8 @@ function ConConsentimiento({
   aviso,
   onGuardado,
 }: Pick<PropiedadesSeccion, 'perfil' | 'aviso' | 'onGuardado'>) {
-  const ajustes = useCatalogo('ajustes');
+  const catalogo = useCatalogo('ajustes');
+  const ajustes = { ...catalogo, datos: conGuardados(catalogo, perfil.necesidades) };
   const [seleccion, setSeleccion] = useState<number[]>(perfil.necesidades.map((n) => n.id));
   const [nota, setNota] = useState(perfil.nota_ajustes ?? '');
   const [compartir, setCompartir] = useState<CompartirAjustes>(perfil.compartir_ajustes);
