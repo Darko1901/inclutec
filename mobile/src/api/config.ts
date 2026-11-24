@@ -30,9 +30,21 @@ export const API_URL = resolverApiUrl(
 /** Datos simulados mientras el API no exista; se apaga con EXPO_PUBLIC_USE_MOCK=false. */
 export const USAR_MOCK = (process.env.EXPO_PUBLIC_USE_MOCK ?? 'true').toLowerCase() !== 'false';
 
+// Al reemplazar una foto o un logotipo, el API conserva la ruta (/archivos/fotos/candidato-3.jpg) y
+// el teléfono guarda las imágenes por URL: con la misma URL seguiría mostrando la anterior. Por eso
+// la URL lleva una versión: la del arranque de la app o, si se subió en esta sesión, la de ese momento.
+const VERSION_ARRANQUE = Date.now();
+const versiones = new Map<string, number>();
+
+/** El archivo de esa ruta se acaba de reemplazar: la próxima vez se descarga de nuevo. */
+export function marcarArchivoNuevo(ruta: string): void {
+  versiones.set(ruta, Math.max(Date.now(), (versiones.get(ruta) ?? VERSION_ARRANQUE) + 1));
+}
+
 /** Los archivos (fotos y logotipos) se sirven fuera de /api/v1: http://localhost:8000/archivos/… */
 export function urlArchivo(ruta: string): string {
   if (/^(https?|file|content|data):/.test(ruta)) return ruta;
   const origen = API_URL.replace(/\/api\/v\d+\/?$/, '');
-  return `${origen}${ruta.startsWith('/') ? '' : '/'}${ruta}`;
+  const version = versiones.get(ruta) ?? VERSION_ARRANQUE;
+  return `${origen}${ruta.startsWith('/') ? '' : '/'}${ruta}?v=${version}`;
 }
