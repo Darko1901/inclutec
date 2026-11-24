@@ -133,7 +133,7 @@ class GestionEmpresas
     public static function editar(array &$estado, int $id, array $datos): array
     {
         $indice = self::indice($estado, $id);
-        $limpios = self::validarEntrada($estado, $datos);
+        $limpios = self::validarEntrada($estado, $datos, $estado['empresas'][$indice]);
         self::exigirRfcLibre($estado, $limpios['rfc'], $id);
 
         $estado['empresas'][$indice] = $limpios + $estado['empresas'][$indice];
@@ -237,13 +237,24 @@ class GestionEmpresas
 
     /**
      * Valida un EmpresaAdminEntrada y devuelve los campos limpios, con los nombres del estado del mock.
+     * Como el API, un sector o tamaño desactivado ya no se acepta en registros nuevos, pero la empresa
+     * que se edita conserva el que ya tenía (`$actual`).
      *
      * @param  array<string, mixed>  $estado
      * @param  array<string, mixed>  $datos
+     * @param  array<string, mixed>|null  $actual
      * @return array<string, mixed>
      */
-    private static function validarEntrada(array $estado, array $datos): array
+    private static function validarEntrada(array $estado, array $datos, ?array $actual = null): array
     {
+        $disponible = function (string $tipo, string $catalogo, ?int $id, ?int $guardado) use ($estado): bool {
+            if ($id === null || ! isset($estado['catalogos'][$catalogo][$id])) {
+                return false;
+            }
+            $activos = GestionCatalogos::activos($estado, $tipo);
+
+            return $id === $guardado || $activos === null || in_array($id, array_column($activos, 'id'), true);
+        };
         $texto = fn (string $campo): string => is_string($datos[$campo] ?? null) ? trim($datos[$campo]) : '';
         $opcional = fn (string $campo): ?string => $texto($campo) === '' ? null : $texto($campo);
         $entero = fn (string $campo): ?int => isset($datos[$campo]) && is_numeric($datos[$campo]) ? (int) $datos[$campo] : null;
@@ -266,10 +277,10 @@ class GestionEmpresas
         if (! preg_match(self::RFC, $rfc)) {
             $campos['rfc'] = 'El RFC debe tener 3 o 4 letras, 6 dígitos de fecha y 3 caracteres de homoclave.';
         }
-        if (! isset($estado['catalogos']['sectores'][$sector])) {
+        if (! $disponible('sectores', 'sectores', $sector, $actual['sector_id'] ?? null)) {
             $campos['sector_id'] = 'Elige un sector de la lista.';
         }
-        if (! isset($estado['catalogos']['tamanos'][$tamano])) {
+        if (! $disponible('tamanos-empresa', 'tamanos', $tamano, $actual['tamano_empresa_id'] ?? null)) {
             $campos['tamano_empresa_id'] = 'Elige un tamaño de la lista.';
         }
         if (! isset($estado['catalogos']['municipios'][$municipio])) {
