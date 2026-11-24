@@ -40,9 +40,10 @@ async function irA(nombre: string) {
   await waitFor(() => expect(pestana(nombre)).toBeSelected());
 }
 
-/** Elige una opción de un selector (mes o año) abriendo su lista. */
+/** Elige una opción de un selector abriendo su lista; mientras su catálogo carga, está deshabilitado. */
 async function elegir(selector: RegExp, opcion: string) {
-  await fireEvent.press(await screen.findByRole('button', { name: selector }));
+  await waitFor(() => expect(screen.getByRole('button', { name: selector })).toBeEnabled());
+  await fireEvent.press(screen.getByRole('button', { name: selector }));
   await fireEvent.press(await screen.findByRole('radio', { name: opcion }));
 }
 
