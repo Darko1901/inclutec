@@ -75,6 +75,30 @@ ruff format --check .
 
 `pytest` usa `TEST_DATABASE_URL`. Necesita un servidor PostgreSQL 16 donde ese usuario pueda crear bases de datos; **borra y recrea** la base que ese URL nombre (`inclutec_pruebas` por omisión), nunca la de desarrollo.
 
+## Prueba de humo y comparación con el contrato
+
+Los dos scripts de `api/scripts/` se corren a mano; ninguno sustituye a `pytest`.
+
+**`scripts/humo.py`** recorre con httpx, contra un API real y con las cuentas de S002, los flujos principales y termina con código 1 si alguna respuesta no es la esperada:
+
+1. Inicio de sesión de candidato, reclutador y administrador, y de una cuenta inexistente (401 `credenciales_invalidas`).
+2. Recomendadas, detalle y desglose de la vacante 1 de Mariana (88 %).
+3. Postularse a la vacante 6 y repetir (409 `postulacion_duplicada`).
+4. La reclutadora de TecnoQro ve los postulados ordenados (83 % para Mariana en la vacante 1), cambia estados y publica un horario.
+5. Mariana reserva el horario y un segundo intento de Jorge da 409 `horario_ocupado`.
+6. Propiedad y privacidad: un candidato no ve lo de otro, un reclutador no ve lo de otra empresa, y las necesidades de ajuste no llegan a la reclutadora (si no se compartieron) ni al administrador.
+7. El administrador ve las estadísticas (y las exporta a PDF y XLSX), valida a Estudio Trazo y resuelve el reporte 1.
+
+Escribe en la base de datos, así que se corre una sola vez sobre una base recién creada; si ya se usó, se niega (código 2) y pide recrearla:
+
+```bash
+docker compose down -v && docker compose up -d db     # desde la raíz del repositorio
+uvicorn app.main:app --port 8000                      # desde api/
+python scripts/humo.py                                # en otra terminal; INCLUTEC_API_URL cambia la dirección
+```
+
+**`scripts/comparar_contrato.py`** compara `app.openapi()` contra `docs/api/openapi.yaml` (no necesita la base de datos): operaciones de uno y otro lado, parámetros, campos de cada cuerpo de petición y de respuesta de éxito (de forma recursiva) y códigos de éxito. Sale con 1 si hay diferencias. Hoy solo reporta dos, y son a propósito: `GET /horarios-entrevista` (`vacante_id`) y `GET /admin/estadisticas/exportar` (`formato`) son obligatorios en el contrato, pero el API los declara opcionales para validarlos a mano y responder el 422 `validacion` con `campos`, como pide el contrato, en lugar del formato de error de FastAPI.
+
 ## Regenerar los modelos
 
 Cuando cambie el esquema (una migración nueva en `db/migraciones/`), se vuelve a generar `app/modelos/tablas.py` desde una base ya creada, sin relaciones; las consultas hacen los JOIN explícitos:
