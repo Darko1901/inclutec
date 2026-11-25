@@ -254,7 +254,8 @@ def main() -> int:
         (r.status_code, r.text[:120]),
     )
 
-    inicio = (datetime.now(UTC) + timedelta(days=3)).replace(
+    # La semilla crea sus horarios a «ahora + 3 días»: a 10 días nunca se traslapan con ellos.
+    inicio = (datetime.now(UTC) + timedelta(days=10)).replace(
         hour=16, minute=0, second=0, microsecond=0
     )
     horario = {
