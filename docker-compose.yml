@@ -1,5 +1,5 @@
 # Servicios de desarrollo de IncluTec.
-# Por ahora solo la base de datos; el API se agrega en el sprint 4.
+# Solo la base de datos: el API (api/) y el panel (web/) se corren en la máquina; ver el README de cada uno.
 services:
   db:
     image: postgres:16
