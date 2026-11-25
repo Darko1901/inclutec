@@ -1,5 +1,8 @@
 """La clave pública de ejemplo nunca firma tokens."""
 
+import pytest
+from pydantic import ValidationError
+
 import app.config as configuracion
 
 # Sin pasar por la caché de obtener_configuracion: las demás pruebas comparten esa instancia.
@@ -28,3 +31,10 @@ def test_una_clave_propia_se_respeta(monkeypatch, tmp_path) -> None:
 
     assert leer_configuracion().jwt_secret == "una-clave-propia-larga-y-aleatoria-de-prueba"
     assert not archivo.exists()
+
+
+def test_un_costo_de_bcrypt_menor_a_10_impide_arrancar(monkeypatch) -> None:
+    monkeypatch.setenv("BCRYPT_COST", "4")
+
+    with pytest.raises(ValidationError):
+        leer_configuracion()
