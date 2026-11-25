@@ -5,7 +5,7 @@ App de **candidatos** y **reclutadores** hecha con React Native + Expo (TypeScri
 - **Candidato:** busca vacantes, ve qué tan compatibles son con su perfil, se postula, lleva su CV y sus necesidades de ajuste (nunca diagnósticos), agenda entrevistas y recibe notificaciones.
 - **Reclutador:** administra la organización y sus vacantes, revisa postulados ordenados por compatibilidad, cambia su estado, publica horarios de entrevista y lleva la agenda.
 
-Hasta que el API exista (sprint 4), la app corre con **datos simulados** que responden igual que el contrato (`docs/api/contrato.md`). Qué hace cada pantalla: `docs/diseno/requerimientos.md` y `docs/diseno/pantallas.md`.
+Por omisión la app corre con **datos simulados** que responden igual que el contrato (`docs/api/contrato.md`); con `EXPO_PUBLIC_USE_MOCK=false` usa el API real de `api/` (ver «Datos simulados o API real»). Qué hace cada pantalla: `docs/diseno/requerimientos.md` y `docs/diseno/pantallas.md`.
 
 ## Índice
 
