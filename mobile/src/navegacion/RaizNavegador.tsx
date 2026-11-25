@@ -17,6 +17,7 @@ import { colores } from '../tema';
 import { CandidatoTabs } from './CandidatoTabs';
 import { ReclutadorTabs } from './ReclutadorTabs';
 import { NoLeidasProvider } from './NoLeidasContext';
+import { TITULOS_CANDIDATO, TITULOS_RECLUTADOR, tituloDePestana } from './opcionesPestanas';
 import type { RootStackParamList } from './tipos';
 
 const Pila = createNativeStackNavigator<RootStackParamList>();
@@ -44,7 +45,12 @@ export function RaizNavegador() {
           <Pila.Screen name="Splash" component={MOV00Splash} />
         ) : estado === 'sin_sesion' || !usuario ? (
           <>
-            <Pila.Screen name="InicioSesion" component={MOV01InicioSesion} />
+            {/* Sin encabezado: el título solo es el texto del botón «Regresar» de Crear cuenta. */}
+            <Pila.Screen
+              name="InicioSesion"
+              component={MOV01InicioSesion}
+              options={{ title: 'Iniciar sesión' }}
+            />
             <Pila.Screen
               name="Registro"
               component={MOV02Registro}
@@ -66,6 +72,9 @@ export function RaizNavegador() {
             <Pila.Screen
               name="CandidatoTabs"
               component={CandidatoTabs}
+              options={({ route }) => ({
+                title: tituloDePestana(route, TITULOS_CANDIDATO, 'Vacantes'),
+              })}
               initialParams={pantallaInicial === 'Perfil' ? { screen: 'Perfil' } : undefined}
             />
             <Pila.Screen
@@ -100,6 +109,9 @@ export function RaizNavegador() {
             <Pila.Screen
               name="ReclutadorTabs"
               component={ReclutadorTabs}
+              options={({ route }) => ({
+                title: tituloDePestana(route, TITULOS_RECLUTADOR, 'Mis vacantes'),
+              })}
               initialParams={
                 pantallaInicial === 'Organizacion' ? { screen: 'Organizacion' } : undefined
               }
