@@ -2,6 +2,7 @@ import secrets
 from functools import lru_cache
 from pathlib import Path
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 RAIZ_API = Path(__file__).resolve().parent.parent
@@ -24,7 +25,8 @@ class Configuracion(BaseSettings):
     )
     jwt_secret: str = JWT_SECRET_DE_EJEMPLO
     jwt_horas: int = 8
-    bcrypt_cost: int = 12
+    # Mínimo 10 (sección 1 del contrato): un valor menor impide arrancar el API.
+    bcrypt_cost: int = Field(default=12, ge=10)
     archivos_dir: str = "uploads"
 
     # Tras 5 intentos fallidos con el mismo correo, el acceso se bloquea 15 minutos.
