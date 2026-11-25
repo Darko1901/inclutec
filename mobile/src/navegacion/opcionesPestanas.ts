@@ -1,5 +1,6 @@
 import type { Ionicons } from '@expo/vector-icons';
 import type { BottomTabNavigationOptions } from '@react-navigation/bottom-tabs';
+import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 
 import { AREA_TACTIL_MINIMA, colores } from '../tema';
 
@@ -25,4 +26,34 @@ export function opcionesNotificaciones(noLeidas: number): BottomTabNavigationOpt
     title: 'Notificaciones',
     tabBarAccessibilityLabel: etiquetaNotificaciones(noLeidas),
   };
+}
+
+/** Nombre que ve la persona de cada pestaña (el de la ruta es interno: «MisVacantes»). */
+export const TITULOS_CANDIDATO: Record<string, string> = {
+  Vacantes: 'Vacantes',
+  Postulaciones: 'Postulaciones',
+  Empresas: 'Empresas',
+  Notificaciones: 'Notificaciones',
+  Perfil: 'Perfil',
+};
+
+export const TITULOS_RECLUTADOR: Record<string, string> = {
+  MisVacantes: 'Mis vacantes',
+  Agenda: 'Agenda',
+  Notificaciones: 'Notificaciones',
+  Organizacion: 'Organización',
+};
+
+/**
+ * Título de la pantalla que aloja una barra inferior. No se ve (su encabezado está oculto), pero
+ * el botón «Regresar» de las pantallas de detalle lo usa como texto: sin él diría «ReclutadorTabs».
+ * Sigue a la pestaña activa, para que regrese a «Agenda» si se vino de ahí.
+ */
+export function tituloDePestana(
+  route: Parameters<typeof getFocusedRouteNameFromRoute>[0],
+  titulos: Record<string, string>,
+  porOmision: string,
+): string {
+  const activa = getFocusedRouteNameFromRoute(route);
+  return (activa && titulos[activa]) || porOmision;
 }
