@@ -3524,7 +3524,7 @@ Al abrirlo por primera vez, una postulación «postulada» no cambia de estado s
 
 **Rol:** reclutador · **Trazabilidad:** REC-05 RF-04 · CU-17
 
-Transiciones: postulada → en_revision o no_seleccionada; en_revision → entrevista o no_seleccionada; entrevista → aceptada o no_seleccionada. Registra el historial y notifica al candidato por app, push y correo.
+Transiciones: postulada → en_revision o no_seleccionada; en_revision → entrevista o no_seleccionada; entrevista → aceptada o no_seleccionada. Registra el historial y notifica al candidato por app, push y correo. Si la postulación tenía una entrevista agendada y pasa a `no_seleccionada`, la entrevista pasa a `cancelada` y su horario a `cancelado` (no vuelve a `libre`); el candidato recibe solo el aviso `cambio_estado`, sin una `entrevista_cancelada` adicional.
 
 | Parámetro | En | Tipo | Descripción |
 |---|---|---|---|
